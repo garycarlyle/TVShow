@@ -13,6 +13,11 @@ Well, you may be thinking about Popcorn Time, don't you ? If so, yes. The concep
 ## What does it use?
 I use .NET Framework 4.5 and C# for the backend. WPF/XAML for the interface. Libtorrent-rasterbar for torrent downloading.
 
+## Supported platforms
+At this time, only Windows 7+ is supported (Windows 7, 8, 8.1 32/64 Bits). I plan to make it cross-platform using Mono.
+
 ## Can I help you?
 Of course yes! It's open-source so feel free to submit pull-request, I promise I'll consider them.
 
+## Visual Studio .sln
+The solution is built using Visual Studio 2013.

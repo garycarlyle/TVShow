@@ -25,7 +25,7 @@ Of course yes! It's open-source so feel free to submit pull-request, I promise I
 The solution is built using Visual Studio 2013.
 
 ## TVShow VS Popcorn Time ?
-Well, there's many points.
+Well, there's some points.
 
 * Cross-platform. Popcorn Time is based on Node-WebKit, hence, on NodeJS. Consequently, it's cross-platform. At the opposite, TVShow is fully built using .NET/C#. So, multi-platform does not come out of the box. However, Mono works well and is aimed to support multi-platform, so that future support for multiple OS is conceivable.
 

@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TvShow", "TVShow\TvShow.csproj", "{5BFADF51-CE11-45CF-8E36-DC9DC061C274}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TvShow", "TVShow\TVShow.csproj", "{5BFADF51-CE11-45CF-8E36-DC9DC061C274}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{BA042D2D-3C0D-4F2F-8A23-56A6F8F60F65}"
 	ProjectSection(SolutionItems) = preProject

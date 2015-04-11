@@ -1,10 +1,5 @@
 language: csharp
-
-before_install:
-  - sudo apt-get update -qq > /dev/null
-  - sudo apt-get install -qq mono-devel mono-gmcs > /dev/null
-  - mozroots --import --sync
-  - export EnableNuGetPackageRestore=true
-
-script:
-  - xbuild TVShow.sln
+solution: TVShow.sln
+install:
+  - sudo apt-get install -y gtk-sharp2
+  - nuget restore TVShow.sln

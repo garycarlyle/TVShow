@@ -65,7 +65,6 @@ namespace TVShow.ViewModel
                 {
                     _isDownloadingMovie = value;
                     RaisePropertyChanged(IsDownloadingMoviePropertyName);
-                    StopDownloadingMovieCommand.RaiseCanExecuteChanged();
                 }
             }
         }

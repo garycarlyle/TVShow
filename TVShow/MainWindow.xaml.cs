@@ -21,8 +21,8 @@ namespace TVShow
     /// </summary>
     public partial class MainWindow : MetroWindow
     {
-        private bool mediaPlayerIsPlaying = false;
-        private bool userIsDraggingSlider = false;
+        private bool _mediaPlayerIsPlaying = false;
+        private bool _userIsDraggingSlider = false;
 
         public string MovieLoadingProgress { get; set; }
 
@@ -38,7 +38,7 @@ namespace TVShow
                 var vm = DataContext as MainViewModel;
                 if (vm != null)
                 {
-                    if (mediaPlayerIsPlaying)
+                    if (_mediaPlayerIsPlaying)
                     {
                         mePlayer.Stop();
                         mePlayer.Source = null;
@@ -136,7 +136,7 @@ namespace TVShow
                 MoviePlayer.IsOpen = true;
                 mePlayer.Source = new Uri(e.PathToFile);
                 mePlayer.Play();
-                mediaPlayerIsPlaying = true;
+                _mediaPlayerIsPlaying = true;
             });
         }
 
@@ -160,7 +160,7 @@ namespace TVShow
 
         private void timer_Tick(object sender, EventArgs e)
         {
-            if ((mePlayer.Source != null) && (mePlayer.NaturalDuration.HasTimeSpan) && (!userIsDraggingSlider))
+            if ((mePlayer.Source != null) && (mePlayer.NaturalDuration.HasTimeSpan) && (!_userIsDraggingSlider))
             {
                 sliProgress.Minimum = 0;
                 sliProgress.Maximum = mePlayer.NaturalDuration.TimeSpan.TotalSeconds;
@@ -171,7 +171,7 @@ namespace TVShow
         private void Play_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             e.CanExecute = (mePlayer != null) && (mePlayer.Source != null);
-            if (mediaPlayerIsPlaying)
+            if (_mediaPlayerIsPlaying)
             {
                 StatusBarItemPlay.Visibility = Visibility.Collapsed;
                 StatusBarItemPause.Visibility = Visibility.Visible;
@@ -186,8 +186,8 @@ namespace TVShow
         private void Play_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             mePlayer.Play();
-            mediaPlayerIsPlaying = true;
-            if (mediaPlayerIsPlaying)
+            _mediaPlayerIsPlaying = true;
+            if (_mediaPlayerIsPlaying)
             {
                 StatusBarItemPlay.Visibility = Visibility.Collapsed;
                 StatusBarItemPause.Visibility = Visibility.Visible;
@@ -201,8 +201,8 @@ namespace TVShow
 
         private void Pause_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
-            e.CanExecute = mediaPlayerIsPlaying;
-            if (mediaPlayerIsPlaying)
+            e.CanExecute = _mediaPlayerIsPlaying;
+            if (_mediaPlayerIsPlaying)
             {
                 StatusBarItemPlay.Visibility = Visibility.Collapsed;
                 StatusBarItemPause.Visibility = Visibility.Visible;
@@ -217,8 +217,8 @@ namespace TVShow
         private void Pause_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             mePlayer.Pause();
-            mediaPlayerIsPlaying = false;
-            if (mediaPlayerIsPlaying)
+            _mediaPlayerIsPlaying = false;
+            if (_mediaPlayerIsPlaying)
             {
                 StatusBarItemPlay.Visibility = Visibility.Collapsed;
                 StatusBarItemPause.Visibility = Visibility.Visible;
@@ -234,11 +234,11 @@ namespace TVShow
         {
             DispatcherHelper.CheckBeginInvokeOnUI(() =>
             {
-                if (mediaPlayerIsPlaying)
+                if (_mediaPlayerIsPlaying)
                 {
                     mePlayer.Stop();
                     mePlayer.Source = null;
-                    mediaPlayerIsPlaying = false;
+                    _mediaPlayerIsPlaying = false;
                 }
 
                 ProgressBar.Visibility = Visibility.Collapsed;
@@ -266,12 +266,12 @@ namespace TVShow
 
         private void sliProgress_DragStarted(object sender, DragStartedEventArgs e)
         {
-            userIsDraggingSlider = true;
+            _userIsDraggingSlider = true;
         }
 
         private void sliProgress_DragCompleted(object sender, DragCompletedEventArgs e)
         {
-            userIsDraggingSlider = false;
+            _userIsDraggingSlider = false;
             mePlayer.Position = TimeSpan.FromSeconds(sliProgress.Value);
         }
 

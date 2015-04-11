@@ -4,13 +4,13 @@ Watch movies easier
 ![screenshot](https://cloud.githubusercontent.com/assets/8962802/7101211/1a3746ae-e04d-11e4-8ed7-b2d0bd5bc221.jpg)
 
 ## What is TVShow?
-TVShow is an experimental project which aims to provide a simple interface to watch any movies.
+TVShow is a project which aims to provide a simple interface to watch any movies.
 
 ## Well, is it legal?
 Depending on which country you live in, it may be not. Also, I'm planning to rethink the media's content to make it entirely legal (ie. content may be replaced by free instructional media such as documentaries or TED podcasts).
 
 ## Hmm, it does remember me something...
-Well, you may be thinking about Popcorn Time, don't you ? If so, yes. The concept is not new, and this project is clearly inspired from it. Also, my primary goal was to make an alternative, using .NET framework.
+Well, you may be thinking about Popcorn Time, don't you? If so, yes. The concept is not new, and this project is clearly inspired from it. Also, my primary goal was to make an alternative, using .NET framework.
 
 ## What does it use?
 I use .NET Framework 4.5 and C# for the backend. WPF/XAML for the interface. Libtorrent-rasterbar for torrent downloading.

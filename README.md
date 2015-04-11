@@ -38,4 +38,4 @@ Well, there's some points.
 * API. It's simple: TVShow uses the YTS and The Movie Database APIs, same ones that Popcorn Time uses.
 
 ## How do I compile the solution?
-* Just open the .sln with VS 2013+ and right-click on the solution, click "Enable NuGet Package Restore" and run F5. 
+* Just open the .sln with VS 2013+, right-click on the solution, click "Enable NuGet Package Restore" and run F5. 

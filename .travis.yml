@@ -7,4 +7,4 @@ before_install:
   - export EnableNuGetPackageRestore=true
 
 script:
-  - xbuild CI\ .\TVShow.sln
+  - xbuild TVShow.sln

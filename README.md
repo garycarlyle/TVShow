@@ -33,6 +33,6 @@ Well, there's some points.
 
 * Features. Since TVShow is a recent project, Popcorn Time supports more features that TVShow does. But it's just a matter of time.
 
-* Stability. TVShow appears to be more stable than Popcorn Time. Sometimes, Popcorn Time crashes randomly. Not sayin I guarantee it will never happen to TVShow, but unit tests are there. Seems not to be considered in Popcorn Time projet...
+* Stability. TVShow appears to be more stable than Popcorn Time. Sometimes, Popcorn Time crashes randomly. Not sayin I guarantee it will never happen to TVShow, but unit tests are there. Seems not to be considered in Popcorn Time project...
 
 * API. It's simple: TVShow uses the YTS and The Movie Database APIs, the same that Popcorn Time uses.

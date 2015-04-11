@@ -27,7 +27,7 @@ The solution is built using Visual Studio 2013.
 ## TVShow VS Popcorn Time ?
 Well, there's many points.
 
-* Cross-platform. Popcorn Time is based on CEF (the Chromium Embedded Framework), hence, on NodeJS. Consequently, it's cross-platform. At the opposite, TVShow is fully built using .NET/C#. So, multi-platform does not come out of the box. However, Mono works well and is aimed to support multi-platform, so that future support for multiple OS is conceivable.
+* Cross-platform. Popcorn Time is based on Node-WebKit, hence, on NodeJS. Consequently, it's cross-platform. At the opposite, TVShow is fully built using .NET/C#. So, multi-platform does not come out of the box. However, Mono works well and is aimed to support multi-platform, so that future support for multiple OS is conceivable.
 
 * Performances. Since NodeJS is based on V8 VM, it is fast. Really fast. But compared to a fully native app, it's a slow rabbit. That's why Popcorn Time compares bad to TVShow, whose performances are great.
 

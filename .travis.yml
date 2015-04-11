@@ -4,8 +4,6 @@ before_install:
   - sudo apt-get update -qq > /dev/null
   - sudo apt-get install -qq mono-devel mono-gmcs > /dev/null
   - mozroots --import --sync
-  - mv -f TVShow/packagesMono.config TVShow/packages.config
-  - mv -f TVShow/TVShowMono.csproj TVShow/TVShow.csproj
   - export EnableNuGetPackageRestore=true
 
 script:

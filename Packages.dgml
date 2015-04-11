@@ -1,0 +1,61 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<DirectedGraph GraphDirection="LeftToRight" xmlns="http://schemas.microsoft.com/vs/2009/dgml">
+  <Nodes>
+    <Node Id="TvShow" Label="TvShow" Category="Projet" />
+    <Node Id="CommonServiceLocator 1.3" Label="CommonServiceLocator 1.3" Category="Package" />
+    <Node Id="DeltaCompressionDotNet 1.0.0" Label="DeltaCompressionDotNet 1.0.0" Category="Package" />
+    <Node Id="MahApps.Metro 1.1.2.0" Label="MahApps.Metro 1.1.2.0" Category="Package" />
+    <Node Id="MahApps.Metro.Resources 0.4.0.0" Label="MahApps.Metro.Resources 0.4.0.0" Category="Package" />
+    <Node Id="Microsoft.Web.Xdt 2.1.1" Label="Microsoft.Web.Xdt 2.1.1" Category="Package" />
+    <Node Id="Mono.Cecil 0.9.5.4" Label="Mono.Cecil 0.9.5.4" Category="Package" />
+    <Node Id="MvvmLightLibs 5.0.2.0" Label="MvvmLightLibs 5.0.2.0" Category="Package" />
+    <Node Id="Newtonsoft.Json 6.0.8" Label="Newtonsoft.Json 6.0.8" Category="Package" />
+    <Node Id="NuGet.Core 2.8.3" Label="NuGet.Core 2.8.3" Category="Package" />
+    <Node Id="Ragnar 0.6.0" Label="Ragnar 0.6.0" Category="Package" />
+    <Node Id="RestSharp 105.0.1" Label="RestSharp 105.0.1" Category="Package" />
+    <Node Id="Splat 1.5.1" Label="Splat 1.5.1" Category="Package" />
+    <Node Id="squirrel.windows 0.9.2.1" Label="squirrel.windows 0.9.2.1" Category="Package" />
+    <Node Id="TMDbLib 0.7.7" Label="TMDbLib 0.7.7" Category="Package" />
+  </Nodes>
+  <Links>
+    <Link Source="MahApps.Metro.Resources 0.4.0.0" Target="MahApps.Metro 1.1.2.0" Category="Dépendance de package" />
+    <Link Source="MvvmLightLibs 5.0.2.0" Target="CommonServiceLocator 1.3" Category="Dépendance de package" />
+    <Link Source="MvvmLightLibs 5.0.2.0" Target="CommonServiceLocator 1.3" Category="Dépendance de package" />
+    <Link Source="MvvmLightLibs 5.0.2.0" Target="CommonServiceLocator 1.3" Category="Dépendance de package" />
+    <Link Source="MvvmLightLibs 5.0.2.0" Target="CommonServiceLocator 1.3" Category="Dépendance de package" />
+    <Link Source="MvvmLightLibs 5.0.2.0" Target="CommonServiceLocator 1.3" Category="Dépendance de package" />
+    <Link Source="MvvmLightLibs 5.0.2.0" Target="CommonServiceLocator 1.3" Category="Dépendance de package" />
+    <Link Source="MvvmLightLibs 5.0.2.0" Target="CommonServiceLocator 1.3" Category="Dépendance de package" />
+    <Link Source="MvvmLightLibs 5.0.2.0" Target="CommonServiceLocator 1.3" Category="Dépendance de package" />
+    <Link Source="MvvmLightLibs 5.0.2.0" Target="CommonServiceLocator 1.3" Category="Dépendance de package" />
+    <Link Source="MvvmLightLibs 5.0.2.0" Target="CommonServiceLocator 1.3" Category="Dépendance de package" />
+    <Link Source="MvvmLightLibs 5.0.2.0" Target="CommonServiceLocator 1.3" Category="Dépendance de package" />
+    <Link Source="MvvmLightLibs 5.0.2.0" Target="CommonServiceLocator 1.3" Category="Dépendance de package" />
+    <Link Source="NuGet.Core 2.8.3" Target="Microsoft.Web.Xdt 2.1.1" Category="Dépendance de package" />
+    <Link Source="squirrel.windows 0.9.2.1" Target="DeltaCompressionDotNet 1.0.0" Category="Dépendance de package" />
+    <Link Source="squirrel.windows 0.9.2.1" Target="NuGet.Core 2.8.3" Category="Dépendance de package" />
+    <Link Source="squirrel.windows 0.9.2.1" Target="Mono.Cecil 0.9.5.4" Category="Dépendance de package" />
+    <Link Source="squirrel.windows 0.9.2.1" Target="Splat 1.5.1" Category="Dépendance de package" />
+    <Link Source="TMDbLib 0.7.7" Target="RestSharp 105.0.1" Category="Dépendance de package" />
+    <Link Source="TvShow" Target="MahApps.Metro.Resources 0.4.0.0" Category="Package installé" />
+    <Link Source="TvShow" Target="MvvmLightLibs 5.0.2.0" Category="Package installé" />
+    <Link Source="TvShow" Target="Newtonsoft.Json 6.0.8" Category="Package installé" />
+    <Link Source="TvShow" Target="Ragnar 0.6.0" Category="Package installé" />
+    <Link Source="TvShow" Target="squirrel.windows 0.9.2.1" Category="Package installé" />
+    <Link Source="TvShow" Target="TMDbLib 0.7.7" Category="Package installé" />
+  </Links>
+  <Categories>
+    <Category Id="Projet" />
+    <Category Id="Package" />
+  </Categories>
+  <Styles>
+    <Style TargetType="Node" GroupLabel="Projet" ValueLabel="True">
+      <Condition Expression="HasCategory('Projet')" />
+      <Setter Property="Background" Value="Blue" />
+    </Style>
+    <Style TargetType="Link" GroupLabel="Dépendance de package" ValueLabel="True">
+      <Condition Expression="HasCategory('Dépendance de package')" />
+      <Setter Property="Background" Value="Yellow" />
+    </Style>
+  </Styles>
+</DirectedGraph>

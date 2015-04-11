@@ -5,7 +5,7 @@ Watch movies easier
 TVShow is an experimental project which aims to provide a simple interface to watch any movies.
 
 ## Well, is it legal?
-Depends on which country you live in, it may be not. Also, I'm planning to rethink the media's content to make it entirely legal (ie. content may be replaced by free instructional such as documentaries or TED podcast)
+Depends on which country you live in, it may be not. Also, I'm planning to rethink the media's content to make it entirely legal (ie. content may be replaced by free instructional media such as documentaries or TED podcast)
 
 ## Hmm, it does remind me something...
 Well, you may be thinking about Popcorn Time, don't you ? If so, yes. The concept is not new, and this project is clearly inspired from it. Also, my primary goal was to make an alternative, using .NET framework.

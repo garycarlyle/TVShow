@@ -31,7 +31,7 @@ Well, there's some points.
 
 * Performances. Since NodeJS is based on V8 VM, it is fast. Really fast. But compared to a fully native app, it's a slow rabbit. That's why Popcorn Time compares bad to TVShow, whose performances are great.
 
-* Features. Since TVShow is a recent project, Popcorn Time supports more features that TVShow does. But it's just a matter of time.
+* Features. Since TVShow is a recent project, Popcorn Time supports more features than TVShow. But it's just a matter of time.
 
 * Stability. TVShow appears to be more stable than Popcorn Time. Sometimes, Popcorn Time crashes randomly. Not sayin I guarantee it will never happen to TVShow, but unit tests are there. Seems not to be considered in Popcorn Time project...
 

@@ -166,7 +166,7 @@
     <Compile Include="Model\Movie\MovieFullDetails.cs" />
     <Compile Include="Model\Api\WrapperMovieFullDetails.cs" />
     <Compile Include="Model\Api\WrapperMovieShortDetails.cs" />
-    <Compile Include="Model\Torrent\Torrent.cs" />
+    <Compile Include="Model\Torrent\TorrentModel.cs" />
     <Compile Include="Model\Cast\Director.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">

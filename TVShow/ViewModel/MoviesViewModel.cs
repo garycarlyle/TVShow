@@ -44,7 +44,7 @@ namespace TVShow.ViewModel
 
         #region Property -> SavedMoviesDictionary
         /// <summary>
-        /// Saved movies per page for fast pagination in the interface
+        /// Saved movies for fast pagination in the interface
         /// </summary>
         public Dictionary<int, List<MovieShortDetails>> SavedMovies = new Dictionary<int, List<MovieShortDetails>>();
         #endregion
@@ -107,9 +107,9 @@ namespace TVShow.ViewModel
         #endregion
 
         #region Commands
-        #region Command -> ReloadMoviesAfterConnexionInError
+        #region Command -> ReloadMoviesAfterConnectionInError
 
-        public RelayCommand ReloadMoviesAfterConnexionInError
+        public RelayCommand ReloadMoviesAfterConnectionInError
         {
             get;
             private set;
@@ -138,10 +138,10 @@ namespace TVShow.ViewModel
         {
             ApiService = apiService;
 
-            ReloadMoviesAfterConnexionInError = new RelayCommand(async () =>
+            ReloadMoviesAfterConnectionInError = new RelayCommand(async () =>
             {
-                Messenger.Default.Send<bool>(false, Helpers.Constants.ConnexionErrorPropertyName);
-                await LoadNextMovies();
+                Messenger.Default.Send<bool>(false, Helpers.Constants.ConnectionErrorPropertyName);
+                await LoadNextPage();
             });
 
             Messenger.Default.Register<PropertyChangedMessage<string>>(
@@ -158,23 +158,35 @@ namespace TVShow.ViewModel
         /// <summary>
         /// Search movies
         /// </summary>
-        /// <param name="searchParameter">The parameter of the search</param>
-        private async Task SearchMovies(string searchParameter)
+        /// <param name="searchFilter">The parameter of the search</param>
+        private async Task SearchMovies(string searchFilter)
         {
+            // We stop any movie loading before searching action 
             await StopLoadingMovies();
+
+            // Set the pagination limit to the default : we don't know yet the limit of the response
             PaginationLimit = Int32.MaxValue;
-            if (!String.IsNullOrEmpty(searchParameter))
+
+            if (!String.IsNullOrEmpty(searchFilter))
             {
+                // We start from scratch : clean everything to not interfer with the results
                 SavedMovies.Clear();
                 Movies.Clear();
                 Pagination = 0;
+
                 try
                 {
+                    // Inform the subscribers we're actually searching for movies
                     OnMoviesLoading(new EventArgs());
 
+                    // Reset the CancellationToken for having the possibility to stop the search
                     CancellationLoadMoviesInfosToken = new CancellationTokenSource();
+
+                    // Impose a delay before each search request (otherwise we don't have time to clean things)
                     await Task.Delay(1000, CancellationLoadMoviesInfosToken.Token);
-                    await LoadNextMovies(searchParameter);
+
+                    // Let's do our search
+                    await LoadNextPage(searchFilter);
                 }
                 catch (TaskCanceledException)
                 {
@@ -183,115 +195,149 @@ namespace TVShow.ViewModel
             }
             else
             {
+                // We cleaned the search filter : let's start cleaning data
                 SavedMovies.Clear();
                 Movies.Clear();
                 Pagination = 0;
-                await LoadNextMovies();
+
+                // Load the first set of movies
+                await LoadNextPage();
             }
         }
         #endregion
 
-        #region Method -> LoadPreviousMovies
+        #region Method -> LoadPreviousPage
         /// <summary>
-        /// Load previous movies 
+        /// Load previous page 
         /// </summary>
-        public void LoadPreviousMovies()
+        public void LoadPreviousPage()
         {
+            // Inform the subscribers we're actually loading movies
             OnMoviesLoading(new EventArgs());
 
-            // We want to load the previous movies only if there is enough content to load before
+            // We want to load the previous movies only if there is enough content to load before (lazy pagination)
             if (Pagination >= 3)
             {
-                List<MovieShortDetails> MoviesToAdd = new List<MovieShortDetails>();
-                // We want to load the previous movies page (the one which is on 2 top level of the current one)
-                SavedMovies.TryGetValue(Pagination - 2, out MoviesToAdd);
-                if (MoviesToAdd != null)
+                List<MovieShortDetails> MoviesToRecover = new List<MovieShortDetails>();
+
+                /* We want to load the previous page (the one which is on 2-top level of the current one)
+                 * Actually, the pagination system is pretty simple: there's constantly only 2 loaded pages (except for the first load, when there's only one page)
+                 * So, each time we load the next page, we clean the page which is on 2-top level
+                 * Each time we load the previous page, we clean the page which is on 2-bottom level
+                 * Anyway, the cleaned pages are stored in the savedMovies dictionnary which index each page (and for each page, we have our list of movies) so that it can be requested easily.
+                 * Why this pagination system ? 'cause UI is overloaded and slowed down dramatically after 40-50 pages loaded on Core i5 (yup, WPF is not really super efficient in terms of performance)
+                 * */
+                SavedMovies.TryGetValue(Pagination - 2, out MoviesToRecover);
+
+                if (MoviesToRecover != null)
                 {
-                    List<MovieShortDetails> temp = MoviesToAdd.ToList();
-                    // We have to reverse the movies list to respect the previous order
+                    List<MovieShortDetails> temp = MoviesToRecover.ToList();
+
+                    // We have to reverse the movies list to respect the order of the page, because we stored it using a reverse order. Yep, things to improve here.
                     temp.Reverse();
                     foreach (MovieShortDetails item in temp)
                     {
                         Movies.Insert(0, item);
                     }
 
-                    List<MovieShortDetails> moviesToDelete = new List<MovieShortDetails>();
-                    SavedMovies.TryGetValue(Pagination, out moviesToDelete);
-                    if (moviesToDelete != null)
-                    {
-                        foreach (MovieShortDetails item in moviesToDelete)
-                        {
-                            Movies.Remove(item);
-                        }
-                    }
+                    // We remove the movies of the page on 2-bottom level
+                    DropMoviesByPage(Pagination);
+                    
+                    // We update our pagination
                     Pagination -= 1;
                 }
             }
 
+            // Inform the subscribers we loaded movies
             OnMoviesLoaded(new EventArgs());
         }
 
         #endregion
 
-        #region Method -> LoadNextMovies
+        #region Method -> LoadNextPage
         /// <summary>
-        /// Load next movies
+        /// Load next page
         /// </summary>
-        public async Task LoadNextMovies(string retrieveParam = null)
+        /// <param name="searchFilter">An optional search parameter which is specified to the API</param>
+        public async Task LoadNextPage(string searchFilter = null)
         {
             if (PaginationLimit == Pagination)
             {
+                // We reached the maximum pages of the requested movies. We inform subscribers movies has been loaded (even if there's not, nevermind)
                 OnMoviesLoaded(new EventArgs());
                 return;
             }
-            if ((String.IsNullOrEmpty(retrieveParam) && String.IsNullOrEmpty(SearchMoviesFilter)) ||
-                (!String.IsNullOrEmpty(retrieveParam) && !String.IsNullOrEmpty(SearchMoviesFilter)))
+
+            /* Check if we're searching with filter (if so, the method parameter and SearchMoviesFilter property should not be empty)
+             * Otherwise, both should be empty
+             * */
+            if ((String.IsNullOrEmpty(searchFilter) && String.IsNullOrEmpty(SearchMoviesFilter)) ||
+                (!String.IsNullOrEmpty(searchFilter) && !String.IsNullOrEmpty(SearchMoviesFilter)))
             {
+                // Reset the CancellationToken for having the possibility to loading
                 CancellationLoadMoviesInfosToken = new CancellationTokenSource();
+
+                // We update the curent pagination
                 Pagination++;
+
+                // Inform the subscribers we're actually loading movies
                 OnMoviesLoading(new EventArgs());
 
+                // We check if the page to load is already saved into the SavedMovies dictionnary (ie. we already loaded it)
                 List<MovieShortDetails> pageAlreadyProcessed = new List<MovieShortDetails>();
                 SavedMovies.TryGetValue(Pagination, out pageAlreadyProcessed);
                 if (pageAlreadyProcessed != null)
                 {
+                    // Our page is already loaded in SavedMovies
                     if (Pagination >= 3)
                     {
-                        List<MovieShortDetails> moviesToDelete = new List<MovieShortDetails>();
-                        SavedMovies.TryGetValue(Pagination - 2, out moviesToDelete);
-                        if (moviesToDelete != null)
-                        {
-                            foreach (MovieShortDetails item in moviesToDelete)
-                            {
-                                Movies.Remove(item);
-                            }
-                        }
+                        // We have at least 2 pages behind the current one. As explained in the LoadPreviousPage method about lazy pagination, we drop the page on 2-bottom level
+                        DropMoviesByPage(Pagination - 2);
                     }
+
+                    // We add our new page in the Movies collection
                     foreach (MovieShortDetails item in pageAlreadyProcessed)
                     {
                         Movies.Add(item);
                     }
+
+                    // Inform the subscribers we loaded movies
                     OnMoviesLoaded(new EventArgs());
                 }
                 else
                 {
-                    Tuple<IEnumerable<MovieShortDetails>, IEnumerable<Exception>> results = await ApiService.GetMoviesInfosAsync(retrieveParam,
+                    // The page to load is new, never met it before, so we load the new page via the service
+                    Tuple<IEnumerable<MovieShortDetails>, IEnumerable<Exception>> results = await ApiService.GetMoviesInfosAsync(searchFilter,
                         MaxMoviesPerPage,
                         Pagination,
                         CancellationLoadMoviesInfosToken);
 
+                    // These are the loaded movies
                     IEnumerable<MovieShortDetails> movies = results.Item1;
+
+                    // Check if we met any exception in the GetMoviesInfosAsync method
                     foreach (var e in results.Item2)
                     {
-                        var ctException = e as TaskCanceledException;
-                        if (ctException != null)
+                        var _taskCancelledException = e as TaskCanceledException;
+                        if (_taskCancelledException != null)
                         {
+                            // Something as cancelled the loading. We go back.
                             Pagination--;
                             OnMoviesLoaded(new EventArgs());
                             return;
                         }
 
-                        Messenger.Default.Send<bool>(true, Helpers.Constants.ConnexionErrorPropertyName);
+                        var _webException = e as WebException;
+                        if (_webException != null)
+                        {
+                            // There's a connection error. Send the message and go back.
+                            Messenger.Default.Send<bool>(true, Helpers.Constants.ConnectionErrorPropertyName);
+                            Pagination--;
+                            OnMoviesLoaded(new EventArgs());
+                            return;
+                        }
+
+                        // Another exception has occured. Go back.
                         Pagination--;
                         OnMoviesLoaded(new EventArgs());
                         return;
@@ -299,81 +345,75 @@ namespace TVShow.ViewModel
 
                     if (movies.Count() < MaxMoviesPerPage)
                     {
+                        // We reached the limit of the request
                         PaginationLimit = Pagination;
                     }
 
-                    if (!String.IsNullOrEmpty(retrieveParam))
+                    if (!String.IsNullOrEmpty(searchFilter))
                     {
+                        /*
+                         * Well, the API filters on titles, actor's name and director's name. Here we just want to filter on title movie.
+                         * */
                         movies =
                             results.Item1.Where(
-                                a => a.Title.IndexOf(retrieveParam, StringComparison.OrdinalIgnoreCase) >= 0);
+                                a => a.Title.IndexOf(searchFilter, StringComparison.OrdinalIgnoreCase) >= 0);
                     }
 
-                    #region Store the movies into the dictionnary
-
-                    List<MovieShortDetails> actualValues = new List<MovieShortDetails>();
-                    SavedMovies.TryGetValue(Pagination, out actualValues);
-                    if (actualValues == null)
-                    {
-                        List<MovieShortDetails> storeMoviesValues = new List<MovieShortDetails>();
-                        foreach (var item in movies)
-                        {
-                            storeMoviesValues.Add(item);
-                        }
-                        SavedMovies.Add(Pagination, storeMoviesValues);
-                    }
-
-                    #endregion
+                    // We "backup" our page into the SavedMovies dictionnary (see the pagination system explanation in the LoadPreviousPage method)
+                    SaveMovies(movies);
 
                     if (Pagination >= 3)
                     {
-                        List<MovieShortDetails> moviesToDelete = new List<MovieShortDetails>();
-                        SavedMovies.TryGetValue(Pagination - 2, out moviesToDelete);
-                        if (moviesToDelete != null)
-                        {
-                            foreach (MovieShortDetails item in moviesToDelete)
-                            {
-                                Movies.Remove(item);
-                            }
-                        }
+                        // We have at least 2 pages behind the current one. As explained in the LoadPreviousPage method about lazy pagination, we drop the page on 2-bottom level
+                        DropMoviesByPage(Pagination - 2);
                     }
 
+                    // Here we add the movies of the loaded page
                     foreach (var movie in movies)
                     {
                         Movies.Add(movie);
                     }
 
+                    // Inform the subscribers we loaded movies
                     OnMoviesLoaded(new EventArgs());
 
+                    // Now we download the cover image for each movie
                     foreach (var movie in movies)
                     {
+                        // Download the cover image of the movie
                         Tuple<string, IEnumerable<Exception>> movieCover = await ApiService.DownloadMovieCoverAsync(movie.ImdbCode,
                             movie.MediumCoverImage,
                             CancellationLoadMoviesInfosToken);
+
+                        // Check if we met any exception
                         foreach (var movieCoverException in movieCover.Item2)
                         {
-                            var movieCoverWebException =
-                                movieCoverException as WebException;
-                            if (movieCoverWebException != null)
+                            var _taskCancelledException = movieCoverException as TaskCanceledException;
+                            if (_taskCancelledException != null)
                             {
-                                if (movieCoverWebException.Status ==
-                                    WebExceptionStatus.NameResolutionFailure)
-                                {
-                                    Messenger.Default.Send<bool>(true,
-                                        Helpers.Constants.ConnexionErrorPropertyName);
-                                    Pagination--;
-                                    return;
-                                }
-                            }
-
-                            var ctException = movieCoverException as TaskCanceledException;
-                            if (ctException != null)
-                            {
+                                // Something as cancelled the loading. We go back.
+                                DropMoviesByPage(Pagination);
                                 Pagination--;
                                 return;
                             }
+
+                            var _webException = movieCoverException as WebException;
+                            if (_webException != null)
+                            {
+                                // There's a connection error. Send the message and go back.
+                                DropMoviesByPage(Pagination);
+                                Messenger.Default.Send<bool>(true, Helpers.Constants.ConnectionErrorPropertyName);
+                                Pagination--;
+                                return;
+                            }
+
+                            // Another exception has occured. Go back.
+                            DropMoviesByPage(Pagination);
+                            Pagination--;
+                            return;
                         }
 
+                        // We associate the path of the cover image to each movie
                         foreach (var movieItem in SavedMovies.SelectMany(x => x.Value))
                         {
                             if (movieItem.ImdbCode == movie.ImdbCode)
@@ -382,6 +422,44 @@ namespace TVShow.ViewModel
                             }
                         }
                     }
+                }
+            }
+        }
+        #endregion
+
+        #region Method -> SaveMoviesByPage
+        /// <summary>
+        /// Save the movies of a given page 
+        /// </summary>
+        private void SaveMovies(IEnumerable<MovieShortDetails> movies)
+        {
+            List<MovieShortDetails> actualValues = new List<MovieShortDetails>();
+            SavedMovies.TryGetValue(Pagination, out actualValues);
+            if (actualValues == null)
+            {
+                List<MovieShortDetails> storeMoviesValues = new List<MovieShortDetails>();
+                foreach (var item in movies)
+                {
+                    storeMoviesValues.Add(item);
+                }
+                SavedMovies.Add(Pagination, storeMoviesValues);
+            }
+        }
+        #endregion
+
+        #region Method -> DropMoviesByPage
+        /// <summary>
+        /// Drop the movies of a given page 
+        /// </summary>
+        private void DropMoviesByPage(int page)
+        {
+            List<MovieShortDetails> moviesToDrop = new List<MovieShortDetails>();
+            SavedMovies.TryGetValue(page, out moviesToDrop);
+            if (moviesToDrop != null)
+            {
+                foreach (MovieShortDetails item in moviesToDrop)
+                {
+                    Movies.Remove(item);
                 }
             }
         }

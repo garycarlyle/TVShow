@@ -51,7 +51,7 @@ namespace TVShow.Model.Movie
         public string State { get; set; }
 
         [JsonProperty("torrents")]
-        public ObservableCollection<Torrent.Torrent> Torrents { get; set; }
+        public ObservableCollection<Torrent.TorrentModel> Torrents { get; set; }
 
         [JsonProperty("date_uploaded")]
         public string DateUploaded { get; set; }

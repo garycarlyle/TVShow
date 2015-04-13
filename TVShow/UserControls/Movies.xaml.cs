@@ -33,7 +33,7 @@ namespace TVShow.UserControls
             {
                 vm.MoviesLoaded += MoviesInfosLoaded;
                 vm.MoviesLoading += MoviesInfosLoading;
-                await vm.LoadNextMovies();
+                await vm.LoadNextPage();
             }
         }
 
@@ -47,11 +47,11 @@ namespace TVShow.UserControls
                 {
                     if (String.IsNullOrEmpty(vm.SearchMoviesFilter))
                     {
-                        await vm.LoadNextMovies();
+                        await vm.LoadNextPage();
                     }
                     else
                     {
-                        await vm.LoadNextMovies(vm.SearchMoviesFilter);
+                        await vm.LoadNextPage(vm.SearchMoviesFilter);
                     }
                 }
             }
@@ -60,7 +60,7 @@ namespace TVShow.UserControls
                 var vm = DataContext as MoviesViewModel;
                 if (vm != null && !ProgressRing.IsActive)
                 {
-                    vm.LoadPreviousMovies();
+                    vm.LoadPreviousPage();
                 }
             }
         }

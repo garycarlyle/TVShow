@@ -74,16 +74,16 @@ namespace TVShow.ViewModel
 
         #endregion
 
-        #region Property -> IsConnexionInError
+        #region Property -> IsConnectionInError
 
-        private bool _isConnexionInError;
+        private bool _isConnectionInError;
         /// <summary>
-        /// Specify if a connexion error has occured
+        /// Specify if a connection error has occured
         /// </summary>
-        public bool IsConnexionInError
+        public bool IsConnectionInError
         {
-            get { return _isConnexionInError; }
-            set { Set(() => IsConnexionInError, ref _isConnexionInError, value, true); }
+            get { return _isConnectionInError; }
+            set { Set(() => IsConnectionInError, ref _isConnectionInError, value, true); }
         }
 
         #endregion
@@ -153,7 +153,7 @@ namespace TVShow.ViewModel
         public MainViewModel(IService apiService)
         {
             ApiService = apiService;
-            Messenger.Default.Register<bool>(this, Helpers.Constants.ConnexionErrorPropertyName, (e) => OnConnexionError(new ConnexionErrorEventArgs(e)));
+            Messenger.Default.Register<bool>(this, Helpers.Constants.ConnectionErrorPropertyName, (e) => OnConnectionError(new ConnectionErrorEventArgs(e)));
 
             StopDownloadingMovieCommand = new RelayCommand(async () =>
             {
@@ -216,7 +216,7 @@ namespace TVShow.ViewModel
                 {
                     if (we.Status == WebExceptionStatus.NameResolutionFailure)
                     {
-                        Messenger.Default.Send<bool>(true, Helpers.Constants.ConnexionErrorPropertyName);
+                        Messenger.Default.Send<bool>(true, Helpers.Constants.ConnectionErrorPropertyName);
                         return;
                     }
                 }
@@ -252,7 +252,7 @@ namespace TVShow.ViewModel
                     {
                         if (we.Status == WebExceptionStatus.NameResolutionFailure)
                         {
-                            Messenger.Default.Send<bool>(true, Helpers.Constants.ConnexionErrorPropertyName);
+                            Messenger.Default.Send<bool>(true, Helpers.Constants.ConnectionErrorPropertyName);
                             return;
                         }
                     }
@@ -287,7 +287,7 @@ namespace TVShow.ViewModel
                         {
                             if (we.Status == WebExceptionStatus.NameResolutionFailure)
                             {
-                                Messenger.Default.Send<bool>(true, Helpers.Constants.ConnexionErrorPropertyName);
+                                Messenger.Default.Send<bool>(true, Helpers.Constants.ConnectionErrorPropertyName);
                                 return;
                             }
                         }
@@ -323,7 +323,7 @@ namespace TVShow.ViewModel
                         {
                             if (we.Status == WebExceptionStatus.NameResolutionFailure)
                             {
-                                Messenger.Default.Send<bool>(true, Helpers.Constants.ConnexionErrorPropertyName);
+                                Messenger.Default.Send<bool>(true, Helpers.Constants.ConnectionErrorPropertyName);
                                 return;
                             }
                         }
@@ -348,7 +348,7 @@ namespace TVShow.ViewModel
                 {
                     if (we.Status == WebExceptionStatus.NameResolutionFailure)
                     {
-                        Messenger.Default.Send<bool>(true, Helpers.Constants.ConnexionErrorPropertyName);
+                        Messenger.Default.Send<bool>(true, Helpers.Constants.ConnectionErrorPropertyName);
                         return;
                     }
                 }
@@ -449,27 +449,27 @@ namespace TVShow.ViewModel
 
         #region Events
 
-        #region Event -> OnConnexionError
+        #region Event -> OnConnectionError
         /// <summary>
-        /// ConnexionErrorEvent event
+        /// ConnectionErrorEvent event
         /// </summary>
-        public event EventHandler<ConnexionErrorEventArgs> ConnexionError;
+        public event EventHandler<ConnectionErrorEventArgs> ConnectionError;
         /// <summary>
-        /// On connexion error
+        /// On connection error
         /// </summary>
-        ///<param name="e">ConnexionErrorEventArgs parameter</param>
-        protected virtual void OnConnexionError(ConnexionErrorEventArgs e)
+        ///<param name="e">ConnectionErrorEventArgs parameter</param>
+        protected virtual void OnConnectionError(ConnectionErrorEventArgs e)
         {
-            EventHandler<ConnexionErrorEventArgs> handler = ConnexionError;
+            EventHandler<ConnectionErrorEventArgs> handler = ConnectionError;
             if (handler != null)
             {
-                if (e.IsInError)
+                if (e != null && e.IsInError)
                 {
-                    IsConnexionInError = true;
+                    IsConnectionInError = true;
                 }
                 else
                 {
-                    IsConnexionInError = false;
+                    IsConnectionInError = false;
                 }
                 handler(this, e);
             }

@@ -393,8 +393,8 @@
                     Margin="0, 10, 0, 0"
                     Content="Reload"
                     FontSize="18"
-                    Visibility="{Binding Main.IsConnexionInError, Source={StaticResource Locator}, Converter={StaticResource BoolToVisibilityInverseConverter}}"
-                    Command="{Binding Movies.ReloadMoviesAfterConnexionInError, Source={StaticResource Locator}}"/>
+                    Visibility="{Binding Main.IsConnectionInError, Source={StaticResource Locator}, Converter={StaticResource BoolToVisibilityInverseConverter}}"
+                    Command="{Binding Movies.ReloadMoviesAfterConnectionInError, Source={StaticResource Locator}}"/>
         </StackPanel>
     </Grid>
 </controls:MetroWindow>

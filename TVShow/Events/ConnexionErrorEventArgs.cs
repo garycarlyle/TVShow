@@ -7,14 +7,14 @@ using System.Threading.Tasks;
 namespace TVShow.Events
 {
     /// <summary>
-    /// ConnexionErrorEventArgs
+    /// ConnectionErrorEventArgs
     /// </summary>
-    public class ConnexionErrorEventArgs : EventArgs
+    public class ConnectionErrorEventArgs : EventArgs
     {
         private readonly bool _isInError;
 
         #region Constructor
-        public ConnexionErrorEventArgs(bool isInError)
+        public ConnectionErrorEventArgs(bool isInError)
         {
             _isInError = isInError;
         }

@@ -63,9 +63,9 @@ namespace TVShow.Helpers
         public const int MovieTitleFontSize = 18;
 
         /// <summary>
-        /// The string on which be based ConnexionError events
+        /// The string on which be based ConnectionError events
         /// </summary>
-        public const string ConnexionErrorPropertyName = "ConnexionError";
+        public const string ConnectionErrorPropertyName = "ConnectionError";
 
         /// <summary>
         /// The string on which be based SearchMoviesFilter events

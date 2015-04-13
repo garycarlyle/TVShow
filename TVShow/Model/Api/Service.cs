@@ -66,6 +66,10 @@ namespace TVShow.Model.Api
             {
                 ex.Add(e);
             }
+            catch (WebException e)
+            {
+                ex.Add(e);
+            }
             catch (Exception e)
             {
                 ex.Add(e);
@@ -533,6 +537,10 @@ namespace TVShow.Model.Api
                                 }
 
                             }
+                            catch (WebException e)
+                            {
+                                return new Tuple<string, Exception>(fileName, e);
+                            }
                             catch (Exception e)
                             {
                                 return new Tuple<string, Exception>(fileName, e);
@@ -557,6 +565,10 @@ namespace TVShow.Model.Api
                                             {
                                                 return new Tuple<string, Exception>(fileName, new Exception());
                                             }
+                                        }
+                                        catch (WebException e)
+                                        {
+                                            return new Tuple<string, Exception>(fileName, e);
                                         }
                                         catch (Exception e)
                                         {

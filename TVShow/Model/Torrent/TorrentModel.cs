@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 
 namespace TVShow.Model.Torrent
 {
-    public class Torrent : ObservableObject
+    public class TorrentModel : ObservableObject
     {
         [JsonProperty("url")]
         public string Url { get; set; }

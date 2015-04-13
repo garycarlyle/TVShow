@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using GalaSoft.MvvmLight.Threading;
 using TVShow.CustomPanels;
 using TVShow.Helpers;
+using System.Globalization;
 
 namespace TVShow
 {
@@ -43,7 +44,7 @@ namespace TVShow
                         mePlayer.Stop();
                         mePlayer.Source = null;
                     }
-                    vm.ConnexionError -= OnConnexionInError;
+                    vm.ConnectionError -= OnConnectionInError;
                     vm.MovieLoading -= OnMovieLoading;
                     vm.MovieStoppedDownloading -= OnMovieStoppedDownloading;
                     vm.MovieSelected -= OnMovieSelected;
@@ -65,7 +66,7 @@ namespace TVShow
             var vm = DataContext as MainViewModel;
             if (vm != null)
             {
-                vm.ConnexionError += OnConnexionInError;
+                vm.ConnectionError += OnConnectionInError;
                 vm.MovieLoading += OnMovieLoading;
                 vm.MovieStoppedDownloading += OnMovieStoppedDownloading;
                 vm.MovieSelected += OnMovieSelected;
@@ -140,7 +141,7 @@ namespace TVShow
             });
         }
 
-        private async void OnConnexionInError(object sender, EventArgs e)
+        private async void OnConnectionInError(object sender, EventArgs e)
         {
             MetroDialogSettings settings = new MetroDialogSettings();
             settings.ColorScheme = MetroDialogColorScheme.Theme;
@@ -280,7 +281,7 @@ namespace TVShow
             var vm = DataContext as MainViewModel;
             if (vm != null)
             {
-                lblProgressStatus.Text = TimeSpan.FromSeconds(sliProgress.Value).ToString(@"hh\:mm\:ss") + " / " + TimeSpan.FromSeconds(vm.Movie.Runtime * 60).ToString(@"hh\:mm\:ss");
+                lblProgressStatus.Text = TimeSpan.FromSeconds(sliProgress.Value).ToString(@"hh\:mm\:ss", CultureInfo.CurrentCulture) + " / " + TimeSpan.FromSeconds(vm.Movie.Runtime * 60).ToString(@"hh\:mm\:ss", CultureInfo.CurrentCulture);
             }
         }
 

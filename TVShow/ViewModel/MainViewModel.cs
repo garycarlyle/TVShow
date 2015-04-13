@@ -49,7 +49,7 @@ namespace TVShow.ViewModel
         /// <summary>
         /// Token to cancel the loading of movies
         /// </summary>
-        private CancellationTokenSource CancellationLoadMoviesToken { get; set; }
+        private CancellationTokenSource CancellationLoadingToken { get; set; }
         #endregion
 
         #region Property -> IsDownloadingMovie
@@ -206,11 +206,11 @@ namespace TVShow.ViewModel
         private async Task GetMovie(int movieId, string imdbCode)
         {
             // Reset the CancellationToken for having the possibility to stop the process
-            CancellationLoadMoviesToken = new CancellationTokenSource();
+            CancellationLoadingToken = new CancellationTokenSource();
 
             // Get the requested movie using the service
             Tuple<MovieFullDetails, IEnumerable<Exception>> MovieInfosAsyncResults = await ApiService.GetMovieAsync(movieId,
-                CancellationLoadMoviesToken);
+                CancellationLoadingToken);
 
             // Check if we met any exception in the GetMoviesInfosAsync method
             foreach (Exception e in MovieInfosAsyncResults.Item2)
@@ -225,12 +225,12 @@ namespace TVShow.ViewModel
             OnMovieLoaded(new EventArgs());
 
             // Reset the CancellationToken for having the possibility to stop downloading the movie poster
-            CancellationLoadMoviesToken = new CancellationTokenSource();
+            CancellationLoadingToken = new CancellationTokenSource();
 
             // Download the movie poster
             Tuple<string, IEnumerable<Exception>> moviePosterAsyncResults = await ApiService.DownloadMoviePosterAsync(Movie.ImdbCode,
                 Movie.Images.LargeCoverImage,
-                CancellationLoadMoviesToken);
+                CancellationLoadingToken);
 
             // Set the path to the poster image if no exception occured in the DownloadMoviePosterAsync method
             if (moviePosterAsyncResults.Item2.All(a => a == null))
@@ -248,14 +248,14 @@ namespace TVShow.ViewModel
             }
 
             // Reset the CancellationToken for having the possibility to stop downloading directors images
-            CancellationLoadMoviesToken = new CancellationTokenSource();
+            CancellationLoadingToken = new CancellationTokenSource();
 
             // For each director, we download its image
             foreach (Director director in Movie.Directors)
             {
                 Tuple<string, IEnumerable<Exception>> directorsImagesAsyncResults = await ApiService.DownloadDirectorImageAsync(director.Name.Trim(),
                     director.SmallImage,
-                    CancellationLoadMoviesToken);
+                    CancellationLoadingToken);
 
                 // Set the path to the director image if no exception occured in the DownloadDirectorImageAsync method
                 if (directorsImagesAsyncResults.Item2.All(a => a == null))
@@ -274,14 +274,14 @@ namespace TVShow.ViewModel
             }
 
             // Reset the CancellationToken for having the possibility to stop downloading actors images
-            CancellationLoadMoviesToken = new CancellationTokenSource();
+            CancellationLoadingToken = new CancellationTokenSource();
 
             // For each actor, we download its image
             foreach (Actor actor in Movie.Actors)
             {
                 Tuple<string, IEnumerable<Exception>> actorsImagesAsyncResults = await ApiService.DownloadActorImageAsync(actor.Name.Trim(),
                     actor.SmallImage,
-                    CancellationLoadMoviesToken);
+                    CancellationLoadingToken);
 
                 // Set the path to the actor image if no exception occured in the DownloadActorImageAsync method
                 if (actorsImagesAsyncResults.Item2.All(a => a == null))
@@ -300,9 +300,9 @@ namespace TVShow.ViewModel
             }
 
             // Reset the CancellationToken for having the possibility to stop downloading the movie background image
-            CancellationLoadMoviesToken = new CancellationTokenSource();
+            CancellationLoadingToken = new CancellationTokenSource();
 
-            Tuple<string, IEnumerable<Exception>> movieBackgroundImageResults = await ApiService.DownloadMovieBackgroundImageAsync(imdbCode, CancellationLoadMoviesToken);
+            Tuple<string, IEnumerable<Exception>> movieBackgroundImageResults = await ApiService.DownloadMovieBackgroundImageAsync(imdbCode, CancellationLoadingToken);
 
             // Set the path to the poster image if no exception occured in the DownloadMoviePosterAsync method
             if (movieBackgroundImageResults.Item2.All(a => a == null))
@@ -322,6 +322,10 @@ namespace TVShow.ViewModel
         #endregion
 
         #region -> HandleException
+        /// <summary>
+        /// Handle the exception
+        /// </summary>
+        /// <param name="e">Exception</param>
         private static void HandleException(Exception e)
         {
             // There's a connection error. Send the message and go back.
@@ -339,10 +343,11 @@ namespace TVShow.ViewModel
                 return;
             }
 
-            // Another exception has occured. Go back.
+            // Another exception has occured. // TODO.
             return;
         }
         #endregion
+
         #region Method -> DownloadMovie
         /// <summary>
         /// Download a movie

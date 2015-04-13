@@ -60,7 +60,7 @@ namespace TVShow.ViewModel
         /// <summary>
         /// Token to cancel movie loading
         /// </summary>
-        private CancellationTokenSource CancellationLoadMoviesInfosToken { get; set; }
+        private CancellationTokenSource CancellationLoadingToken { get; set; }
         #endregion
 
         #region Property -> MaxMoviesPerPage
@@ -180,10 +180,10 @@ namespace TVShow.ViewModel
                     OnMoviesLoading(new EventArgs());
 
                     // Reset the CancellationToken for having the possibility to stop the search
-                    CancellationLoadMoviesInfosToken = new CancellationTokenSource();
+                    CancellationLoadingToken = new CancellationTokenSource();
 
                     // Impose a delay before each search request (otherwise we don't have time to clean things)
-                    await Task.Delay(1000, CancellationLoadMoviesInfosToken.Token);
+                    await Task.Delay(1000, CancellationLoadingToken.Token);
 
                     // Let's do our search
                     await LoadNextPage(searchFilter);
@@ -256,7 +256,7 @@ namespace TVShow.ViewModel
 
         #region Method -> LoadNextPage
         /// <summary>
-        /// Load next page
+        /// Load next page with an optional search parameter
         /// </summary>
         /// <param name="searchFilter">An optional search parameter which is specified to the API</param>
         public async Task LoadNextPage(string searchFilter = null)
@@ -274,10 +274,10 @@ namespace TVShow.ViewModel
             if ((String.IsNullOrEmpty(searchFilter) && String.IsNullOrEmpty(SearchMoviesFilter)) ||
                 (!String.IsNullOrEmpty(searchFilter) && !String.IsNullOrEmpty(SearchMoviesFilter)))
             {
-                // Reset the CancellationToken for having the possibility to loading
-                CancellationLoadMoviesInfosToken = new CancellationTokenSource();
+                // Reset the CancellationToken for having the possibility to stop loading
+                CancellationLoadingToken = new CancellationTokenSource();
 
-                // We update the curent pagination
+                // We update the current pagination
                 Pagination++;
 
                 // Inform the subscribers we're actually loading movies
@@ -310,7 +310,7 @@ namespace TVShow.ViewModel
                     Tuple<IEnumerable<MovieShortDetails>, IEnumerable<Exception>> results = await ApiService.GetMoviesAsync(searchFilter,
                         MaxMoviesPerPage,
                         Pagination,
-                        CancellationLoadMoviesInfosToken);
+                        CancellationLoadingToken);
 
                     // These are the loaded movies
                     IEnumerable<MovieShortDetails> movies = results.Item1;
@@ -383,7 +383,7 @@ namespace TVShow.ViewModel
                         // Download the cover image of the movie
                         Tuple<string, IEnumerable<Exception>> movieCover = await ApiService.DownloadMovieCoverAsync(movie.ImdbCode,
                             movie.MediumCoverImage,
-                            CancellationLoadMoviesInfosToken);
+                            CancellationLoadingToken);
 
                         // Check if we met any exception
                         foreach (var movieCoverException in movieCover.Item2)
@@ -473,9 +473,9 @@ namespace TVShow.ViewModel
         {
             await Task.Run(() =>
             {
-                if (CancellationLoadMoviesInfosToken != null)
+                if (CancellationLoadingToken != null)
                 {
-                    CancellationLoadMoviesInfosToken.Cancel(true);
+                    CancellationLoadingToken.Cancel(true);
                 }
             });
         }

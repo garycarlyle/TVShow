@@ -22,17 +22,17 @@ namespace TVShow.UserControls
             InitializeComponent();
             Loaded += async (s, e) =>
             {
-                await MoviesUcLoaded(s, e);
+                await OnMoviesUcLoaded(s, e);
             };
         }
 
-        private async Task MoviesUcLoaded(object sender, RoutedEventArgs e)
+        private async Task OnMoviesUcLoaded(object sender, RoutedEventArgs e)
         {
             var vm = DataContext as MoviesViewModel;
             if (vm != null)
             {
-                vm.MoviesLoaded += MoviesInfosLoaded;
-                vm.MoviesLoading += MoviesInfosLoading;
+                vm.MoviesLoaded += OnMoviesInfosLoaded;
+                vm.MoviesLoading += OnMoviesInfosLoading;
                 await vm.LoadNextPage();
             }
         }
@@ -65,7 +65,7 @@ namespace TVShow.UserControls
             }
         }
 
-        private void MoviesInfosLoading(object sender, EventArgs e)
+        private void OnMoviesInfosLoading(object sender, EventArgs e)
         {
             DispatcherHelper.CheckBeginInvokeOnUI(() =>
             {
@@ -91,7 +91,7 @@ namespace TVShow.UserControls
             });
         }
 
-        private void MoviesInfosLoaded(object sender, EventArgs e)
+        private void OnMoviesInfosLoaded(object sender, EventArgs e)
         {
             DispatcherHelper.CheckBeginInvokeOnUI(() =>
             {

@@ -11,6 +11,7 @@ namespace TVShow.Converters
     public class RuntimeConverter : IValueConverter
     {
         #region IValueConverter Members
+
         /// <summary>
         /// Convert value string to value string + " min"
         /// </summary>
@@ -23,12 +24,10 @@ namespace TVShow.Converters
         {
             if (value != null)
             {
-                return value.ToString() + " min";
+                return value + " min";
             }
-            else
-            {
-                return String.Empty;
-            }
+
+            return String.Empty;
         }
 
         /// <summary>

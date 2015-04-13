@@ -12,6 +12,7 @@ namespace TVShow.Converters
     public class GenresConverter : IValueConverter
     {
         #region IValueConverter Members
+
         /// <summary>
         /// Used to add "/" character at the end of each genre
         /// </summary>
@@ -24,26 +25,27 @@ namespace TVShow.Converters
         {
             if (value != null)
             {
-                List<string> result = value as List<string>;
+                List<string> genres = value as List<string>;
                 string res = String.Empty;
-                int index = 0;
-                foreach (string item in result)
+                if (genres != null)
                 {
-                    index++;
-
-                    res += item;
-                    // Add the slash at the end of each genre.
-                    if (index != result.Count())
+                    int index = 0;
+                    foreach (string genre in genres)
                     {
-                        res += " / ";
+                        index++;
+
+                        res += genre;
+                        // Add the slash at the end of each genre.
+                        if (index != genres.Count())
+                        {
+                            res += " / ";
+                        }
                     }
                 }
                 return res;
             }
-            else
-            {
-                return String.Empty;
-            }
+
+            return String.Empty;
         }
 
         /// <summary>

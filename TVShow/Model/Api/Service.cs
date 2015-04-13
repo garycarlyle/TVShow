@@ -25,7 +25,7 @@ namespace TVShow.Model.Api
         /// Get list of movies regarding a optionnal search parameter, a maximum movies per page, a page number (pagination) and a cancellationToken
         /// </summary>
         /// <param name="searchParameter">Search parameter</param>
-        /// <param name="MaxMoviesPerPage">MaxMoviesPerPage</param>
+        /// <param name="maxMoviesPerPage">MaxMoviesPerPage</param>
         /// <param name="pageNumberToLoad">Page number to load</param>
         /// <param name="cancellationToken">cancellationToken</param>
         public async Task<Tuple<IEnumerable<MovieShortDetails>, IEnumerable<Exception>>> GetMoviesAsync(string searchParameter, 
@@ -417,15 +417,14 @@ namespace TVShow.Model.Api
                 movie.Images.Backdrops.Aggregate((i1, i2) => i1.VoteAverage > i2.VoteAverage ? i1 : i2).FilePath);
 
             List<Exception> ex = new List<Exception>();
-            Tuple<string, Exception> res;
-            string BackgroundImage = String.Empty;
+            string backgroundImage = String.Empty;
             try
             {
-                res =
+                Tuple<string, Exception> res =
                     await DownloadFileAsync(imdbCode, imageUri, Constants.FileType.BackgroundImage, cancellationToken.Token);
                 if (res.Item2 == null)
                 {
-                    BackgroundImage = Constants.BackgroundMovieDirectory + imdbCode + Constants.ImageFileExtension;
+                    backgroundImage = Constants.BackgroundMovieDirectory + imdbCode + Constants.ImageFileExtension;
                 }
                 else
                 {
@@ -441,7 +440,7 @@ namespace TVShow.Model.Api
                 ex.Add(e);
             }
 
-            return new Tuple<string,IEnumerable<Exception>>(BackgroundImage, ex);
+            return new Tuple<string,IEnumerable<Exception>>(backgroundImage, ex);
         }
 
         #endregion
@@ -450,50 +449,51 @@ namespace TVShow.Model.Api
         /// <summary>
         /// Download a file
         /// </summary>
-        /// <param name="fileUri"></param>
-        /// <param name="fileName"></param>
-        /// <param name="ct">ct</param>
+        /// <param name="fileName">The name of the file to download</param>
+        /// <param name="fileUri">Path to the file</param>
+        /// <param name="fileType">The filetype</param>
+        /// <param name="ct">The cancellation token</param>
         private static async Task<Tuple<string,Exception>> DownloadFileAsync(string fileName, Uri fileUri, Constants.FileType fileType, CancellationToken ct)
         {
-            string PathDirectory = String.Empty;
+            string pathDirectory = String.Empty;
             string extension = String.Empty;
             switch (fileType)
             {
                 case Constants.FileType.BackgroundImage:
-                    PathDirectory = Constants.BackgroundMovieDirectory;
+                    pathDirectory = Constants.BackgroundMovieDirectory;
                     extension = Constants.ImageFileExtension;
                     break;
                 case Constants.FileType.CoverImage:
-                    PathDirectory = Constants.CoverMoviesDirectory;
+                    pathDirectory = Constants.CoverMoviesDirectory;
                     extension = Constants.ImageFileExtension;
                     break;
                 case Constants.FileType.PosterImage:
-                    PathDirectory = Constants.PosterMovieDirectory;
+                    pathDirectory = Constants.PosterMovieDirectory;
                     extension = Constants.ImageFileExtension;
                     break;
                 case Constants.FileType.DirectorImage:
-                    PathDirectory = Constants.DirectorMovieDirectory;
+                    pathDirectory = Constants.DirectorMovieDirectory;
                     extension = Constants.ImageFileExtension;
                     break;
                 case Constants.FileType.ActorImage:
-                    PathDirectory = Constants.ActorMovieDirectory;
+                    pathDirectory = Constants.ActorMovieDirectory;
                     extension = Constants.ImageFileExtension;
                     break;
                 case Constants.FileType.TorrentFile:
-                    PathDirectory = Constants.TorrentDirectory;
+                    pathDirectory = Constants.TorrentDirectory;
                     extension = Constants.TorrentFileExtension;
                     break;
                 default:
                     return new Tuple<string, Exception>(fileName, new Exception());
             }
-            string downloadToDirectory = PathDirectory + fileName + extension;
+            string downloadToDirectory = pathDirectory + fileName + extension;
 
 
-            if (!Directory.Exists(PathDirectory))
+            if (!Directory.Exists(pathDirectory))
             {
                 try
                 {
-                    Directory.CreateDirectory(PathDirectory);
+                    Directory.CreateDirectory(pathDirectory);
                 }
                 catch (Exception e)
                 {
@@ -553,7 +553,7 @@ namespace TVShow.Model.Api
                                             await webClient.DownloadFileTaskAsync(fileUri, @downloadToDirectory);
 
                                             FileInfo newfi = new FileInfo(downloadToDirectory);
-                                            if (fi.Length == 0)
+                                            if (newfi.Length == 0)
                                             {
                                                 return new Tuple<string, Exception>(fileName, new Exception());
                                             }

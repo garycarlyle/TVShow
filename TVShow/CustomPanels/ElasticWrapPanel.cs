@@ -76,7 +76,7 @@ namespace TVShow.CustomPanels
 
             Columns = (int)(availableSize.Width / DesiredColumnWidth);
 
-            foreach (UIElement item in this.Children)
+            foreach (UIElement item in Children)
             {
                 item.Measure(availableSize);
             }
@@ -102,22 +102,16 @@ namespace TVShow.CustomPanels
                 int index = 0;
                 double overflow = 0;
                 bool overflowAlreadyCount = false;
-                foreach (UIElement item in this.Children)
+                foreach (UIElement item in Children)
                 {
                     item.Arrange(new Rect(columnWidth * column, top, columnWidth, item.DesiredSize.Height));
                     column++;
-                    if (Children.Count >= Columns)
-                    {
-                        rowHeight = Math.Max(rowHeight, item.DesiredSize.Height);
-                    }
-                    else
-                    {
-                        rowHeight = Math.Min(rowHeight, item.DesiredSize.Height);
-                    }
+                    rowHeight = Children.Count >= Columns ?
+                         Math.Max(rowHeight, item.DesiredSize.Height) : Math.Min(rowHeight, item.DesiredSize.Height);
                     index++;
 
                     // Check if the current element is at the end of a row and add an height overflow to get enough space for the next elements of the next row
-                    if (column == Columns && Children.Count != index && (this.Children.Count - index + 1) <= Columns && !overflowAlreadyCount)
+                    if (column == Columns && Children.Count != index && (Children.Count - index + 1) <= Columns && !overflowAlreadyCount)
                     {
                         overflow = rowHeight;
                         totalHeight += rowHeight;
@@ -142,7 +136,7 @@ namespace TVShow.CustomPanels
                     totalHeight = totalHeight/Columns + overflow;
                 }
 
-                base.Height = totalHeight;
+                Height = totalHeight;
                 finalSize.Height = totalHeight;
 
             }

@@ -10,7 +10,6 @@ using TVShow.Events;
 using TVShow.ViewModel;
 using GalaSoft.MvvmLight.Threading;
 using System.Globalization;
-using NuGet;
 
 namespace TVShow
 {
@@ -19,8 +18,8 @@ namespace TVShow
     /// </summary>
     public partial class MainWindow : MetroWindow
     {
-        private bool _mediaPlayerIsPlaying = false;
-        private bool _userIsDraggingSlider = false;
+        private bool _mediaPlayerIsPlaying;
+        private bool _userIsDraggingSlider;
 
         #region Properties
         #region Property -> MovieLoadingProgress
@@ -124,7 +123,7 @@ namespace TVShow
 
                 ProgressBar.Value = e.Progress;
 
-                // The percentage here is related to the buffering progress. W
+                // The percentage here is related to the buffering progress
                 double percentage = Math.Round(e.Progress, 1) / Helpers.Constants.MinimumBufferingBeforeMoviePlaying * 100;
                 if (percentage >= 100)
                 {

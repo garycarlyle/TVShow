@@ -67,7 +67,7 @@ namespace TVShow.ViewModel
         public int MaxMoviesPerPage { get; set; }
         #endregion
 
-        #region
+        #region Property -> SearchMessageToken
         /// <summary>
         /// Token for message subscription when searching movies
         /// </summary>
@@ -94,7 +94,7 @@ namespace TVShow.ViewModel
         }
         #endregion
 
-        #region
+        #region Property -> PaginationLimit
         /// <summary>
         /// The max number page for loaded movies
         /// </summary>
@@ -142,7 +142,7 @@ namespace TVShow.ViewModel
             });
 
             Messenger.Default.Register<PropertyChangedMessage<string>>(
-                this, SearchMessageToken, async (e) => await SearchMovies(e.NewValue)
+                this, SearchMessageToken, async e => await SearchMovies(e.NewValue)
             );
         }
         #endregion
@@ -215,7 +215,7 @@ namespace TVShow.ViewModel
             // We want to load the previous movies only if there is enough content to load before (lazy pagination)
             if (Pagination >= 3)
             {
-                List<MovieShortDetails> MoviesToRecover = new List<MovieShortDetails>();
+                List<MovieShortDetails> moviesToRecover = new List<MovieShortDetails>();
 
                 /* We want to load the previous page (the one which is on 2-top level of the current one)
                  * Actually, the pagination system is pretty simple: there's constantly only 2 loaded pages (except for the first load, when there's only one page)
@@ -224,11 +224,11 @@ namespace TVShow.ViewModel
                  * Anyway, the cleaned pages are stored in the savedMovies dictionnary which index each page (and for each page, we have our list of movies) so that it can be requested easily.
                  * Why this pagination system ? 'cause UI is overloaded and slowed down dramatically after 40-50 pages loaded on Core i5 (yup, WPF is not really super efficient in terms of performance)
                  * */
-                SavedMovies.TryGetValue(Pagination - 2, out MoviesToRecover);
+                SavedMovies.TryGetValue(Pagination - 2, out moviesToRecover);
 
-                if (MoviesToRecover != null)
+                if (moviesToRecover != null)
                 {
-                    List<MovieShortDetails> temp = MoviesToRecover.ToList();
+                    List<MovieShortDetails> temp = moviesToRecover.ToList();
 
                     // We have to reverse the movies list to respect the order of the page, because we stored it using a reverse order. Yep, things to improve here.
                     temp.Reverse();
@@ -315,8 +315,8 @@ namespace TVShow.ViewModel
                     // Check if we met any exception in the GetMoviesInfosAsync method
                     foreach (var e in results.Item2)
                     {
-                        var _taskCancelledException = e as TaskCanceledException;
-                        if (_taskCancelledException != null)
+                        var taskCancelledException = e as TaskCanceledException;
+                        if (taskCancelledException != null)
                         {
                             // Something as cancelled the loading. We go back.
                             Pagination--;
@@ -324,8 +324,8 @@ namespace TVShow.ViewModel
                             return;
                         }
 
-                        var _webException = e as WebException;
-                        if (_webException != null)
+                        var webException = e as WebException;
+                        if (webException != null)
                         {
                             // There's a connection error. Send the message and go back.
                             Messenger.Default.Send<bool>(true, Helpers.Constants.ConnectionErrorPropertyName);
@@ -385,8 +385,8 @@ namespace TVShow.ViewModel
                         // Check if we met any exception
                         foreach (var movieCoverException in movieCover.Item2)
                         {
-                            var _taskCancelledException = movieCoverException as TaskCanceledException;
-                            if (_taskCancelledException != null)
+                            var taskCancelledException = movieCoverException as TaskCanceledException;
+                            if (taskCancelledException != null)
                             {
                                 // Something as cancelled the loading. We go back.
                                 DropMoviesByPage(Pagination);
@@ -394,8 +394,8 @@ namespace TVShow.ViewModel
                                 return;
                             }
 
-                            var _webException = movieCoverException as WebException;
-                            if (_webException != null)
+                            var webException = movieCoverException as WebException;
+                            if (webException != null)
                             {
                                 // There's a connection error. Send the message and go back.
                                 DropMoviesByPage(Pagination);

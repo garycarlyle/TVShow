@@ -15,7 +15,7 @@ namespace TVShow.Helpers
         public Top10Listener(int capacity)
         {
             this.capacity = capacity;
-            this.traces = new LinkedList<string>();
+            traces = new LinkedList<string>();
         }
 
         public override void Write(string message)
@@ -38,7 +38,7 @@ namespace TVShow.Helpers
         public void ExportTo(TextWriter output)
         {
             lock (traces)
-                foreach (string s in this.traces)
+                foreach (string s in traces)
                     output.WriteLine(s);
         }
     }

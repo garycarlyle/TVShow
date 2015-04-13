@@ -12,7 +12,7 @@ namespace TVShow.Resources.Styles
         public static readonly DependencyProperty RatingValueProperty = DependencyProperty.Register("RatingValue", typeof(int), typeof(Rating),
             new FrameworkPropertyMetadata(0, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, new PropertyChangedCallback(RatingChanged)));
 
-        private int _max = 5;
+        private const int Max = 5;
 
         public int RatingValue
         {
@@ -26,9 +26,9 @@ namespace TVShow.Resources.Styles
                 {
                     SetValue(RatingValueProperty, 0);
                 }
-                else if (value > _max)
+                else if (value > Max)
                 {
-                    SetValue(RatingValueProperty, _max);
+                    SetValue(RatingValueProperty, Max);
                 }
                 else
                 {
@@ -40,25 +40,27 @@ namespace TVShow.Resources.Styles
         private static void RatingChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
         {
             Rating item = sender as Rating;
-            int newval = (int)e.NewValue;
-            UIElementCollection childs = ((Grid)(item.Content)).Children;
-
-            ToggleButton button = null;
-
-            for (int i = 0; i < newval; i++)
+            if (item != null)
             {
-                button = childs[i] as ToggleButton;
-                if (button != null)
-                    button.IsChecked = true;
-            }
+                int newval = (int) e.NewValue;
+                UIElementCollection childs = ((Grid) (item.Content)).Children;
 
-            for (int i = newval; i < childs.Count; i++)
-            {
-                button = childs[i] as ToggleButton;
-                if (button != null)
-                    button.IsChecked = false;
-            }
+                ToggleButton button;
 
+                for (int i = 0; i < newval; i++)
+                {
+                    button = childs[i] as ToggleButton;
+                    if (button != null)
+                        button.IsChecked = true;
+                }
+
+                for (int i = newval; i < childs.Count; i++)
+                {
+                    button = childs[i] as ToggleButton;
+                    if (button != null)
+                        button.IsChecked = false;
+                }
+            }
         }
 
         public Rating()

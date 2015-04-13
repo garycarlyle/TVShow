@@ -13,8 +13,6 @@ namespace TVShow.Converters
     {
         private static RatioConverter _instance;
 
-        public RatioConverter() { }
-
         #region IValueConverter Members
         /// <summary>
         /// Modify value with a ratio parameter

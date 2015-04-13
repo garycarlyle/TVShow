@@ -65,7 +65,7 @@ namespace TVShow.ViewModel
                 if (_isDownloadingMovie != value)
                 {
                     _isDownloadingMovie = value;
-                    RaisePropertyChanged(Helpers.Constants.IsDownloadingMoviePropertyName);
+                    RaisePropertyChanged(Constants.IsDownloadingMoviePropertyName);
                 }
             }
         }
@@ -151,7 +151,7 @@ namespace TVShow.ViewModel
         public MainViewModel(IService apiService)
         {
             ApiService = apiService;
-            Messenger.Default.Register<bool>(this, Constants.ConnectionErrorPropertyName, (arg) => OnConnectionError(new ConnectionErrorEventArgs(arg)));
+            Messenger.Default.Register<bool>(this, Constants.ConnectionErrorPropertyName, arg => OnConnectionError(new ConnectionErrorEventArgs(arg)));
 
             StopDownloadingMovieCommand = new RelayCommand(async () =>
             {
@@ -169,7 +169,7 @@ namespace TVShow.ViewModel
                 }
             });
 
-            OpenMovieFlyoutCommand = new RelayCommand<MovieShortDetails>(async (movie) =>
+            OpenMovieFlyoutCommand = new RelayCommand<MovieShortDetails>(async movie =>
             {
                 await LoadMovie(new Tuple<int, string>(movie.Id, movie.ImdbCode));
             });
@@ -207,17 +207,17 @@ namespace TVShow.ViewModel
             CancellationLoadingToken = new CancellationTokenSource();
 
             // Get the requested movie using the service
-            Tuple<MovieFullDetails, IEnumerable<Exception>> MovieInfosAsyncResults = await ApiService.GetMovieAsync(movieId,
+            Tuple<MovieFullDetails, IEnumerable<Exception>> movieInfosAsyncResults = await ApiService.GetMovieAsync(movieId,
                 CancellationLoadingToken);
 
             // Check if we met any exception in the GetMoviesInfosAsync method
-            foreach (Exception e in MovieInfosAsyncResults.Item2)
+            foreach (Exception e in movieInfosAsyncResults.Item2)
             {
                 HandleException(e);
                 return;
             }
 
-            Movie = MovieInfosAsyncResults.Item1;
+            Movie = movieInfosAsyncResults.Item1;
 
             // Inform we loaded the requested movie
             OnMovieLoaded(new EventArgs());

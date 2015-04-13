@@ -46,7 +46,7 @@ namespace TVShow.ViewModel
         /// <summary>
         /// Saved movies per page for fast pagination in the interface
         /// </summary>
-        public Dictionary<int, List<MovieShortDetails>> SavedMoviesDictionary = new Dictionary<int, List<MovieShortDetails>>();
+        public Dictionary<int, List<MovieShortDetails>> SavedMovies = new Dictionary<int, List<MovieShortDetails>>();
         #endregion
 
         #region Property -> Pagination
@@ -77,21 +77,21 @@ namespace TVShow.ViewModel
         public static readonly Guid SearchMessageToken = new Guid();
         #endregion
 
-        #region Property -> SearchMovies
+        #region Property -> SearchMoviesFilter
         /// <summary>
-        /// The filter for searching movies if any
+        /// The filter for searching movies
         /// </summary>
-        private string _searchMovies = String.Empty;
-        public string SearchMovies
+        private string _searchMoviesFilter = String.Empty;
+        public string SearchMoviesFilter
         {
-            get { return _searchMovies; }
+            get { return _searchMoviesFilter; }
             set
             {
-                if (value != _searchMovies)
+                if (value != _searchMoviesFilter)
                 {
-                    string oldValue = _searchMovies;
-                    _searchMovies = value;
-                    Messenger.Default.Send(new PropertyChangedMessage<string>(oldValue, value, "SearchMovies"), SearchMessageToken);
+                    string oldValue = _searchMoviesFilter;
+                    _searchMoviesFilter = value;
+                    Messenger.Default.Send(new PropertyChangedMessage<string>(oldValue, value, Helpers.Constants.SearchMoviesFilterPropertyName), SearchMessageToken);
                 }
             }
         }
@@ -140,12 +140,12 @@ namespace TVShow.ViewModel
 
             ReloadMoviesAfterConnexionInError = new RelayCommand(async () =>
             {
-                Messenger.Default.Send<bool>(false, "IsConnexionInError");
-                await LoadNextMoviesInfos();
+                Messenger.Default.Send<bool>(false, Helpers.Constants.ConnexionErrorPropertyName);
+                await LoadNextMovies();
             });
 
             Messenger.Default.Register<PropertyChangedMessage<string>>(
-                this, SearchMessageToken, async (e) => await OnSearchMovies(e.NewValue)
+                this, SearchMessageToken, async (e) => await SearchMovies(e.NewValue)
             );
         }
         #endregion
@@ -154,40 +154,39 @@ namespace TVShow.ViewModel
 
         #region Methods
 
-        #region Method -> OnSearchMovies
+        #region Method -> SearchMovies
         /// <summary>
-        /// When a movie search is processing
+        /// Search movies
         /// </summary>
-        /// <param name="param">param</param>
-        private async Task OnSearchMovies(string param)
+        /// <param name="searchParameter">The parameter of the search</param>
+        private async Task SearchMovies(string searchParameter)
         {
-            await StopLoadingMoviesInfos();
+            await StopLoadingMovies();
             PaginationLimit = Int32.MaxValue;
-            if (!String.IsNullOrEmpty(param))
+            if (!String.IsNullOrEmpty(searchParameter))
             {
-                SavedMoviesDictionary.Clear();
+                SavedMovies.Clear();
                 Movies.Clear();
                 Pagination = 0;
                 try
                 {
-                    EventArgs onMoviesLoadingArgs = new EventArgs();
-                    OnMoviesLoading(onMoviesLoadingArgs);
+                    OnMoviesLoading(new EventArgs());
 
                     CancellationLoadMoviesInfosToken = new CancellationTokenSource();
                     await Task.Delay(1000, CancellationLoadMoviesInfosToken.Token);
-                    await LoadNextMoviesInfos(param);
+                    await LoadNextMovies(searchParameter);
                 }
                 catch (TaskCanceledException)
                 {
-                    
+                    throw new TaskCanceledException();   
                 }
             }
             else
             {
-                SavedMoviesDictionary.Clear();
+                SavedMovies.Clear();
                 Movies.Clear();
                 Pagination = 0;
-                await LoadNextMoviesInfos();
+                await LoadNextMovies();
             }
         }
         #endregion
@@ -198,15 +197,14 @@ namespace TVShow.ViewModel
         /// </summary>
         public void LoadPreviousMovies()
         {
-            EventArgs onMoviesLoadingArgs = new EventArgs();
-            OnMoviesLoading(onMoviesLoadingArgs);
+            OnMoviesLoading(new EventArgs());
 
             // We want to load the previous movies only if there is enough content to load before
             if (Pagination >= 3)
             {
                 List<MovieShortDetails> MoviesToAdd = new List<MovieShortDetails>();
                 // We want to load the previous movies page (the one which is on 2 top level of the current one)
-                SavedMoviesDictionary.TryGetValue(Pagination - 2, out MoviesToAdd);
+                SavedMovies.TryGetValue(Pagination - 2, out MoviesToAdd);
                 if (MoviesToAdd != null)
                 {
                     List<MovieShortDetails> temp = MoviesToAdd.ToList();
@@ -218,7 +216,7 @@ namespace TVShow.ViewModel
                     }
 
                     List<MovieShortDetails> moviesToDelete = new List<MovieShortDetails>();
-                    SavedMoviesDictionary.TryGetValue(Pagination, out moviesToDelete);
+                    SavedMovies.TryGetValue(Pagination, out moviesToDelete);
                     if (moviesToDelete != null)
                     {
                         foreach (MovieShortDetails item in moviesToDelete)
@@ -230,38 +228,37 @@ namespace TVShow.ViewModel
                 }
             }
 
-            EventArgs onMoviesInfosLoadedArgs = new EventArgs();
-            OnMoviesInfosLoaded(onMoviesInfosLoadedArgs);
+            OnMoviesLoaded(new EventArgs());
         }
 
         #endregion
 
-        #region Method -> LoadNextMoviesInfos
+        #region Method -> LoadNextMovies
         /// <summary>
-        /// Load next movies 
+        /// Load next movies
         /// </summary>
-        public async Task LoadNextMoviesInfos(string retrieveParam = null)
+        public async Task LoadNextMovies(string retrieveParam = null)
         {
             if (PaginationLimit == Pagination)
             {
-                OnMoviesInfosLoaded(new EventArgs());
+                OnMoviesLoaded(new EventArgs());
                 return;
             }
-            if ((String.IsNullOrEmpty(retrieveParam) && String.IsNullOrEmpty(SearchMovies)) ||
-                (!String.IsNullOrEmpty(retrieveParam) && !String.IsNullOrEmpty(SearchMovies)))
+            if ((String.IsNullOrEmpty(retrieveParam) && String.IsNullOrEmpty(SearchMoviesFilter)) ||
+                (!String.IsNullOrEmpty(retrieveParam) && !String.IsNullOrEmpty(SearchMoviesFilter)))
             {
                 CancellationLoadMoviesInfosToken = new CancellationTokenSource();
                 Pagination++;
                 OnMoviesLoading(new EventArgs());
 
                 List<MovieShortDetails> pageAlreadyProcessed = new List<MovieShortDetails>();
-                SavedMoviesDictionary.TryGetValue(Pagination, out pageAlreadyProcessed);
+                SavedMovies.TryGetValue(Pagination, out pageAlreadyProcessed);
                 if (pageAlreadyProcessed != null)
                 {
                     if (Pagination >= 3)
                     {
                         List<MovieShortDetails> moviesToDelete = new List<MovieShortDetails>();
-                        SavedMoviesDictionary.TryGetValue(Pagination - 2, out moviesToDelete);
+                        SavedMovies.TryGetValue(Pagination - 2, out moviesToDelete);
                         if (moviesToDelete != null)
                         {
                             foreach (MovieShortDetails item in moviesToDelete)
@@ -274,7 +271,7 @@ namespace TVShow.ViewModel
                     {
                         Movies.Add(item);
                     }
-                    OnMoviesInfosLoaded(new EventArgs());
+                    OnMoviesLoaded(new EventArgs());
                 }
                 else
                 {
@@ -290,13 +287,13 @@ namespace TVShow.ViewModel
                         if (ctException != null)
                         {
                             Pagination--;
-                            OnMoviesInfosLoaded(new EventArgs());
+                            OnMoviesLoaded(new EventArgs());
                             return;
                         }
 
-                        Messenger.Default.Send<bool>(true, "IsConnexionInError");
+                        Messenger.Default.Send<bool>(true, Helpers.Constants.ConnexionErrorPropertyName);
                         Pagination--;
-                        OnMoviesInfosLoaded(new EventArgs());
+                        OnMoviesLoaded(new EventArgs());
                         return;
                     }
 
@@ -312,10 +309,10 @@ namespace TVShow.ViewModel
                                 a => a.Title.IndexOf(retrieveParam, StringComparison.OrdinalIgnoreCase) >= 0);
                     }
 
-                    #region Permet de stocker les "movies" dans le dictionnaire
+                    #region Store the movies into the dictionnary
 
                     List<MovieShortDetails> actualValues = new List<MovieShortDetails>();
-                    SavedMoviesDictionary.TryGetValue(Pagination, out actualValues);
+                    SavedMovies.TryGetValue(Pagination, out actualValues);
                     if (actualValues == null)
                     {
                         List<MovieShortDetails> storeMoviesValues = new List<MovieShortDetails>();
@@ -323,7 +320,7 @@ namespace TVShow.ViewModel
                         {
                             storeMoviesValues.Add(item);
                         }
-                        SavedMoviesDictionary.Add(Pagination, storeMoviesValues);
+                        SavedMovies.Add(Pagination, storeMoviesValues);
                     }
 
                     #endregion
@@ -331,7 +328,7 @@ namespace TVShow.ViewModel
                     if (Pagination >= 3)
                     {
                         List<MovieShortDetails> moviesToDelete = new List<MovieShortDetails>();
-                        SavedMoviesDictionary.TryGetValue(Pagination - 2, out moviesToDelete);
+                        SavedMovies.TryGetValue(Pagination - 2, out moviesToDelete);
                         if (moviesToDelete != null)
                         {
                             foreach (MovieShortDetails item in moviesToDelete)
@@ -346,7 +343,7 @@ namespace TVShow.ViewModel
                         Movies.Add(movie);
                     }
 
-                    OnMoviesInfosLoaded(new EventArgs());
+                    OnMoviesLoaded(new EventArgs());
 
                     foreach (var movie in movies)
                     {
@@ -363,7 +360,7 @@ namespace TVShow.ViewModel
                                     WebExceptionStatus.NameResolutionFailure)
                                 {
                                     Messenger.Default.Send<bool>(true,
-                                        "IsConnexionInError");
+                                        Helpers.Constants.ConnexionErrorPropertyName);
                                     Pagination--;
                                     return;
                                 }
@@ -377,7 +374,7 @@ namespace TVShow.ViewModel
                             }
                         }
 
-                        foreach (var movieItem in SavedMoviesDictionary.SelectMany(x => x.Value))
+                        foreach (var movieItem in SavedMovies.SelectMany(x => x.Value))
                         {
                             if (movieItem.ImdbCode == movie.ImdbCode)
                             {
@@ -390,11 +387,11 @@ namespace TVShow.ViewModel
         }
         #endregion
 
-        #region Method -> StopLoadingMoviesInfos
+        #region Method -> StopLoadingMovies
         /// <summary>
-        /// Cancel loading movies 
+        /// Cancel the loading of movies 
         /// </summary>
-        public async Task StopLoadingMoviesInfos()
+        public async Task StopLoadingMovies()
         {
             await Task.Run(() =>
             {
@@ -410,18 +407,18 @@ namespace TVShow.ViewModel
 
         #region Events
 
-        #region Event -> MoviesInfosLoading
+        #region Event -> MoviesLoading
         /// <summary>
-        /// MoviesInfosLoaded event
+        /// MoviesLoading event
         /// </summary>
-        public event EventHandler<EventArgs> MoviesInfosLoading;
+        public event EventHandler<EventArgs> MoviesLoading;
         /// <summary>
-        /// Advertise when information's movies are loading
+        /// On loading movies
         /// </summary>
-        ///<param name="e">e</param>
+        ///<param name="e">EventArgs parameter</param>
         protected virtual void OnMoviesLoading(EventArgs e)
         {
-            EventHandler<EventArgs> handler = MoviesInfosLoading;
+            EventHandler<EventArgs> handler = MoviesLoading;
             if (handler != null)
             {
                 handler(this, e);
@@ -429,18 +426,18 @@ namespace TVShow.ViewModel
         }
         #endregion
 
-        #region Event -> MoviesInfosLoaded
+        #region Event -> MoviesLoaded
         /// <summary>
-        /// MoviesInfosLoaded event
+        /// MoviesLoaded event
         /// </summary>
-        public event EventHandler<EventArgs> MoviesInfosLoaded;
+        public event EventHandler<EventArgs> MoviesLoaded;
         /// <summary>
-        /// Advertise when information's movies are finished loading
+        /// On finished loading movies
         /// </summary>
-        ///<param name="e">e</param>
-        protected virtual void OnMoviesInfosLoaded(EventArgs e)
+        ///<param name="e">EventArgs parameter</param>
+        protected virtual void OnMoviesLoaded(EventArgs e)
         {
-            EventHandler<EventArgs> handler = MoviesInfosLoaded;
+            EventHandler<EventArgs> handler = MoviesLoaded;
             if (handler != null)
             {
                 handler(this, e);

@@ -370,7 +370,7 @@
         <Border BorderThickness="0,0,0,5" BorderBrush="#FF7E7E7E"  Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">
             <StackPanel Width="150" VerticalAlignment="Center" HorizontalAlignment="Center">
                 <TextBox 
-                        Text="{Binding Movies.SearchMovies, Source={StaticResource Locator}, UpdateSourceTrigger=PropertyChanged}"
+                        Text="{Binding Movies.SearchMoviesFilter, Source={StaticResource Locator}, UpdateSourceTrigger=PropertyChanged}"
                         controls:TextBoxHelper.Watermark="Search..."
                         controls:TextBoxHelper.ClearTextButton="True">
                 </TextBox>

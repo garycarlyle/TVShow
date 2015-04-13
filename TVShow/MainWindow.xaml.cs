@@ -43,7 +43,7 @@ namespace TVShow
                         mePlayer.Stop();
                         mePlayer.Source = null;
                     }
-                    vm.ConnexionInErrorEvent -= OnConnexionInError;
+                    vm.ConnexionError -= OnConnexionInError;
                     vm.MovieLoading -= OnMovieLoading;
                     vm.MovieStoppedDownloading -= OnMovieStoppedDownloading;
                     vm.MovieSelected -= OnMovieSelected;
@@ -65,7 +65,7 @@ namespace TVShow
             var vm = DataContext as MainViewModel;
             if (vm != null)
             {
-                vm.ConnexionInErrorEvent += OnConnexionInError;
+                vm.ConnexionError += OnConnexionInError;
                 vm.MovieLoading += OnMovieLoading;
                 vm.MovieStoppedDownloading += OnMovieStoppedDownloading;
                 vm.MovieSelected += OnMovieSelected;

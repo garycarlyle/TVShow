@@ -35,7 +35,7 @@ namespace TVShow.ViewModel
 
         #region Property -> Movie
         /// <summary>
-        /// The movie on witch be based future actions (playing, data display, ...)
+        /// The selected movie which will be played
         /// </summary>
         private MovieFullDetails _movie = new MovieFullDetails();
         public MovieFullDetails Movie
@@ -47,15 +47,18 @@ namespace TVShow.ViewModel
 
         #region Property -> CancellationLoadMoviesToken
         /// <summary>
-        /// Token to cancel loading movies
+        /// Token to cancel the loading of movies
         /// </summary>
         private CancellationTokenSource CancellationLoadMoviesToken { get; set; }
         #endregion
 
         #region Property -> IsDownloadingMovie
 
-        public const string IsDownloadingMoviePropertyName = "IsDownloadingMovie";
+        
         private bool _isDownloadingMovie;
+        /// <summary>
+        /// Specify if a movie is downloading
+        /// </summary>
         public bool IsDownloadingMovie
         {
             get { return _isDownloadingMovie; }
@@ -64,7 +67,7 @@ namespace TVShow.ViewModel
                 if (_isDownloadingMovie != value)
                 {
                     _isDownloadingMovie = value;
-                    RaisePropertyChanged(IsDownloadingMoviePropertyName);
+                    RaisePropertyChanged(Helpers.Constants.IsDownloadingMoviePropertyName);
                 }
             }
         }
@@ -74,6 +77,9 @@ namespace TVShow.ViewModel
         #region Property -> IsConnexionInError
 
         private bool _isConnexionInError;
+        /// <summary>
+        /// Specify if a connexion error has occured
+        /// </summary>
         public bool IsConnexionInError
         {
             get { return _isConnexionInError; }
@@ -83,11 +89,17 @@ namespace TVShow.ViewModel
         #endregion
 
         #region Property -> TorrentSession
+        /// <summary>
+        /// The session of the current torrent
+        /// </summary>
         private Session TorrentSession { get; set; }
         #endregion
 
-        #region Property -> TorrentHandleCurrentMovie
-        private TorrentHandle TorrentHandleCurrentMovie { get; set; }
+        #region Property -> TorrentHandle
+        /// <summary>
+        /// The handle of the current torrent
+        /// </summary>
+        private TorrentHandle TorrentHandle { get; set; }
         #endregion
 
         #endregion
@@ -137,11 +149,11 @@ namespace TVShow.ViewModel
         /// <summary>
         /// Initializes a new instance of the MainViewModel class.
         /// </summary>
-        /// <param name="apiService">apiService</param>
+        /// <param name="apiService">The service which will be used</param>
         public MainViewModel(IService apiService)
         {
             ApiService = apiService;
-            Messenger.Default.Register<bool>(this, "IsConnexionInError", (e) => OnConnexionInError(new ConnexionErrorEventArgs(e)));
+            Messenger.Default.Register<bool>(this, Helpers.Constants.ConnexionErrorPropertyName, (e) => OnConnexionError(new ConnexionErrorEventArgs(e)));
 
             StopDownloadingMovieCommand = new RelayCommand(async () =>
             {
@@ -161,7 +173,7 @@ namespace TVShow.ViewModel
 
             OpenMovieFlyoutCommand = new RelayCommand<MovieShortDetails>(async (s) =>
             {
-                await OpenMovie(new Tuple<int, string>(s.Id, s.ImdbCode));
+                await LoadMovie(new Tuple<int, string>(s.Id, s.ImdbCode));
             });
         }
         #endregion
@@ -169,12 +181,12 @@ namespace TVShow.ViewModel
         #endregion
 
         #region Methods
-        #region Method -> OpenMovie
+        #region Method -> LoadMovie
         /// <summary>
-        /// Loads the requested movie
+        /// Load the requested movie
         /// </summary>
-        /// <param name="movieCodes">movieCodes</param>
-        private async Task OpenMovie(Tuple<int, string> movieCodes)
+        /// <param name="movieCodes">The movieID and IMDb code</param>
+        private async Task LoadMovie(Tuple<int, string> movieCodes)
         {
             if (Movie == null || !String.IsNullOrEmpty(Movie.Title))
             {
@@ -189,8 +201,8 @@ namespace TVShow.ViewModel
         /// <summary>
         /// Get the informations of the requested movie
         /// </summary>
-        /// <param name="movieId">movieId</param>
-        /// <param name="imdbCode">imdbCode</param>
+        /// <param name="movieId">The movie ID</param>
+        /// <param name="imdbCode">The IMDb code</param>
         private async Task GetMovieInfos(int movieId, string imdbCode)
         {
             CancellationLoadMoviesToken = new CancellationTokenSource();
@@ -204,7 +216,7 @@ namespace TVShow.ViewModel
                 {
                     if (we.Status == WebExceptionStatus.NameResolutionFailure)
                     {
-                        Messenger.Default.Send<bool>(true, "IsConnexionInError");
+                        Messenger.Default.Send<bool>(true, Helpers.Constants.ConnexionErrorPropertyName);
                         return;
                     }
                 }
@@ -217,8 +229,7 @@ namespace TVShow.ViewModel
             }
 
             Movie = MovieInfosAsyncResults.Item1;
-            EventArgs args = new EventArgs();
-            OnMovieSelected(args);
+            OnMovieSelected(new EventArgs());
 
             CancellationLoadMoviesToken = new CancellationTokenSource();
 
@@ -241,7 +252,7 @@ namespace TVShow.ViewModel
                     {
                         if (we.Status == WebExceptionStatus.NameResolutionFailure)
                         {
-                            Messenger.Default.Send<bool>(true, "IsConnexionInError");
+                            Messenger.Default.Send<bool>(true, Helpers.Constants.ConnexionErrorPropertyName);
                             return;
                         }
                     }
@@ -257,7 +268,7 @@ namespace TVShow.ViewModel
             CancellationLoadMoviesToken = new CancellationTokenSource();
             foreach (Director director in Movie.Directors)
             {
-                Tuple<string, IEnumerable<Exception>> directorsImagesAsyncResults = await ApiService.DownloadDirectorsImagesAsync(director.Name.Trim(),
+                Tuple<string, IEnumerable<Exception>> directorsImagesAsyncResults = await ApiService.DownloadDirectorImageAsync(director.Name.Trim(),
                     director.SmallImage,
                     CancellationLoadMoviesToken);
 
@@ -276,7 +287,7 @@ namespace TVShow.ViewModel
                         {
                             if (we.Status == WebExceptionStatus.NameResolutionFailure)
                             {
-                                Messenger.Default.Send<bool>(true, "IsConnexionInError");
+                                Messenger.Default.Send<bool>(true, Helpers.Constants.ConnexionErrorPropertyName);
                                 return;
                             }
                         }
@@ -293,7 +304,7 @@ namespace TVShow.ViewModel
             CancellationLoadMoviesToken = new CancellationTokenSource();
             foreach (Actor actor in Movie.Actors)
             {
-                Tuple<string, IEnumerable<Exception>> actorsImagesAsyncResults = await ApiService.DownloadActorsImagesAsync(actor.Name.Trim(),
+                Tuple<string, IEnumerable<Exception>> actorsImagesAsyncResults = await ApiService.DownloadActorImageAsync(actor.Name.Trim(),
                     actor.SmallImage,
                     CancellationLoadMoviesToken);
 
@@ -312,7 +323,7 @@ namespace TVShow.ViewModel
                         {
                             if (we.Status == WebExceptionStatus.NameResolutionFailure)
                             {
-                                Messenger.Default.Send<bool>(true, "IsConnexionInError");
+                                Messenger.Default.Send<bool>(true, Helpers.Constants.ConnexionErrorPropertyName);
                                 return;
                             }
                         }
@@ -337,7 +348,7 @@ namespace TVShow.ViewModel
                 {
                     if (we.Status == WebExceptionStatus.NameResolutionFailure)
                     {
-                        Messenger.Default.Send<bool>(true, "IsConnexionInError");
+                        Messenger.Default.Send<bool>(true, Helpers.Constants.ConnexionErrorPropertyName);
                         return;
                     }
                 }
@@ -362,33 +373,36 @@ namespace TVShow.ViewModel
             using (TorrentSession = new Session())
             {
                 IsDownloadingMovie = true;
-                EventArgs onMovieLoadingArgs = new EventArgs();
-                OnMovieLoading(onMovieLoadingArgs);
+                OnMovieLoading(new EventArgs());
 
                 TorrentSession.ListenOn(6881, 6889);
 
                 var addParams = new AddTorrentParams
                 {
                     SavePath = Constants.MovieDownloads,
+                    // At this time, no quality selection is available in the interface, so we take the lowest
                     Url = movie.Torrents.Aggregate((i1, i2) => (i1.SizeBytes < i2.SizeBytes ? i1 : i2)).Url
                 };
 
-                TorrentHandleCurrentMovie = TorrentSession.AddTorrent(addParams);
-                TorrentHandleCurrentMovie.SequentialDownload = true;
+                TorrentHandle = TorrentSession.AddTorrent(addParams);
+                TorrentHandle.SequentialDownload = true;
 
                 bool alreadyBuffered = false;
                 while (true)
                 {
-                    TorrentStatus status = TorrentHandleCurrentMovie.QueryStatus();
+                    TorrentStatus status = TorrentHandle.QueryStatus();
 
                     if (status.IsSeeding || !IsDownloadingMovie)
                     {
                         break;
                     }
+                    
                     // Print our progress and sleep for a bit.
                     MovieLoadingProgressEventArgs onMovieLoadingProgress =
-                        new MovieLoadingProgressEventArgs(status.Progress*100, status.DownloadRate/1024);
+                        new MovieLoadingProgressEventArgs(status.Progress * 100, status.DownloadRate / 1024);
                     OnMovieLoadingProgress(onMovieLoadingProgress);
+
+                    // We consider 2% of progress is enough to start playing
                     if (status.Progress * 100 >= 2 && !alreadyBuffered)
                     {
                         try
@@ -417,16 +431,15 @@ namespace TVShow.ViewModel
         #region Method -> StopDownloadingMovie
 
         /// <summary>
-        /// Cancel loading movies 
+        /// Cancel the download of a movie 
         /// </summary>
         public async Task StopDownloadingMovie()
         {
             await Task.Run(() =>
             {
-                EventArgs onMovieStoppedDownloading = new EventArgs();
-                OnMovieStoppedDownloading(onMovieStoppedDownloading);
+                OnMovieStoppedDownloading(new EventArgs());
                 IsDownloadingMovie = false;
-                TorrentSession.RemoveTorrent(TorrentHandleCurrentMovie, true);
+                TorrentSession.RemoveTorrent(TorrentHandle, true);
             });
         }
 
@@ -436,18 +449,18 @@ namespace TVShow.ViewModel
 
         #region Events
 
-        #region Event -> ConnexionInErrorEvent
+        #region Event -> OnConnexionError
         /// <summary>
-        /// ConnexionInErrorEvent event
+        /// ConnexionErrorEvent event
         /// </summary>
-        public event EventHandler<ConnexionErrorEventArgs> ConnexionInErrorEvent;
+        public event EventHandler<ConnexionErrorEventArgs> ConnexionError;
         /// <summary>
-        /// When ConnexionInErrorEvent event is fired
+        /// On connexion error
         /// </summary>
-        ///<param name="e">e</param>
-        protected virtual void OnConnexionInError(ConnexionErrorEventArgs e)
+        ///<param name="e">ConnexionErrorEventArgs parameter</param>
+        protected virtual void OnConnexionError(ConnexionErrorEventArgs e)
         {
-            EventHandler<ConnexionErrorEventArgs> handler = ConnexionInErrorEvent;
+            EventHandler<ConnexionErrorEventArgs> handler = ConnexionError;
             if (handler != null)
             {
                 if (e.IsInError)
@@ -465,13 +478,13 @@ namespace TVShow.ViewModel
 
         #region Event -> OnMovieLoadingProgress
         /// <summary>
-        /// OnMovieLoadingProgress event
+        /// MovieLoadingProgress event
         /// </summary>
         public event EventHandler<MovieLoadingProgressEventArgs> MovieLoadingProgress;
         /// <summary>
-        /// Advertise when movie is loading
+        /// When movie is loading
         /// </summary>
-        ///<param name="e">e</param>
+        ///<param name="e">MovieLoadingProgressEventArgs parameter</param>
         protected virtual void OnMovieLoadingProgress(MovieLoadingProgressEventArgs e)
         {
             EventHandler<MovieLoadingProgressEventArgs> handler = MovieLoadingProgress;
@@ -484,13 +497,13 @@ namespace TVShow.ViewModel
 
         #region Event -> OnMovieLoading
         /// <summary>
-        /// OnMovieLoading event
+        /// MovieLoading event
         /// </summary>
         public event EventHandler<EventArgs> MovieLoading;
         /// <summary>
-        /// Advertise when movie is loading
+        /// When movie is loading
         /// </summary>
-        ///<param name="e">e</param>
+        ///<param name="e">EventArgs parameter</param>
         protected virtual void OnMovieLoading(EventArgs e)
         {
             EventHandler<EventArgs> handler = MovieLoading;
@@ -507,7 +520,7 @@ namespace TVShow.ViewModel
         /// </summary>
         public event EventHandler<EventArgs> MovieSelected;
         /// <summary>
-        /// Advertise when movie is selected
+        /// When movie is selected
         /// </summary>
         ///<param name="e">e</param>
         protected virtual void OnMovieSelected(EventArgs e)
@@ -526,9 +539,9 @@ namespace TVShow.ViewModel
         /// </summary>
         public event EventHandler<EventArgs> MovieStoppedDownloading;
         /// <summary>
-        /// Advertise when movie is stopped downloading
+        /// When movie is stopped downloading
         /// </summary>
-        ///<param name="e">e</param>
+        ///<param name="e">EventArgs parameter</param>
         protected virtual void OnMovieStoppedDownloading(EventArgs e)
         {
             EventHandler<EventArgs> handler = MovieStoppedDownloading;
@@ -545,9 +558,9 @@ namespace TVShow.ViewModel
         /// </summary>
         public event EventHandler<MovieBufferedEventArgs> MovieBuffered;
         /// <summary>
-        /// Advertise when a movie is finished buffering
+        /// When a movie is finished buffering
         /// </summary>
-        ///<param name="e">e</param>
+        ///<param name="e">MovieBufferedEventArgs parameter</param>
         protected virtual void OnMovieBuffered(MovieBufferedEventArgs e)
         {
             EventHandler<MovieBufferedEventArgs> handler = MovieBuffered;

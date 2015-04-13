@@ -29,11 +29,11 @@ namespace TVShow.Model.Api
             string imageUrl,
             CancellationTokenSource cancellationToken);
 
-        Task<Tuple<string, IEnumerable<Exception>>> DownloadDirectorsImagesAsync(string name,
+        Task<Tuple<string, IEnumerable<Exception>>> DownloadDirectorImageAsync(string name,
             string imageUrl,
             CancellationTokenSource cancellationToken);
 
-        Task<Tuple<string, IEnumerable<Exception>>> DownloadActorsImagesAsync(string name,
+        Task<Tuple<string, IEnumerable<Exception>>> DownloadActorImageAsync(string name,
             string imageUrl,
             CancellationTokenSource cancellationToken);
 

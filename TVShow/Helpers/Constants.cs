@@ -62,6 +62,21 @@ namespace TVShow.Helpers
         /// </summary>
         public const int MovieTitleFontSize = 18;
 
+        /// <summary>
+        /// The string on which be based ConnexionError events
+        /// </summary>
+        public const string ConnexionErrorPropertyName = "ConnexionError";
+
+        /// <summary>
+        /// The string on which be based SearchMoviesFilter events
+        /// </summary>
+        public const string SearchMoviesFilterPropertyName = "SearchMoviesFilter";
+
+        /// <summary>
+        /// The string on which be IsDownloadingMovie events
+        /// </summary>
+        public const string IsDownloadingMoviePropertyName = "IsDownloadingMovie";
+        
         public enum FileType
         {
             BackgroundImage = 0,

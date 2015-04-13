@@ -31,9 +31,9 @@ namespace TVShow.UserControls
             var vm = DataContext as MoviesViewModel;
             if (vm != null)
             {
-                vm.MoviesInfosLoaded += MoviesInfosLoaded;
-                vm.MoviesInfosLoading += MoviesInfosLoading;
-                await vm.LoadNextMoviesInfos();
+                vm.MoviesLoaded += MoviesInfosLoaded;
+                vm.MoviesLoading += MoviesInfosLoading;
+                await vm.LoadNextMovies();
             }
         }
 
@@ -45,13 +45,13 @@ namespace TVShow.UserControls
                 var vm = DataContext as MoviesViewModel;
                 if (vm != null && !ProgressRing.IsActive)
                 {
-                    if (String.IsNullOrEmpty(vm.SearchMovies))
+                    if (String.IsNullOrEmpty(vm.SearchMoviesFilter))
                     {
-                        await vm.LoadNextMoviesInfos();
+                        await vm.LoadNextMovies();
                     }
                     else
                     {
-                        await vm.LoadNextMoviesInfos(vm.SearchMovies);
+                        await vm.LoadNextMovies(vm.SearchMoviesFilter);
                     }
                 }
             }
@@ -113,7 +113,7 @@ namespace TVShow.UserControls
                 var vm = DataContext as MoviesViewModel;
                 if (vm != null)
                 {
-                    if (!vm.Movies.Any() && !String.IsNullOrEmpty(vm.SearchMovies))
+                    if (!vm.Movies.Any() && !String.IsNullOrEmpty(vm.SearchMoviesFilter))
                     {
                         this.NoMouvieFound.Visibility = Visibility.Visible;
                     }
@@ -131,7 +131,7 @@ namespace TVShow.UserControls
             var vm = DataContext as MoviesViewModel;
             if (vm != null && ProgressRing.IsActive)
             {
-                await vm.StopLoadingMoviesInfos();
+                await vm.StopLoadingMovies();
             }
         }
 
@@ -140,7 +140,7 @@ namespace TVShow.UserControls
             var vm = DataContext as MoviesViewModel;
             if (vm != null && ProgressRing.IsActive)
             {
-                await vm.StopLoadingMoviesInfos();
+                await vm.StopLoadingMovies();
             }
         }
 

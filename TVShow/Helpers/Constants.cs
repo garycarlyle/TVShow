@@ -52,6 +52,16 @@ namespace TVShow.Helpers
         /// </summary>
         public static readonly string YtsApiEndpoint = "http://yts.to/api/v2";
 
+        /// <summary>
+        /// Maximum width of the movie title in the main interface until sliding
+        /// </summary>
+        public const int MaxWidthBeforeSlidingTitle = 160;
+
+        /// <summary>
+        /// Font size of the movie title in the main interface
+        /// </summary>
+        public const int MovieTitleFontSize = 18;
+
         public enum FileType
         {
             BackgroundImage = 0,

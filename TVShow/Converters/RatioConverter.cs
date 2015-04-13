@@ -10,7 +10,7 @@ using System.Windows.Markup;
 namespace TVShow.Converters
 {
     /// <summary>
-    /// Used to resize the main window depending on a ratio parameter
+    /// Convert double to double using a ratio parameter
     /// </summary>
     [ValueConversion(typeof(string), typeof(string))]
     public class RatioConverter : MarkupExtension, IValueConverter
@@ -21,27 +21,27 @@ namespace TVShow.Converters
 
         #region IValueConverter Members
         /// <summary>
-        /// Convert method
+        /// Modify value with a ratio parameter
         /// </summary>
-        /// <param name="culture">culture</param>
-        /// <param name="parameter">parameter</param>
-        /// <param name="targetType">targetType</param>
-        /// <param name="value">value</param>
+        /// <param name="value">The value produced by the binding source.</param>
+        /// <param name="targetType">The type of the binding target property.</param>
+        /// <param name="parameter">The converter parameter to use.</param>
+        /// <param name="culture">The culture to use in the converter.</param>
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        { // do not let the culture default to local to prevent variable outcome re decimal syntax
+        { 
             double size = System.Convert.ToDouble(value) * System.Convert.ToDouble(parameter, CultureInfo.InvariantCulture);
             return size.ToString("G0", CultureInfo.InvariantCulture);
         }
 
         /// <summary>
-        /// ConvertBack method
+        /// NotImplemented
         /// </summary>
-        /// <param name="culture">culture</param>
-        /// <param name="parameter">parameter</param>
-        /// <param name="targetType">targetType</param>
-        /// <param name="value">value</param>
+        /// <param name="value">The value produced by the binding source.</param>
+        /// <param name="targetType">The type of the binding target property.</param>
+        /// <param name="parameter">The converter parameter to use.</param>
+        /// <param name="culture">The culture to use in the converter.</param>
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        { // read only converter...
+        {
             throw new NotImplementedException();
         }
         #endregion

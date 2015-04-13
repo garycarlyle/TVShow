@@ -30,11 +30,11 @@ namespace TVShow.Model.Api
         #region Methods
         #region Method -> GetMoviesInfosAsync
         /// <summary>
-        /// Request data from YTS API
+        /// Get list of movies regarding a optionnal search parameter, a maximum movies per page, a page number (pagination) and a cancellationToken
         /// </summary>
-        /// <param name="searchParameter">searchParameter</param>
+        /// <param name="searchParameter">Search parameter</param>
         /// <param name="MaxMoviesPerPage">MaxMoviesPerPage</param>
-        /// <param name="pageNumberToLoad">pageNumberToLoad</param>
+        /// <param name="pageNumberToLoad">Page number to load</param>
         /// <param name="cancellationToken">cancellationToken</param>
         public async Task<Tuple<IEnumerable<MovieShortDetails>, IEnumerable<Exception>>> GetMoviesInfosAsync(string searchParameter, 
             int maxMoviesPerPage,
@@ -84,10 +84,9 @@ namespace TVShow.Model.Api
 
         #region Method -> GetMovieInfosAsync
         /// <summary>
-        /// Request data from OMDb API
+        /// Get the data from a movie (Torrent file url, images url, ...)
         /// </summary>
-        /// <param name="callback">callback</param>
-        /// <param name="movieId">movieId</param>
+        /// <param name="movieId">The unique identifier of a movie (same as IMDb ID)</param>
         /// <param name="cancellationToken">cancellationToken</param>
         public async Task<Tuple<MovieFullDetails, IEnumerable<Exception>>> GetMovieInfosAsync(int movieId, 
             CancellationTokenSource cancellationToken)
@@ -137,11 +136,10 @@ namespace TVShow.Model.Api
 
         #region Method -> DownloadMovieTorrent
         /// <summary>
-        /// Request data from OMDb API
+        /// Download the torrent file of a movie
         /// </summary>
-        /// <param name="callback">callback</param>
-        /// <param name="imdbCode">imdbCode</param>
-        /// <param name="torentUrl">movieId</param>
+        /// <param name="movieId">The unique identifier of a movie (same as IMDb ID)</param>
+        /// <param name="torentUrl">The torrent URL</param>
         /// <param name="cancellationToken">cancellationToken</param>
         public async Task<Tuple<string, IEnumerable<Exception>>> DownloadMovieTorrent(string imdbCode, string torentUrl,
             CancellationTokenSource cancellationToken)
@@ -191,11 +189,10 @@ namespace TVShow.Model.Api
         #region Method -> DownloadMovieCoverAsync
 
         /// <summary>
-        /// Request data from TMDb API
+        /// Download the movie cover
         /// </summary>
-        /// <param name="callback">callback</param>
-        /// <param name="imdbCode">movie</param>
-        /// <param name="imageUrl">imageUrl</param>
+        /// <param name="movieId">The unique identifier of a movie (same as IMDb ID)</param>
+        /// <param name="imageUrl">The image URL</param>
         /// <param name="cancellationToken">cancellationToken</param>
         public async Task<Tuple<string, IEnumerable<Exception>>> DownloadMovieCoverAsync(string imdbCode,
             string imageUrl,
@@ -246,11 +243,10 @@ namespace TVShow.Model.Api
         #region Method -> DownloadMoviePosterAsync
 
         /// <summary>
-        /// Request data from TMDb API
+        /// Download the movie poster
         /// </summary>
-        /// <param name="callback">callback</param>
-        /// <param name="imdbCode">movie</param>
-        /// <param name="imageUrl">imageUrl</param>
+        /// <param name="movieId">The unique identifier of a movie (same as IMDb ID)</param>
+        /// <param name="imageUrl">The image URL</param>
         /// <param name="cancellationToken">cancellationToken</param>
         public async Task<Tuple<string, IEnumerable<Exception>>> DownloadMoviePosterAsync(string imdbCode,
             string imageUrl,
@@ -301,11 +297,10 @@ namespace TVShow.Model.Api
         #region Method -> DownloadDirectorsImagesAsync
 
         /// <summary>
-        /// Request data from TMDb API
+        /// Download the directors images
         /// </summary>
-        /// <param name="callback">callback</param>
-        /// <param name="name">movie</param>
-        /// <param name="imageUrl">imageUrl</param>
+        /// <param name="movieId">The unique identifier of a movie (same as IMDb ID)</param>
+        /// <param name="imageUrl">The image URL</param>
         /// <param name="cancellationToken">cancellationToken</param>
         public async Task<Tuple<string, IEnumerable<Exception>>> DownloadDirectorsImagesAsync(string name,
             string imageUrl,
@@ -357,11 +352,10 @@ namespace TVShow.Model.Api
         #region Method -> DownloadActorsImageAsync
 
         /// <summary>
-        /// Request data from TMDb API
+        /// Download the actors images
         /// </summary>
-        /// <param name="callback">callback</param>
-        /// <param name="imdbCode">movie</param>
-        /// <param name="imageUrl">imageUrl</param>
+        /// <param name="movieId">The unique identifier of a movie (same as IMDb ID)</param>
+        /// <param name="imageUrl">The image URL</param>
         /// <param name="cancellationToken">cancellationToken</param>
         public async Task<Tuple<string, IEnumerable<Exception>>> DownloadActorsImagesAsync(string name,
             string imageUrl,
@@ -413,10 +407,9 @@ namespace TVShow.Model.Api
         #region Method -> DownloadMovieBackgroundImage
 
         /// <summary>
-        /// Request data from TMDb API
+        /// Download the movie background image
         /// </summary>
-        /// <param name="callback">callback</param>
-        /// <param name="imdbCode">movie</param>
+        /// <param name="movieId">The unique identifier of a movie (same as IMDb ID)</param>
         /// <param name="cancellationToken">cancellationToken</param>
         public async Task<Tuple<string, IEnumerable<Exception>>> DownloadMovieBackgroundImage(string imdbCode,
             CancellationTokenSource cancellationToken)
@@ -459,16 +452,16 @@ namespace TVShow.Model.Api
 
         #region Method -> DownloadFile
         /// <summary>
-        /// Download image asynchronously
+        /// Download a file
         /// </summary>
         /// <param name="fileUri"></param>
         /// <param name="fileName"></param>
         /// <param name="ct">ct</param>
-        private static async Task<Tuple<string,Exception>> DownloadFile(string fileName, Uri fileUri, Constants.FileType ti, CancellationToken ct)
+        private static async Task<Tuple<string,Exception>> DownloadFile(string fileName, Uri fileUri, Constants.FileType fileType, CancellationToken ct)
         {
             string PathDirectory = String.Empty;
             string extension = String.Empty;
-            switch (ti)
+            switch (fileType)
             {
                 case Constants.FileType.BackgroundImage:
                     PathDirectory = Constants.BackgroundMovieDirectory;

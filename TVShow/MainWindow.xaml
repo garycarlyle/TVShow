@@ -29,11 +29,12 @@
                 <ResourceDictionary Source="Skins/MainSkin.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <converters:NullImageConverter x:Key="NullImageConverter" />
-            <converters:PosterSizeConverter x:Key="PosterSizeConverter" />
+            <converters:RatioConverter x:Key="RatioConverter" />
             <converters:RuntimeConverter x:Key="RuntimeConverter" />
             <converters:GenresConverter x:Key="GenresConverter" />
             <converters:StringRatingToIntRatingConverter x:Key="StringRatingToIntRatingConverter" />
             <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+            <converters:BoolToVisibilityInverseConverter x:Key="BoolToVisibilityInverseConverter" />
         </ResourceDictionary>
     </Window.Resources>
 
@@ -150,7 +151,7 @@
                                         <Image 
                                         x:Name="Poster"
                                         Source="{Binding Path=Movie.PosterImage, Converter={StaticResource NullImageConverter}}" 
-                                        Width="{Binding ElementName=MovieContainer, Path=ActualWidth, Converter={StaticResource PosterSizeConverter}, ConverterParameter=4}"/>
+                                        Width="{Binding ElementName=MovieContainer, Path=ActualWidth, Converter={StaticResource RatioConverter}, ConverterParameter=0.25}"/>
                                     </StackPanel>
                                 </Grid>
                             </Border>
@@ -204,7 +205,7 @@
                                         <TextBlock Text="{Binding Movie.MpaRating}" Margin="15,0,0,0" VerticalAlignment="Center" FontFamily="Agency FB" FontSize="18"/>
                                     </StackPanel>
                                 </DockPanel>
-                                <Grid Height="{Binding ElementName=MovieContainer, Path=ActualHeight, Converter={StaticResource PosterSizeConverter}, ConverterParameter=1.8}">
+                                <Grid Height="{Binding ElementName=MovieContainer, Path=ActualHeight, Converter={StaticResource RatioConverter}, ConverterParameter=0.5}">
                                     <ScrollViewer VerticalScrollBarVisibility="Auto">
                                         <StackPanel>
                                             <TextBlock VerticalAlignment="Center" Padding="0,20,0,0" TextAlignment="Justify" Text="{Binding Movie.DescriptionFull}" TextWrapping="Wrap" FontFamily="pack://application:,,,/Resources/Fonts/#Agency FB" FontSize="24"></TextBlock>
@@ -392,7 +393,7 @@
                     Margin="0, 10, 0, 0"
                     Content="Reload"
                     FontSize="18"
-                    Visibility="{Binding Main.IsConnexionInError, Source={StaticResource Locator}, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Inverse}"
+                    Visibility="{Binding Main.IsConnexionInError, Source={StaticResource Locator}, Converter={StaticResource BoolToVisibilityInverseConverter}}"
                     Command="{Binding Movies.ReloadMoviesAfterConnexionInError, Source={StaticResource Locator}}"/>
         </StackPanel>
     </Grid>

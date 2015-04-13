@@ -5,6 +5,9 @@ using System.Xml.Serialization;
 
 namespace TvShow.Helpers
 {
+    /// <summary>
+    /// Used to serialize XML
+    /// </summary>
     public static class Serializer
     {
         private static XmlSerializerNamespaces _serializerNamespaces;

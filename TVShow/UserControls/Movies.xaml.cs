@@ -13,7 +13,7 @@ using TVShow.Events;
 namespace TVShow.UserControls
 {
     /// <summary>
-    /// Logique d'interaction pour Movies.xaml
+    /// Interaction logic for Movies.xaml
     /// </summary>
     public partial class Movies : UserControl
     {

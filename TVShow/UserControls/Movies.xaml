@@ -16,7 +16,7 @@
             <Setter Property="TitleFontSize" Value="14" />
         </Style>
         <converters:StringRatingToIntRatingConverter x:Key="StringRatingToIntRatingConverter" />
-        <converters:FontToWidthConverter x:Key="FontToWidthConverter" />
+        <converters:SlidingTitleConverter x:Key="SlidingTitleConverter" />
         <converters:NullImageConverter x:Key="NullImageConverter" />
         <Storyboard x:Key="TitleAnimation">
             <DoubleAnimation  
@@ -69,7 +69,7 @@
                                                     <Style.Triggers>
                                                             <MultiDataTrigger>
                                                                 <MultiDataTrigger.Conditions>
-                                                                    <Condition Binding="{Binding Title, Converter={StaticResource FontToWidthConverter}}" Value="True"></Condition>
+                                                            <Condition Binding="{Binding Title, Converter={StaticResource SlidingTitleConverter}}" Value="True"></Condition>
                                                                 </MultiDataTrigger.Conditions>
                                                             <MultiDataTrigger.EnterActions>
                                                                 <BeginStoryboard Storyboard="{StaticResource TitleAnimation}" />

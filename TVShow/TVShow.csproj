@@ -137,14 +137,14 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Converters\BoolToVisiblityInverseConverter.cs" />
     <Compile Include="Converters\GenresConverter.cs" />
     <Compile Include="Converters\BoolToVisibilityConverter.cs" />
     <Compile Include="Converters\NullImageConverter.cs" />
-    <Compile Include="Converters\PosterSizeConverter.cs" />
     <Compile Include="Converters\RatioConverter.cs" />
     <Compile Include="Converters\RuntimeConverter.cs" />
     <Compile Include="Converters\StringRatingToIntRatingConverter.cs" />
-    <Compile Include="Converters\FontToWidthConverter.cs" />
+    <Compile Include="Converters\SlidingTitleConverter.cs" />
     <Compile Include="CustomPanels\ElasticWrapPanel.cs" />
     <Compile Include="Events\ConnexionErrorEventArgs.cs" />
     <Compile Include="Events\MovieLoadingProgressEventArgs.cs" />

@@ -10,7 +10,7 @@ using TVShow.Events;
 namespace TVShow.CustomPanels
 {
     /// <summary>
-    /// Custom panel to resize elements and stretch them in itself when window is resizing
+    /// Custom panel which resize elements and stretch them in itself when window is resizing
     /// </summary>
     public class ElasticWrapPanel : Panel
     {
@@ -119,6 +119,8 @@ namespace TVShow.CustomPanels
                         rowHeight = Math.Min(rowHeight, item.DesiredSize.Height);
                     }
                     index++;
+
+                    // Check if the current element is at the end of a row and add an height overflow to get enough space for the next elements of the next row
                     if (column == Columns && Children.Count != index && (this.Children.Count - index + 1) <= Columns && !overflowAlreadyCount)
                     {
                         overflow = rowHeight;

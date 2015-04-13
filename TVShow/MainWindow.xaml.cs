@@ -21,7 +21,11 @@ namespace TVShow
         private bool _mediaPlayerIsPlaying = false;
         private bool _userIsDraggingSlider = false;
 
+        #region Properties
+        #region Property -> MovieLoadingProgress
         public string MovieLoadingProgress { get; set; }
+        #endregion
+        #endregion
 
         /// <summary>
         /// Initializes a new instance of the MainWindow class.
@@ -29,17 +33,28 @@ namespace TVShow
         public MainWindow()
         {
             InitializeComponent();
-            Closing += (s, e) =>
+
+            ShowTitleBar = false;
+            Loaded += MainWindow_Loaded;
+
+            // Action when window is about to close
+            Closing += async (s, e) =>
             {
+                // Unsubscribe events
                 Loaded -= MainWindow_Loaded;
+
+                // Stop playing and downloading a movie if any
                 var vm = DataContext as MainViewModel;
                 if (vm != null)
                 {
                     if (_mediaPlayerIsPlaying)
                     {
-                        mePlayer.Stop();
+                        mePlayer.Close();
                         mePlayer.Source = null;
+                        await vm.StopDownloadingMovie();
                     }
+
+                    // Unsubscribe events
                     vm.ConnectionError -= OnConnectionInError;
                     vm.MovieLoading -= OnMovieLoading;
                     vm.MovieStoppedDownloading -= OnMovieStoppedDownloading;
@@ -49,14 +64,16 @@ namespace TVShow
 
                 ViewModelLocator.Cleanup();
             };
-            ShowTitleBar = false;
-            Loaded += MainWindow_Loaded;
-            DispatcherTimer timer = new DispatcherTimer();
-            timer.Interval = TimeSpan.FromSeconds(1);
-            timer.Tick += timer_Tick;
-            timer.Start();
         }
 
+        #region Methods
+
+        #region Method -> MainWindow_Loaded
+        /// <summary>
+        /// Subscribes to events when window is loaded
+        /// </summary>
+        /// <param name="sender">Sender object</param>
+        /// <param name="e">RoutedEventArgs</param>
         void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
             var vm = DataContext as MainViewModel;
@@ -69,13 +86,25 @@ namespace TVShow
                 vm.MovieBuffered += OnMovieBuffered;
                 vm.MovieLoadingProgress += OnMovieLoadingProgress;
             }
+
+            /*
+             * This is used to override the default value of WPF framerate (default is 60fps). 
+             * To boost performance, we can set it down to 30 (good compromise between performance and good visual)
+             */
             Timeline.DesiredFrameRateProperty.OverrideMetadata(
                 typeof(Timeline),
                 new FrameworkPropertyMetadata { DefaultValue = 30 }
             );
         }
+        #endregion
 
-        private void OnMovieLoadingProgress(object sender, Events.MovieLoadingProgressEventArgs e)
+        #region Method -> OnMovieLoadingProgress
+        /// <summary>
+        /// Report progress when a movie is loading and set to visible the progressbar, the cancel button and the LoadingText label
+        /// </summary>
+        /// <param name="sender">Sender object</param>
+        /// <param name="e">MovieLoadingProgressEventArgs</param>
+        private void OnMovieLoadingProgress(object sender, MovieLoadingProgressEventArgs e)
         {
             DispatcherHelper.CheckBeginInvokeOnUI(() =>
             {
@@ -93,7 +122,7 @@ namespace TVShow
                 }
 
                 ProgressBar.Value = e.Progress;
-                double percentage = Math.Round(e.Progress, 1)*50;
+                double percentage = Math.Round(e.Progress, 1) * 50;
                 if (percentage >= 100)
                 {
                     percentage = 100;
@@ -101,10 +130,17 @@ namespace TVShow
                 LoadingText.Text = "Loading : " + percentage + "%" + " ( " + e.DownloadRate + " kB/s)";
             });
         }
+        #endregion
 
+        #region Method -> OnMovieLoading
+        /// <summary>
+        /// Fade in the opacity when a movie is loading
+        /// </summary>
+        /// <param name="sender">Sender object</param>
+        /// <param name="e">EventArgs</param>
         private void OnMovieLoading(object sender, EventArgs e)
         {
-            #region Fading Opacity
+            #region Fade in opacity
             DoubleAnimationUsingKeyFrames opacityAnimation = new DoubleAnimationUsingKeyFrames();
             opacityAnimation.Duration = new Duration(TimeSpan.FromSeconds(0.5));
             PowerEase opacityEasingFunction = new PowerEase();
@@ -119,43 +155,88 @@ namespace TVShow
 
             #endregion
         }
+        #endregion
 
+        #region Method -> OnMovieSelected
+        /// <summary>
+        /// Open the movie flyout when a movie is selected from the main interface
+        /// </summary>
+        /// <param name="sender">Sender object</param>
+        /// <param name="e">EventArgs</param>
         void OnMovieSelected(object sender, EventArgs e)
         {
             MovieContainer.Opacity = 1.0;
             MoviePage.IsOpen = true;
         }
+        #endregion
 
+        #region Method -> OnMovieBuffered
+        /// <summary>
+        /// Play the movie when buffered
+        /// </summary>
+        /// <param name="sender">Sender object</param>
+        /// <param name="e">MovieBufferedEventArgs</param>
         private void OnMovieBuffered(object sender, MovieBufferedEventArgs e)
         {
             DispatcherHelper.CheckBeginInvokeOnUI(() =>
             {
+                #region Dispatcher Timer
+                /*
+                 * Usefull for sliProgress
+                 */
+                DispatcherTimer timer = new DispatcherTimer();
+                timer.Interval = TimeSpan.FromSeconds(1);
+                timer.Tick += Timer_Tick;
+                timer.Start();
+                #endregion
+
+                // Open the player and play the movie
                 MoviePlayer.IsOpen = true;
                 mePlayer.Source = new Uri(e.PathToFile);
                 mePlayer.Play();
                 _mediaPlayerIsPlaying = true;
             });
         }
+        #endregion
 
+        #region Method -> OnConnectionInError
+        /// <summary>
+        /// Open the popup when a connection error has occured
+        /// </summary>
+        /// <param name="sender">Sender object</param>
+        /// <param name="e">MovieBufferedEventArgs</param>
         private async void OnConnectionInError(object sender, EventArgs e)
         {
+            // Set and open a MetroDialog to inform that a connection error occured
             MetroDialogSettings settings = new MetroDialogSettings();
             settings.ColorScheme = MetroDialogColorScheme.Theme;
             MessageDialogResult result = await
                 this.ShowMessageAsync("Internet connection error.",
                     "You seem to have an internet connection error. Please retry.",
                     MessageDialogStyle.Affirmative, settings);
+
+            // Catch the response's user (when clicked OK)
             if (result == MessageDialogResult.Affirmative)
             {
+                // Close the movie page
                 if (MoviePage.IsOpen)
                 {
                     MoviePage.IsOpen = false;
+
+                    // Hide the movies list (the connection is in error, so no movie manipulation is available)
                     MoviesUc.Opacity = 0;
                 }
             }
         }
+        #endregion
 
-        private void timer_Tick(object sender, EventArgs e)
+        #region Method -> Timer_Tick
+        /// <summary>
+        /// Report the playing progress on the timeline
+        /// </summary>
+        /// <param name="sender">Sender object</param>
+        /// <param name="e">EventArgs</param>
+        private void Timer_Tick(object sender, EventArgs e)
         {
             if ((mePlayer.Source != null) && (mePlayer.NaturalDuration.HasTimeSpan) && (!_userIsDraggingSlider))
             {
@@ -164,7 +245,14 @@ namespace TVShow
                 sliProgress.Value = mePlayer.Position.TotalSeconds;
             }
         }
+        #endregion
 
+        #region Method -> Play_CanExecute
+        /// <summary>
+        /// Each time the CanExecute play command change, update the visibility of Play/Pause buttons in the player
+        /// </summary>
+        /// <param name="sender">Sender object</param>
+        /// <param name="e">CanExecuteRoutedEventArgs</param>
         private void Play_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             e.CanExecute = (mePlayer != null) && (mePlayer.Source != null);
@@ -179,7 +267,14 @@ namespace TVShow
                 StatusBarItemPause.Visibility = Visibility.Collapsed;
             }
         }
+        #endregion
 
+        #region Method -> Play_CanExecute
+        /// <summary>
+        /// Play the current movie
+        /// </summary>
+        /// <param name="sender">Sender object</param>
+        /// <param name="e">ExecutedRoutedEventArgs</param>
         private void Play_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             mePlayer.Play();
@@ -195,7 +290,14 @@ namespace TVShow
                 StatusBarItemPause.Visibility = Visibility.Collapsed;
             }
         }
+        #endregion
 
+        #region Method -> Pause_CanExecute
+        /// <summary>
+        /// Each time the CanExecute play command change, update the visibility of Play/Pause buttons in the player
+        /// </summary>
+        /// <param name="sender">Sender object</param>
+        /// <param name="e">CanExecuteRoutedEventArgs</param>
         private void Pause_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             e.CanExecute = _mediaPlayerIsPlaying;
@@ -210,7 +312,14 @@ namespace TVShow
                 StatusBarItemPause.Visibility = Visibility.Collapsed;
             }
         }
+        #endregion
 
+        #region Method -> Pause_Executed
+        /// <summary>
+        /// Pause the movie playing
+        /// </summary>
+        /// <param name="sender">Sender object</param>
+        /// <param name="e">CanExecuteRoutedEventArgs</param>
         private void Pause_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             mePlayer.Pause();
@@ -226,14 +335,21 @@ namespace TVShow
                 StatusBarItemPause.Visibility = Visibility.Collapsed;
             }
         }
+        #endregion
 
+        #region Method -> OnMovieStoppedDownloading
+        /// <summary>
+        /// Close the player and go back to the movie page when the downloading of the movie has stopped
+        /// </summary>
+        /// <param name="sender">Sender object</param>
+        /// <param name="e">EventArgs</param>
         private void OnMovieStoppedDownloading(object sender, EventArgs e)
         {
             DispatcherHelper.CheckBeginInvokeOnUI(() =>
             {
                 if (_mediaPlayerIsPlaying)
                 {
-                    mePlayer.Stop();
+                    mePlayer.Close();
                     mePlayer.Source = null;
                     _mediaPlayerIsPlaying = false;
                 }
@@ -243,7 +359,7 @@ namespace TVShow
                 LoadingText.Visibility = Visibility.Collapsed;
                 ProgressBar.Value = 0.0;
 
-                #region Fading Opacity
+                #region Fade out opacity
 
                 DoubleAnimationUsingKeyFrames opacityAnimation = new DoubleAnimationUsingKeyFrames();
                 opacityAnimation.Duration = new Duration(TimeSpan.FromSeconds(0.5));
@@ -260,18 +376,39 @@ namespace TVShow
                 #endregion
             });
         }
+        #endregion
 
+        #region Method -> sliProgress_DragStarted
+        /// <summary>
+        /// Report when dragging is used
+        /// </summary>
+        /// <param name="sender">Sender object</param>
+        /// <param name="e">DragStartedEventArgs</param>
         private void sliProgress_DragStarted(object sender, DragStartedEventArgs e)
         {
             _userIsDraggingSlider = true;
         }
+        #endregion
 
+        #region Method -> sliProgress_DragCompleted
+        /// <summary>
+        /// Report when user has finished dragging
+        /// </summary>
+        /// <param name="sender">Sender object</param>
+        /// <param name="e">DragCompletedEventArgs</param>
         private void sliProgress_DragCompleted(object sender, DragCompletedEventArgs e)
         {
             _userIsDraggingSlider = false;
             mePlayer.Position = TimeSpan.FromSeconds(sliProgress.Value);
         }
+        #endregion
 
+        #region Method -> sliProgress_ValueChanged
+        /// <summary>
+        /// Report runtime when progress changed
+        /// </summary>
+        /// <param name="sender">Sender object</param>
+        /// <param name="e">RoutedPropertyChangedEventArgs</param>
         private void sliProgress_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             var vm = DataContext as MainViewModel;
@@ -280,10 +417,20 @@ namespace TVShow
                 lblProgressStatus.Text = TimeSpan.FromSeconds(sliProgress.Value).ToString(@"hh\:mm\:ss", CultureInfo.CurrentCulture) + " / " + TimeSpan.FromSeconds(vm.Movie.Runtime * 60).ToString(@"hh\:mm\:ss", CultureInfo.CurrentCulture);
             }
         }
+        #endregion
 
+        #region Method -> Grid_MouseWheel
+        /// <summary>
+        /// When user uses the mousewheel, update the volume
+        /// </summary>
+        /// <param name="sender">Sender object</param>
+        /// <param name="e">MouseWheelEventArgs</param>
         private void Grid_MouseWheel(object sender, MouseWheelEventArgs e)
         {
             mePlayer.Volume += (e.Delta > 0) ? 0.1 : -0.1;
         }
+        #endregion
+
+        #endregion
     }
 }

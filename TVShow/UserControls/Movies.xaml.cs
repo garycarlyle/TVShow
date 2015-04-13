@@ -7,7 +7,6 @@ using System.Windows.Media.Animation;
 using TVShow.ViewModel;
 using System.Threading.Tasks;
 using GalaSoft.MvvmLight.Threading;
-using NuGet;
 using TVShow.CustomPanels;
 using TVShow.Events;
 
@@ -47,49 +46,6 @@ namespace TVShow.UserControls
 
                 // At first load, we load the first page of movies
                 await vm.LoadNextPage();
-            }
-        }
-        #endregion
-
-        #region Method -> ScrollViewer_ScrollChanged
-        /// <summary>
-        /// Decide if we have to load previous or next page regarding the scroll position
-        /// </summary>
-        /// <param name="sender">Sender object</param>
-        /// <param name="e">ScrollChangedEventArgs</param>
-        private async void ScrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
-        {
-            double totalHeight = e.VerticalOffset + e.ViewportHeight;
-
-            if (totalHeight.Equals(e.ExtentHeight))
-            {
-                // We are at the bottom position of the window: we have to load the next movies
-                var vm = DataContext as MoviesViewModel;
-
-                // We check if no loading is occuring
-                if (vm != null && !ProgressRing.IsActive)
-                {
-                    // We check if the searching form is empty or not
-                    if (String.IsNullOrEmpty(vm.SearchMoviesFilter))
-                    {
-                        await vm.LoadNextPage();
-                    }
-                    else
-                    {
-                        await vm.LoadNextPage(vm.SearchMoviesFilter);
-                    }
-                }
-            }
-            else if (e.VerticalOffset.Equals(0.0) && e.VerticalChange < 0.0)
-            {
-                // We are at the top position of the window: we have to load the previous movies
-                var vm = DataContext as MoviesViewModel;
-
-                // We check if no loading is occuring
-                if (vm != null && !ProgressRing.IsActive)
-                {
-                    vm.LoadPreviousPage();
-                }
             }
         }
         #endregion
@@ -170,6 +126,49 @@ namespace TVShow.UserControls
                     }
                 }
             });
+        }
+        #endregion
+
+        #region Method -> ScrollViewer_ScrollChanged
+        /// <summary>
+        /// Decide if we have to load previous or next page regarding the scroll position
+        /// </summary>
+        /// <param name="sender">Sender object</param>
+        /// <param name="e">ScrollChangedEventArgs</param>
+        private async void ScrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
+        {
+            double totalHeight = e.VerticalOffset + e.ViewportHeight;
+
+            if (totalHeight.Equals(e.ExtentHeight))
+            {
+                // We are at the bottom position of the window: we have to load the next movies
+                var vm = DataContext as MoviesViewModel;
+
+                // We check if no loading is occuring
+                if (vm != null && !ProgressRing.IsActive)
+                {
+                    // We check if the searching form is empty or not
+                    if (String.IsNullOrEmpty(vm.SearchMoviesFilter))
+                    {
+                        await vm.LoadNextPage();
+                    }
+                    else
+                    {
+                        await vm.LoadNextPage(vm.SearchMoviesFilter);
+                    }
+                }
+            }
+            else if (e.VerticalOffset.Equals(0.0) && e.VerticalChange < 0.0)
+            {
+                // We are at the top position of the window: we have to load the previous movies
+                var vm = DataContext as MoviesViewModel;
+
+                // We check if no loading is occuring
+                if (vm != null && !ProgressRing.IsActive)
+                {
+                    vm.LoadPreviousPage();
+                }
+            }
         }
         #endregion
 

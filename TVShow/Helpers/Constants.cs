@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.IO;
 
 namespace TVShow.Helpers
 {
@@ -63,17 +58,22 @@ namespace TVShow.Helpers
         public const int MovieTitleFontSize = 18;
 
         /// <summary>
-        /// The string on which be based ConnectionError events
+        /// We want at least 5 rows to be able to scroll inside the main window
+        /// </summary>
+        public const int NumberOfRowsPerPage = 5;
+
+        /// <summary>
+        /// ConnectionErrorPropertyName
         /// </summary>
         public const string ConnectionErrorPropertyName = "ConnectionError";
 
         /// <summary>
-        /// The string on which be based SearchMoviesFilter events
+        /// SearchMoviesFilterPropertyName
         /// </summary>
         public const string SearchMoviesFilterPropertyName = "SearchMoviesFilter";
 
         /// <summary>
-        /// The string on which be IsDownloadingMovie events
+        /// IsDownloadingMoviePropertyName
         /// </summary>
         public const string IsDownloadingMoviePropertyName = "IsDownloadingMovie";
         

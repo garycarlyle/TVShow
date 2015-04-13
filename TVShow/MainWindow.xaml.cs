@@ -4,15 +4,11 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
-using GalaSoft.MvvmLight.Messaging;
 using MahApps.Metro.Controls;
 using MahApps.Metro.Controls.Dialogs;
 using TVShow.Events;
 using TVShow.ViewModel;
-using System.Threading.Tasks;
 using GalaSoft.MvvmLight.Threading;
-using TVShow.CustomPanels;
-using TVShow.Helpers;
 using System.Globalization;
 
 namespace TVShow

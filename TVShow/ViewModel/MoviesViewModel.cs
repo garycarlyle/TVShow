@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Threading;
@@ -10,8 +9,6 @@ using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Messaging;
 using TVShow.Model.Api;
 using TVShow.Model.Movie;
-using TVShow.Events;
-using TVShow.Helpers;
 using GalaSoft.MvvmLight.Command;
 
 namespace TVShow.ViewModel

@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using GalaSoft.MvvmLight;
@@ -321,7 +319,7 @@ namespace TVShow.ViewModel
         }
         #endregion
 
-        #region -> HandleException
+        #region Method -> HandleException
         /// <summary>
         /// Handle the exception
         /// </summary>

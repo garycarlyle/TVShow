@@ -1,24 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Runtime.Remoting.Contexts;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using RestSharp;
 using TVShow.Helpers;
 using TVShow.Model.Movie;
-using System.Xml;
 using TMDbLib.Client;
-using TMDbLib.Objects.General;
 using TMDbLib.Objects.Movies;
-using TvShow.Helpers;
-using System.Xml.Serialization;
-using TVShow.Model.Cast;
 
 namespace TVShow.Model.Api
 {

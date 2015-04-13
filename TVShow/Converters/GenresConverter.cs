@@ -2,9 +2,6 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Data;
 
 namespace TVShow.Converters
@@ -16,7 +13,7 @@ namespace TVShow.Converters
     {
         #region IValueConverter Members
         /// <summary>
-        /// Used to add "/" character at the end of each genre of the string
+        /// Used to add "/" character at the end of each genre
         /// </summary>
         /// <param name="value">The value produced by the binding source.</param>
         /// <param name="targetType">The type of the binding target property.</param>

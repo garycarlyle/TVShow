@@ -151,7 +151,7 @@ namespace TVShow.ViewModel
         public MainViewModel(IService apiService)
         {
             ApiService = apiService;
-            Messenger.Default.Register<bool>(this, Helpers.Constants.ConnectionErrorPropertyName, (arg) => OnConnectionError(new ConnectionErrorEventArgs(arg)));
+            Messenger.Default.Register<bool>(this, Constants.ConnectionErrorPropertyName, (arg) => OnConnectionError(new ConnectionErrorEventArgs(arg)));
 
             StopDownloadingMovieCommand = new RelayCommand(async () =>
             {
@@ -330,19 +330,15 @@ namespace TVShow.ViewModel
             var we = e as WebException;
             if (we != null)
             {
-                Messenger.Default.Send<bool>(true, Helpers.Constants.ConnectionErrorPropertyName);
+                Messenger.Default.Send<bool>(true, Constants.ConnectionErrorPropertyName);
                 return;
             }
 
-            // Something as cancelled the loading. We go back.
             var ctException = e as TaskCanceledException;
             if (ctException != null)
             {
-                return;
+                // The user cancelled the loading
             }
-
-            // Another exception has occured. // TODO.
-            return;
         }
         #endregion
 
@@ -373,30 +369,32 @@ namespace TVShow.ViewModel
                 while (true)
                 {
                     TorrentStatus status = TorrentHandle.QueryStatus();
+                    double progress = status.Progress * 100.0;
+
 
                     if (status.IsSeeding || !IsDownloadingMovie)
                     {
-                        break;
+                        return;
                     }
                     
                     // Print our progress and sleep for a bit.
-                    OnMovieLoadingProgress(new MovieLoadingProgressEventArgs(status.Progress * 100, status.DownloadRate / 1024));
+                    OnMovieLoadingProgress(new MovieLoadingProgressEventArgs(progress, status.DownloadRate / 1024));
 
                     // We consider 2% of progress is enough to start playing
-                    if (status.Progress * 100 >= 2 && !alreadyBuffered)
+                    if (progress >= Constants.MinimumBufferingBeforeMoviePlaying && !alreadyBuffered)
                     {
                         try
                         {
                             foreach (string directory in Directory.GetDirectories(Constants.MovieDownloads))
                             {
-                                foreach (string filePath in Directory.GetFiles(directory, "*.mp4"))
+                                foreach (string filePath in Directory.GetFiles(directory, "*" + Constants.VideoFileExtension))
                                 {
                                     OnMovieBuffered(new MovieBufferedEventArgs(filePath));
                                     alreadyBuffered = true;
                                 }
                             }
                         }
-                        catch (System.Exception e)
+                        catch (Exception e)
                         {
                             Console.WriteLine(e.Message);
                         }

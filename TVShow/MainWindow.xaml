@@ -64,8 +64,8 @@
                                    Visibility="Collapsed"></TextBlock>
                         <controls:MetroProgressBar 
                                             x:Name="ProgressBar"
-                                            Minimum="0"
-                                            Maximum="2"
+                                            Minimum="0.0"
+                                            Maximum="2.0"
                                             Width="400"
                                             Foreground="{DynamicResource AccentColorBrush}"
                                             Margin="0, 10, 0, 0" 

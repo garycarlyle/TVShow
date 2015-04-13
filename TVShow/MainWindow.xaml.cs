@@ -10,6 +10,7 @@ using TVShow.Events;
 using TVShow.ViewModel;
 using GalaSoft.MvvmLight.Threading;
 using System.Globalization;
+using NuGet;
 
 namespace TVShow
 {
@@ -122,7 +123,9 @@ namespace TVShow
                 }
 
                 ProgressBar.Value = e.Progress;
-                double percentage = Math.Round(e.Progress, 1) * 50;
+
+                // The percentage here is related to the buffering progress. W
+                double percentage = Math.Round(e.Progress, 1) / Helpers.Constants.MinimumBufferingBeforeMoviePlaying * 100;
                 if (percentage >= 100)
                 {
                     percentage = 100;

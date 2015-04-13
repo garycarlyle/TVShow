@@ -209,7 +209,7 @@ namespace TVShow.Model.Api
                 {
                     coverImage = new Tuple<string, Exception>(Constants.CoverMoviesDirectory +
                                                               imdbCode +
-                                                              ".jpg", new Exception());
+                                                              Constants.ImageFileExtension, new Exception());
                 }
                 else
                 {
@@ -263,7 +263,7 @@ namespace TVShow.Model.Api
                 {
                     posterImage = new Tuple<string, Exception>(Constants.PosterMovieDirectory +
                                                               imdbCode +
-                                                              ".jpg", new Exception());
+                                                              Constants.ImageFileExtension, new Exception());
                 }
                 else
                 {
@@ -317,7 +317,7 @@ namespace TVShow.Model.Api
                 {
                     directorImage = new Tuple<string, Exception>(Constants.DirectorMovieDirectory +
                                                               name +
-                                                              ".jpg", new Exception());
+                                                              Constants.ImageFileExtension, new Exception());
                 }
                 else
                 {
@@ -372,7 +372,7 @@ namespace TVShow.Model.Api
                 {
                     actorImage = new Tuple<string, Exception>(Constants.ActorMovieDirectory +
                                                               name +
-                                                              ".jpg", new Exception());
+                                                              Constants.ImageFileExtension, new Exception());
                 }
                 else
                 {
@@ -425,7 +425,7 @@ namespace TVShow.Model.Api
                     await DownloadFileAsync(imdbCode, imageUri, Constants.FileType.BackgroundImage, cancellationToken.Token);
                 if (res.Item2 == null)
                 {
-                    BackgroundImage = Constants.BackgroundMovieDirectory + imdbCode + ".jpg";
+                    BackgroundImage = Constants.BackgroundMovieDirectory + imdbCode + Constants.ImageFileExtension;
                 }
                 else
                 {
@@ -461,27 +461,27 @@ namespace TVShow.Model.Api
             {
                 case Constants.FileType.BackgroundImage:
                     PathDirectory = Constants.BackgroundMovieDirectory;
-                    extension = ".jpg";
+                    extension = Constants.ImageFileExtension;
                     break;
                 case Constants.FileType.CoverImage:
                     PathDirectory = Constants.CoverMoviesDirectory;
-                    extension = ".jpg";
+                    extension = Constants.ImageFileExtension;
                     break;
                 case Constants.FileType.PosterImage:
                     PathDirectory = Constants.PosterMovieDirectory;
-                    extension = ".jpg";
+                    extension = Constants.ImageFileExtension;
                     break;
                 case Constants.FileType.DirectorImage:
                     PathDirectory = Constants.DirectorMovieDirectory;
-                    extension = ".jpg";
+                    extension = Constants.ImageFileExtension;
                     break;
                 case Constants.FileType.ActorImage:
                     PathDirectory = Constants.ActorMovieDirectory;
-                    extension = ".jpg";
+                    extension = Constants.ImageFileExtension;
                     break;
                 case Constants.FileType.TorrentFile:
                     PathDirectory = Constants.TorrentDirectory;
-                    extension = ".torrent";
+                    extension = Constants.TorrentFileExtension;
                     break;
                 default:
                     return new Tuple<string, Exception>(fileName, new Exception());

@@ -63,6 +63,26 @@ namespace TVShow.Helpers
         public const int NumberOfRowsPerPage = 5;
 
         /// <summary>
+        /// In percentage, the minimum of buffering before we can actually start playing the movie
+        /// </summary>
+        public const double MinimumBufferingBeforeMoviePlaying = 2.0;
+
+        /// <summary>
+        /// Extension of image file
+        /// </summary>
+        public const string ImageFileExtension = ".jpg";
+
+        /// <summary>
+        /// Extension of video file
+        /// </summary>
+        public const string VideoFileExtension = ".mp4";
+
+        /// <summary>
+        /// Extension of torrent file
+        /// </summary>
+        public const string TorrentFileExtension = ".torrent";
+
+        /// <summary>
         /// ConnectionErrorPropertyName
         /// </summary>
         public const string ConnectionErrorPropertyName = "ConnectionError";

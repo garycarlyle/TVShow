@@ -153,7 +153,7 @@ namespace TVShow.ViewModel
         public MainViewModel(IService apiService)
         {
             ApiService = apiService;
-            Messenger.Default.Register<bool>(this, Helpers.Constants.ConnectionErrorPropertyName, (e) => OnConnectionError(new ConnectionErrorEventArgs(e)));
+            Messenger.Default.Register<bool>(this, Helpers.Constants.ConnectionErrorPropertyName, (arg) => OnConnectionError(new ConnectionErrorEventArgs(arg)));
 
             StopDownloadingMovieCommand = new RelayCommand(async () =>
             {
@@ -171,9 +171,9 @@ namespace TVShow.ViewModel
                 }
             });
 
-            OpenMovieFlyoutCommand = new RelayCommand<MovieShortDetails>(async (s) =>
+            OpenMovieFlyoutCommand = new RelayCommand<MovieShortDetails>(async (movie) =>
             {
-                await LoadMovie(new Tuple<int, string>(s.Id, s.ImdbCode));
+                await LoadMovie(new Tuple<int, string>(movie.Id, movie.ImdbCode));
             });
         }
         #endregion
@@ -193,177 +193,156 @@ namespace TVShow.ViewModel
                 Movie = new MovieFullDetails();
             }
 
-            await GetMovieInfos(movieCodes.Item1, movieCodes.Item2);
+            await GetMovie(movieCodes.Item1, movieCodes.Item2);
         }
         #endregion
 
-        #region Method -> GetMovieInfos
+        #region Method -> GetMovie
         /// <summary>
-        /// Get the informations of the requested movie
+        /// Get the requested movie
         /// </summary>
         /// <param name="movieId">The movie ID</param>
         /// <param name="imdbCode">The IMDb code</param>
-        private async Task GetMovieInfos(int movieId, string imdbCode)
+        private async Task GetMovie(int movieId, string imdbCode)
         {
+            // Reset the CancellationToken for having the possibility to stop the process
             CancellationLoadMoviesToken = new CancellationTokenSource();
-            Tuple<MovieFullDetails, IEnumerable<Exception>> MovieInfosAsyncResults = await ApiService.GetMovieInfosAsync(movieId,
+
+            // Get the requested movie using the service
+            Tuple<MovieFullDetails, IEnumerable<Exception>> MovieInfosAsyncResults = await ApiService.GetMovieAsync(movieId,
                 CancellationLoadMoviesToken);
 
+            // Check if we met any exception in the GetMoviesInfosAsync method
             foreach (Exception e in MovieInfosAsyncResults.Item2)
             {
-                var we = e as WebException;
-                if (we != null)
-                {
-                    if (we.Status == WebExceptionStatus.NameResolutionFailure)
-                    {
-                        Messenger.Default.Send<bool>(true, Helpers.Constants.ConnectionErrorPropertyName);
-                        return;
-                    }
-                }
-
-                var ctException = e as TaskCanceledException;
-                if (ctException != null)
-                {
-                    return;
-                }
+                HandleException(e);
+                return;
             }
 
             Movie = MovieInfosAsyncResults.Item1;
-            OnMovieSelected(new EventArgs());
 
+            // Inform we loaded the requested movie
+            OnMovieLoaded(new EventArgs());
+
+            // Reset the CancellationToken for having the possibility to stop downloading the movie poster
             CancellationLoadMoviesToken = new CancellationTokenSource();
 
+            // Download the movie poster
             Tuple<string, IEnumerable<Exception>> moviePosterAsyncResults = await ApiService.DownloadMoviePosterAsync(Movie.ImdbCode,
                 Movie.Images.LargeCoverImage,
                 CancellationLoadMoviesToken);
 
+            // Set the path to the poster image if no exception occured in the DownloadMoviePosterAsync method
             if (moviePosterAsyncResults.Item2.All(a => a == null))
             {
-                Movie.PosterImage = Constants.PosterMovieDirectory +
-                                                    Movie.ImdbCode +
-                                                    ".jpg";
+                Movie.PosterImage = moviePosterAsyncResults.Item1;
             }
             else
             {
+                // We met an exception in DownloadMoviePosterAsync method
                 foreach (Exception e in moviePosterAsyncResults.Item2)
                 {
-                    var we = e as WebException;
-                    if (we != null)
-                    {
-                        if (we.Status == WebExceptionStatus.NameResolutionFailure)
-                        {
-                            Messenger.Default.Send<bool>(true, Helpers.Constants.ConnectionErrorPropertyName);
-                            return;
-                        }
-                    }
-
-                    var ctException = e as TaskCanceledException;
-                    if (ctException != null)
-                    {
-                        return;
-                    }
+                    HandleException(e);
+                    return;
                 }
             }
 
+            // Reset the CancellationToken for having the possibility to stop downloading directors images
             CancellationLoadMoviesToken = new CancellationTokenSource();
+
+            // For each director, we download its image
             foreach (Director director in Movie.Directors)
             {
                 Tuple<string, IEnumerable<Exception>> directorsImagesAsyncResults = await ApiService.DownloadDirectorImageAsync(director.Name.Trim(),
                     director.SmallImage,
                     CancellationLoadMoviesToken);
 
+                // Set the path to the director image if no exception occured in the DownloadDirectorImageAsync method
                 if (directorsImagesAsyncResults.Item2.All(a => a == null))
                 {
-                    director.SmallImagePath = Constants.DirectorMovieDirectory +
-                                              director.Name.Trim() +
-                                              ".jpg";
+                    director.SmallImagePath = directorsImagesAsyncResults.Item1;
                 }
                 else
                 {
+                    // We met an exception in DownloadDirectorImageAsync method
                     foreach (Exception e in directorsImagesAsyncResults.Item2)
                     {
-                        var we = e as WebException;
-                        if (we != null)
-                        {
-                            if (we.Status == WebExceptionStatus.NameResolutionFailure)
-                            {
-                                Messenger.Default.Send<bool>(true, Helpers.Constants.ConnectionErrorPropertyName);
-                                return;
-                            }
-                        }
-
-                        var ctException = e as TaskCanceledException;
-                        if (ctException != null)
-                        {
-                            return;
-                        }
+                        HandleException(e);
+                        return;
                     }
                 }
             }
 
+            // Reset the CancellationToken for having the possibility to stop downloading actors images
             CancellationLoadMoviesToken = new CancellationTokenSource();
+
+            // For each actor, we download its image
             foreach (Actor actor in Movie.Actors)
             {
                 Tuple<string, IEnumerable<Exception>> actorsImagesAsyncResults = await ApiService.DownloadActorImageAsync(actor.Name.Trim(),
                     actor.SmallImage,
                     CancellationLoadMoviesToken);
 
+                // Set the path to the actor image if no exception occured in the DownloadActorImageAsync method
                 if (actorsImagesAsyncResults.Item2.All(a => a == null))
                 {
-                    actor.SmallImagePath = Constants.ActorMovieDirectory +
-                                              actor.Name.Trim() +
-                                              ".jpg";
+                    actor.SmallImagePath = actorsImagesAsyncResults.Item1;
                 }
                 else
                 {
+                    // We met an exception in DownloadActorImageAsync method
                     foreach (Exception e in actorsImagesAsyncResults.Item2)
                     {
-                        var we = e as WebException;
-                        if (we != null)
-                        {
-                            if (we.Status == WebExceptionStatus.NameResolutionFailure)
-                            {
-                                Messenger.Default.Send<bool>(true, Helpers.Constants.ConnectionErrorPropertyName);
-                                return;
-                            }
-                        }
-
-                        var ctException = e as TaskCanceledException;
-                        if (ctException != null)
-                        {
-                            return;
-                        }
-                    }
-                }
-            }
-
-            CancellationLoadMoviesToken = new CancellationTokenSource();
-            Tuple<string, IEnumerable<Exception>> movieBackgroundImageResults = await ApiService.DownloadMovieBackgroundImage(imdbCode,
-                CancellationLoadMoviesToken);
-
-            foreach (Exception e in movieBackgroundImageResults.Item2)
-            {
-                var we = e as WebException;
-                if (we != null)
-                {
-                    if (we.Status == WebExceptionStatus.NameResolutionFailure)
-                    {
-                        Messenger.Default.Send<bool>(true, Helpers.Constants.ConnectionErrorPropertyName);
+                        HandleException(e);
                         return;
                     }
                 }
+            }
 
-                var ctException = e as TaskCanceledException;
-                if (ctException != null)
+            // Reset the CancellationToken for having the possibility to stop downloading the movie background image
+            CancellationLoadMoviesToken = new CancellationTokenSource();
+
+            Tuple<string, IEnumerable<Exception>> movieBackgroundImageResults = await ApiService.DownloadMovieBackgroundImageAsync(imdbCode, CancellationLoadMoviesToken);
+
+            // Set the path to the poster image if no exception occured in the DownloadMoviePosterAsync method
+            if (movieBackgroundImageResults.Item2.All(a => a == null))
+            {
+                Movie.BackgroundImage = movieBackgroundImageResults.Item1;
+            }
+            else
+            {
+                // We met an exception in DownloadMovieBackgroundImageAsync method
+                foreach (Exception e in movieBackgroundImageResults.Item2)
                 {
+                    HandleException(e);
                     return;
                 }
             }
-
-            Movie.BackgroundImage = movieBackgroundImageResults.Item1;
         }
         #endregion
 
+        #region -> HandleException
+        private static void HandleException(Exception e)
+        {
+            // There's a connection error. Send the message and go back.
+            var we = e as WebException;
+            if (we != null)
+            {
+                Messenger.Default.Send<bool>(true, Helpers.Constants.ConnectionErrorPropertyName);
+                return;
+            }
+
+            // Something as cancelled the loading. We go back.
+            var ctException = e as TaskCanceledException;
+            if (ctException != null)
+            {
+                return;
+            }
+
+            // Another exception has occured. Go back.
+            return;
+        }
+        #endregion
         #region Method -> DownloadMovie
         /// <summary>
         /// Download a movie
@@ -398,28 +377,25 @@ namespace TVShow.ViewModel
                     }
                     
                     // Print our progress and sleep for a bit.
-                    MovieLoadingProgressEventArgs onMovieLoadingProgress =
-                        new MovieLoadingProgressEventArgs(status.Progress * 100, status.DownloadRate / 1024);
-                    OnMovieLoadingProgress(onMovieLoadingProgress);
+                    OnMovieLoadingProgress(new MovieLoadingProgressEventArgs(status.Progress * 100, status.DownloadRate / 1024));
 
                     // We consider 2% of progress is enough to start playing
                     if (status.Progress * 100 >= 2 && !alreadyBuffered)
                     {
                         try
                         {
-                            foreach (string d in Directory.GetDirectories(Constants.MovieDownloads))
+                            foreach (string directory in Directory.GetDirectories(Constants.MovieDownloads))
                             {
-                                foreach (string f in Directory.GetFiles(d, "*.mp4"))
+                                foreach (string filePath in Directory.GetFiles(directory, "*.mp4"))
                                 {
-                                    MovieBufferedEventArgs args = new MovieBufferedEventArgs(f);
-                                    OnMovieBuffered(args);
+                                    OnMovieBuffered(new MovieBufferedEventArgs(filePath));
                                     alreadyBuffered = true;
                                 }
                             }
                         }
-                        catch (System.Exception excpt)
+                        catch (System.Exception e)
                         {
-                            Console.WriteLine(excpt.Message);
+                            Console.WriteLine(e.Message);
                         }
                     }
                     await Task.Delay(1000);
@@ -514,18 +490,18 @@ namespace TVShow.ViewModel
         }
         #endregion
 
-        #region Event -> OnMovieSelected
+        #region Event -> OnMovieLoaded
         /// <summary>
         /// MovieSelected event
         /// </summary>
-        public event EventHandler<EventArgs> MovieSelected;
+        public event EventHandler<EventArgs> MovieLoaded;
         /// <summary>
         /// When movie is selected
         /// </summary>
         ///<param name="e">e</param>
-        protected virtual void OnMovieSelected(EventArgs e)
+        protected virtual void OnMovieLoaded(EventArgs e)
         {
-            EventHandler<EventArgs> handler = MovieSelected;
+            EventHandler<EventArgs> handler = MovieLoaded;
             if (handler != null)
             {
                 handler(this, e);

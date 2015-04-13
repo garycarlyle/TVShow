@@ -10,15 +10,15 @@ namespace TVShow.Model.Api
 {
     public interface IService
     {
-        Task<Tuple<IEnumerable<MovieShortDetails>, IEnumerable<Exception>>> GetMoviesInfosAsync(string searchParameter,
+        Task<Tuple<IEnumerable<MovieShortDetails>, IEnumerable<Exception>>> GetMoviesAsync(string searchParameter,
             int maxMoviesPerPage,
             int pageNumberToLoad, 
             CancellationTokenSource cancellationToken);
 
-        Task<Tuple<MovieFullDetails, IEnumerable<Exception>>> GetMovieInfosAsync(int movieId,
+        Task<Tuple<MovieFullDetails, IEnumerable<Exception>>> GetMovieAsync(int movieId,
             CancellationTokenSource cancellationToken);
 
-        Task<Tuple<string, IEnumerable<Exception>>> DownloadMovieBackgroundImage(string imdbCode,
+        Task<Tuple<string, IEnumerable<Exception>>> DownloadMovieBackgroundImageAsync(string imdbCode,
             CancellationTokenSource cancellationToken);
 
         Task<Tuple<string, IEnumerable<Exception>>> DownloadMovieCoverAsync(string imdbCode,
@@ -37,7 +37,7 @@ namespace TVShow.Model.Api
             string imageUrl,
             CancellationTokenSource cancellationToken);
 
-        Task<Tuple<string, IEnumerable<Exception>>> DownloadMovieTorrent(string imdbCode, 
+        Task<Tuple<string, IEnumerable<Exception>>> DownloadMovieTorrentAsync(string imdbCode, 
             string torentUrl,
             CancellationTokenSource cancellationToken);
     }

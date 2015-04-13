@@ -28,7 +28,7 @@ namespace TVShow.Model.Api
     public class Service : IService
     {
         #region Methods
-        #region Method -> GetMoviesInfosAsync
+        #region Method -> GetMoviesAsync
         /// <summary>
         /// Get list of movies regarding a optionnal search parameter, a maximum movies per page, a page number (pagination) and a cancellationToken
         /// </summary>
@@ -36,7 +36,7 @@ namespace TVShow.Model.Api
         /// <param name="MaxMoviesPerPage">MaxMoviesPerPage</param>
         /// <param name="pageNumberToLoad">Page number to load</param>
         /// <param name="cancellationToken">cancellationToken</param>
-        public async Task<Tuple<IEnumerable<MovieShortDetails>, IEnumerable<Exception>>> GetMoviesInfosAsync(string searchParameter, 
+        public async Task<Tuple<IEnumerable<MovieShortDetails>, IEnumerable<Exception>>> GetMoviesAsync(string searchParameter, 
             int maxMoviesPerPage,
             int pageNumberToLoad, 
             CancellationTokenSource cancellationToken)
@@ -86,13 +86,13 @@ namespace TVShow.Model.Api
         }
         #endregion
 
-        #region Method -> GetMovieInfosAsync
+        #region Method -> GetMovieAsync
         /// <summary>
         /// Get the data from a movie (Torrent file url, images url, ...)
         /// </summary>
         /// <param name="movieId">The unique identifier of a movie</param>
         /// <param name="cancellationToken">cancellationToken</param>
-        public async Task<Tuple<MovieFullDetails, IEnumerable<Exception>>> GetMovieInfosAsync(int movieId, 
+        public async Task<Tuple<MovieFullDetails, IEnumerable<Exception>>> GetMovieAsync(int movieId, 
             CancellationTokenSource cancellationToken)
         {
             var restClient = new RestClient(Constants.YtsApiEndpoint);
@@ -138,14 +138,14 @@ namespace TVShow.Model.Api
         }
         #endregion
 
-        #region Method -> DownloadMovieTorrent
+        #region Method -> DownloadMovieTorrentAsync
         /// <summary>
         /// Download the torrent file of a movie
         /// </summary>
         /// <param name="imdbCode">The unique identifier of a movie</param>
         /// <param name="torentUrl">The torrent URL</param>
         /// <param name="cancellationToken">cancellationToken</param>
-        public async Task<Tuple<string, IEnumerable<Exception>>> DownloadMovieTorrent(string imdbCode, string torentUrl,
+        public async Task<Tuple<string, IEnumerable<Exception>>> DownloadMovieTorrentAsync(string imdbCode, string torentUrl,
             CancellationTokenSource cancellationToken)
         {
             List<Exception> ex = new List<Exception>();
@@ -155,7 +155,7 @@ namespace TVShow.Model.Api
             {
                 torrentFile =
                     await
-                        DownloadFile(imdbCode,
+                        DownloadFileAsync(imdbCode,
                             new Uri(torentUrl), Constants.FileType.TorrentFile,
                             cancellationToken.Token);
 
@@ -209,7 +209,7 @@ namespace TVShow.Model.Api
             {
                 coverImage =
                     await
-                        DownloadFile(imdbCode,
+                        DownloadFileAsync(imdbCode,
                             new Uri(imageUrl), Constants.FileType.CoverImage,
                             cancellationToken.Token);
 
@@ -263,7 +263,7 @@ namespace TVShow.Model.Api
             {
                 posterImage =
                     await
-                        DownloadFile(imdbCode,
+                        DownloadFileAsync(imdbCode,
                             new Uri(imageUrl), Constants.FileType.PosterImage,
                             cancellationToken.Token);
 
@@ -317,7 +317,7 @@ namespace TVShow.Model.Api
             {
                 directorImage =
                     await
-                        DownloadFile(name,
+                        DownloadFileAsync(name,
                             new Uri(imageUrl), Constants.FileType.DirectorImage,
                             cancellationToken.Token);
 
@@ -372,7 +372,7 @@ namespace TVShow.Model.Api
             {
                 actorImage =
                     await
-                        DownloadFile(name,
+                        DownloadFileAsync(name,
                             new Uri(imageUrl), Constants.FileType.ActorImage,
                             cancellationToken.Token);
 
@@ -408,14 +408,14 @@ namespace TVShow.Model.Api
 
         #endregion
 
-        #region Method -> DownloadMovieBackgroundImage
+        #region Method -> DownloadMovieBackgroundImageAsync
 
         /// <summary>
         /// Download the movie background image
         /// </summary>
         /// <param name="imdbCode">The unique identifier of a movie</param>
         /// <param name="cancellationToken">cancellationToken</param>
-        public async Task<Tuple<string, IEnumerable<Exception>>> DownloadMovieBackgroundImage(string imdbCode,
+        public async Task<Tuple<string, IEnumerable<Exception>>> DownloadMovieBackgroundImageAsync(string imdbCode,
             CancellationTokenSource cancellationToken)
         {
             TMDbClient tmDbclient = new TMDbClient("52db02421219a8b6b4a8eed1df0b8bd8");
@@ -430,7 +430,7 @@ namespace TVShow.Model.Api
             try
             {
                 res =
-                    await DownloadFile(imdbCode, imageUri, Constants.FileType.BackgroundImage, cancellationToken.Token);
+                    await DownloadFileAsync(imdbCode, imageUri, Constants.FileType.BackgroundImage, cancellationToken.Token);
                 if (res.Item2 == null)
                 {
                     BackgroundImage = Constants.BackgroundMovieDirectory + imdbCode + ".jpg";
@@ -454,14 +454,14 @@ namespace TVShow.Model.Api
 
         #endregion
 
-        #region Method -> DownloadFile
+        #region Method -> DownloadFileAsync
         /// <summary>
         /// Download a file
         /// </summary>
         /// <param name="fileUri"></param>
         /// <param name="fileName"></param>
         /// <param name="ct">ct</param>
-        private static async Task<Tuple<string,Exception>> DownloadFile(string fileName, Uri fileUri, Constants.FileType fileType, CancellationToken ct)
+        private static async Task<Tuple<string,Exception>> DownloadFileAsync(string fileName, Uri fileUri, Constants.FileType fileType, CancellationToken ct)
         {
             string PathDirectory = String.Empty;
             string extension = String.Empty;

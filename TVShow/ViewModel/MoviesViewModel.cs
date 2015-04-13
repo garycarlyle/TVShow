@@ -307,7 +307,7 @@ namespace TVShow.ViewModel
                 else
                 {
                     // The page to load is new, never met it before, so we load the new page via the service
-                    Tuple<IEnumerable<MovieShortDetails>, IEnumerable<Exception>> results = await ApiService.GetMoviesInfosAsync(searchFilter,
+                    Tuple<IEnumerable<MovieShortDetails>, IEnumerable<Exception>> results = await ApiService.GetMoviesAsync(searchFilter,
                         MaxMoviesPerPage,
                         Pagination,
                         CancellationLoadMoviesInfosToken);
@@ -427,7 +427,7 @@ namespace TVShow.ViewModel
         }
         #endregion
 
-        #region Method -> SaveMoviesByPage
+        #region Method -> SaveMovies
         /// <summary>
         /// Save the movies of a given page 
         /// </summary>

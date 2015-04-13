@@ -47,7 +47,7 @@ namespace TVShow
                     vm.ConnectionError -= OnConnectionInError;
                     vm.MovieLoading -= OnMovieLoading;
                     vm.MovieStoppedDownloading -= OnMovieStoppedDownloading;
-                    vm.MovieSelected -= OnMovieSelected;
+                    vm.MovieLoaded -= OnMovieSelected;
                     vm.MovieBuffered -= OnMovieBuffered;
                 }
 
@@ -69,7 +69,7 @@ namespace TVShow
                 vm.ConnectionError += OnConnectionInError;
                 vm.MovieLoading += OnMovieLoading;
                 vm.MovieStoppedDownloading += OnMovieStoppedDownloading;
-                vm.MovieSelected += OnMovieSelected;
+                vm.MovieLoaded += OnMovieSelected;
                 vm.MovieBuffered += OnMovieBuffered;
                 vm.MovieLoadingProgress += OnMovieLoadingProgress;
             }

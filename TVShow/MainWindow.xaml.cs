@@ -260,13 +260,16 @@ namespace TVShow
             {
                 if (MediaPlayerIsPlaying)
                 {
+                    mePlayer.Stop();
                     mePlayer.Close();
                     mePlayer.Source = null;
                     MediaPlayerIsPlaying = false;
                 }
 
+                #region Dispatcher Timer
                 timer.Tick -= Timer_Tick;
                 timer.Stop();
+                #endregion
 
                 ProgressBar.Visibility = Visibility.Collapsed;
                 StopLoadMovieButton.Visibility = Visibility.Collapsed;

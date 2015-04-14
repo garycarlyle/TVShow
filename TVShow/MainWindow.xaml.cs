@@ -146,11 +146,20 @@ namespace TVShow
 
                 // The percentage here is related to the buffering progress
                 double percentage = Math.Round(e.Progress, 1) / Helpers.Constants.MinimumBufferingBeforeMoviePlaying * 100;
+
                 if (percentage >= 100)
                 {
                     percentage = 100;
                 }
-                LoadingText.Text = "Loading : " + percentage + "%" + " ( " + e.DownloadRate + " kB/s)";
+
+                if (e.DownloadRate >= 1000)
+                {
+                    LoadingText.Text = "Buffering : " + percentage + "%" + " ( " + e.DownloadRate / 1000 + " MB/s)";
+                }
+                else
+                {
+                    LoadingText.Text = "Buffering : " + percentage + "%" + " ( " + e.DownloadRate + " kB/s)";
+                }
             });
         }
         #endregion

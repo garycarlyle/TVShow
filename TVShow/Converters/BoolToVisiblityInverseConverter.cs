@@ -5,7 +5,7 @@ using System.Windows.Data;
 namespace TVShow.Converters
 {
     /// <summary>
-    /// Use to convert boolean to a Visibility class property
+    /// Used to convert and inverse boolean to a Visibility class property
     /// </summary>
     public class BoolToVisibilityInverseConverter : IValueConverter
     {
@@ -27,11 +27,12 @@ namespace TVShow.Converters
             {
                 return Visibility.Visible;
             }
+
             return Visibility.Collapsed;
         }
 
         /// <summary>
-        /// NotImplemented
+        /// Not implemented
         /// </summary>
         /// <param name="value">The value produced by the binding source.</param>
         /// <param name="targetType">The type of the binding target property.</param>
@@ -42,7 +43,6 @@ namespace TVShow.Converters
         {
             throw new NotImplementedException();
         }
-
         #endregion
     }
 }

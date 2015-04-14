@@ -51,8 +51,6 @@ namespace TVShow.ViewModel
         #endregion
 
         #region Property -> IsDownloadingMovie
-
-        
         private bool _isDownloadingMovie;
         /// <summary>
         /// Specify if a movie is downloading
@@ -69,11 +67,9 @@ namespace TVShow.ViewModel
                 }
             }
         }
-
         #endregion
 
         #region Property -> IsConnectionInError
-
         private bool _isConnectionInError;
         /// <summary>
         /// Specify if a connection error has occured
@@ -103,6 +99,7 @@ namespace TVShow.ViewModel
         #endregion
 
         #region Commands
+
         #region Command -> StopDownloadingMovieCommand
 
         public RelayCommand StopDownloadingMovieCommand
@@ -122,13 +119,13 @@ namespace TVShow.ViewModel
         #endregion
 
         #region Command -> LoadMovieCommand
-
         public RelayCommand<MovieShortDetails> LoadMovieCommand
         {
             get;
             private set;
         }
         #endregion
+
         #endregion
 
         #region Constructors
@@ -179,6 +176,7 @@ namespace TVShow.ViewModel
         #endregion
 
         #region Methods
+
         #region Method -> LoadMovie
         /// <summary>
         /// Load the requested movie
@@ -415,7 +413,6 @@ namespace TVShow.ViewModel
         #endregion
 
         #region Method -> StopDownloadingMovie
-
         /// <summary>
         /// Cancel the download of a movie 
         /// </summary>

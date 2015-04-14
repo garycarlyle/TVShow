@@ -17,6 +17,7 @@ namespace TVShow.Events
         #endregion
 
         #region Properties
+
         #region Property -> IsInError
         public bool IsInError
         {
@@ -26,6 +27,7 @@ namespace TVShow.Events
             }
         }
         #endregion
+
         #endregion
     }
 }

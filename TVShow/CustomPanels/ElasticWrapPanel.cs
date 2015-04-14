@@ -11,17 +11,19 @@ namespace TVShow.CustomPanels
     public class ElasticWrapPanel : Panel
     {
         #region DependencyProperties
+
         #region DependencyProperty -> DesiredColumnWidthProperty
         /// <summary>
         /// Identifies the <see cref="DesiredColumnWidth"/> dependency property. 
         /// </summary>
         internal static readonly DependencyProperty DesiredColumnWidthProperty = DependencyProperty.Register("DesiredColumnWidth", typeof(double), typeof(ElasticWrapPanel), new PropertyMetadata(230d, new PropertyChangedCallback(OnDesiredColumnWidthChanged)));
         #endregion
+
         #endregion
 
         #region Properties
-        #region Property -> Columns
 
+        #region Property -> Columns
         /// <summary>
         /// Columns
         /// </summary>
@@ -42,6 +44,7 @@ namespace TVShow.CustomPanels
             }
         }
         #endregion
+
         #region Property -> DesiredColumnWidth
         /// <summary>
         /// DesiredColumnWidth 
@@ -59,9 +62,11 @@ namespace TVShow.CustomPanels
             }
         }
         #endregion
+
         #endregion
 
         #region Methods
+
         #region Method -> MeasureOverride
         /// <summary>
         /// Ovverides the MeasureOverride base method to calculate the required number of columns
@@ -143,6 +148,7 @@ namespace TVShow.CustomPanels
             return base.ArrangeOverride(finalSize);
         }
         #endregion
+
         #region Method -> OnDesiredColumnWidthChanged
         /// <summary>
         /// Fired when DependencyProperty DesiredColumnWidthProperty is changed
@@ -177,6 +183,7 @@ namespace TVShow.CustomPanels
         }
         #endregion
         #endregion
+
         #endregion
     }
 }

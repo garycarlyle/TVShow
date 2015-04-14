@@ -19,6 +19,7 @@ namespace TVShow.Events
         #endregion
 
         #region Properties
+
         #region Property -> Progress
         public double Progress
         {
@@ -38,6 +39,7 @@ namespace TVShow.Events
             }
         }
         #endregion
+
         #endregion
     } 
 }

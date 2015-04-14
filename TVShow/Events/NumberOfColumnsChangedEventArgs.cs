@@ -17,6 +17,7 @@ namespace TVShow.Events
         #endregion
 
         #region Properties
+
         #region Property -> NumberOfColumns
         public int NumberOfColumns
         {
@@ -26,6 +27,7 @@ namespace TVShow.Events
             }
         }
         #endregion
+
         #endregion
     }
 }

@@ -29,11 +29,12 @@ namespace TVShow.Converters
                     return true;
                 }
             }
+
             return false;
         }
 
         /// <summary>
-        /// NotImplemented
+        /// Not implemented
         /// </summary>
         /// <param name="value">The value produced by the binding source.</param>
         /// <param name="targetType">The type of the binding target property.</param>

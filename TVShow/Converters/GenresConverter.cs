@@ -12,7 +12,6 @@ namespace TVShow.Converters
     public class GenresConverter : IValueConverter
     {
         #region IValueConverter Members
-
         /// <summary>
         /// Used to add "/" character at the end of each genre
         /// </summary>
@@ -49,7 +48,7 @@ namespace TVShow.Converters
         }
 
         /// <summary>
-        /// ConvertBack method
+        /// Not implemented
         /// </summary>
         /// <param name="value">The value produced by the binding source.</param>
         /// <param name="targetType">The type of the binding target property.</param>

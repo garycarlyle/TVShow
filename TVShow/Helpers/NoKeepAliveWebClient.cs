@@ -9,6 +9,7 @@ namespace TVShow.Helpers
     public class NoKeepAliveWebClient : WebClient
     {
         #region Methods
+
         #region Method -> GetWebRequest
         /// <summary>
         /// Set KeepAlive to false (otherwise cause Server violation protocol Section=ResponseStatusLine with YTS Rest api)
@@ -27,6 +28,7 @@ namespace TVShow.Helpers
             return request;
         }
         #endregion
+
         #endregion
     }
 }

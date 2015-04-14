@@ -24,6 +24,7 @@ namespace TVShow.Converters
             if (value != null)
             {
                 string rating = value.ToString();
+
                 try
                 {
                     result = System.Convert.ToDouble(rating, CultureInfo.InvariantCulture);
@@ -43,11 +44,12 @@ namespace TVShow.Converters
                     result = Math.Round(result);
                 }
             }
+
             return result;
         }
 
         /// <summary>
-        /// NotImplemented
+        /// Not implemented
         /// </summary>
         /// <param name="value">The value produced by the binding source.</param>
         /// <param name="targetType">The type of the binding target property.</param>

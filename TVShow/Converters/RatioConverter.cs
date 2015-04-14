@@ -24,11 +24,12 @@ namespace TVShow.Converters
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         { 
             double size = System.Convert.ToDouble(value) * System.Convert.ToDouble(parameter, CultureInfo.InvariantCulture);
+
             return size.ToString("G0", CultureInfo.InvariantCulture);
         }
 
         /// <summary>
-        /// NotImplemented
+        /// Not implemented
         /// </summary>
         /// <param name="value">The value produced by the binding source.</param>
         /// <param name="targetType">The type of the binding target property.</param>
@@ -44,6 +45,5 @@ namespace TVShow.Converters
         {
             return _instance ?? (_instance = new RatioConverter());
         }
-
     }
 }

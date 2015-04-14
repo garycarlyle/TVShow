@@ -104,6 +104,7 @@ namespace TVShow.ViewModel
         #endregion
 
         #region Commands
+
         #region Command -> ReloadMoviesAfterConnectionInError
 
         public RelayCommand ReloadMoviesAfterConnectionInError
@@ -112,6 +113,7 @@ namespace TVShow.ViewModel
             private set;
         }
         #endregion
+
         #endregion
 
         #region Constructors

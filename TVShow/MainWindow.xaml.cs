@@ -18,16 +18,27 @@ namespace TVShow
     /// </summary>
     public partial class MainWindow : MetroWindow
     {
-        private bool _mediaPlayerIsPlaying;
-        private bool _userIsDraggingSlider;
-        DispatcherTimer timer;
-
         #region Properties
+
+        #region Property -> MediaPlayerIsPlaying
+        private bool MediaPlayerIsPlaying;
+        #endregion
+
+        #region Property -> UserIsDraggingSlider
+        private bool UserIsDraggingSlider;
+        #endregion
+
+        #region Property -> timer
+        private DispatcherTimer timer;
+        #endregion
+
         #region Property -> MovieLoadingProgress
         public string MovieLoadingProgress { get; set; }
         #endregion
+
         #endregion
 
+        #region Constructor
         /// <summary>
         /// Initializes a new instance of the MainWindow class.
         /// </summary>
@@ -48,7 +59,7 @@ namespace TVShow
                 var vm = DataContext as MainViewModel;
                 if (vm != null)
                 {
-                    if (_mediaPlayerIsPlaying)
+                    if (MediaPlayerIsPlaying)
                     {
                         mePlayer.Close();
                         mePlayer.Source = null;
@@ -66,6 +77,7 @@ namespace TVShow
                 ViewModelLocator.Cleanup();
             };
         }
+        #endregion
 
         #region Methods
 
@@ -197,7 +209,7 @@ namespace TVShow
                 MoviePlayer.IsOpen = true;
                 mePlayer.Source = new Uri(e.PathToFile);
                 mePlayer.Play();
-                _mediaPlayerIsPlaying = true;
+                MediaPlayerIsPlaying = true;
             });
         }
         #endregion
@@ -233,113 +245,6 @@ namespace TVShow
         }
         #endregion
 
-        #region Method -> Timer_Tick
-        /// <summary>
-        /// Report the playing progress on the timeline
-        /// </summary>
-        /// <param name="sender">Sender object</param>
-        /// <param name="e">EventArgs</param>
-        private void Timer_Tick(object sender, EventArgs e)
-        {
-            if ((mePlayer.Source != null) && (mePlayer.NaturalDuration.HasTimeSpan) && (!_userIsDraggingSlider))
-            {
-                sliProgress.Minimum = 0;
-                sliProgress.Maximum = mePlayer.NaturalDuration.TimeSpan.TotalSeconds;
-                sliProgress.Value = mePlayer.Position.TotalSeconds;
-            }
-        }
-        #endregion
-
-        #region Method -> Play_CanExecute
-        /// <summary>
-        /// Each time the CanExecute play command change, update the visibility of Play/Pause buttons in the player
-        /// </summary>
-        /// <param name="sender">Sender object</param>
-        /// <param name="e">CanExecuteRoutedEventArgs</param>
-        private void Play_CanExecute(object sender, CanExecuteRoutedEventArgs e)
-        {
-            e.CanExecute = (mePlayer != null) && (mePlayer.Source != null);
-            if (_mediaPlayerIsPlaying)
-            {
-                StatusBarItemPlay.Visibility = Visibility.Collapsed;
-                StatusBarItemPause.Visibility = Visibility.Visible;
-            }
-            else
-            {
-                StatusBarItemPlay.Visibility = Visibility.Visible;
-                StatusBarItemPause.Visibility = Visibility.Collapsed;
-            }
-        }
-        #endregion
-
-        #region Method -> Play_Executed
-        /// <summary>
-        /// Play the current movie
-        /// </summary>
-        /// <param name="sender">Sender object</param>
-        /// <param name="e">ExecutedRoutedEventArgs</param>
-        private void Play_Executed(object sender, ExecutedRoutedEventArgs e)
-        {
-            mePlayer.Play();
-            _mediaPlayerIsPlaying = true;
-            if (_mediaPlayerIsPlaying)
-            {
-                StatusBarItemPlay.Visibility = Visibility.Collapsed;
-                StatusBarItemPause.Visibility = Visibility.Visible;
-            }
-            else
-            {
-                StatusBarItemPlay.Visibility = Visibility.Visible;
-                StatusBarItemPause.Visibility = Visibility.Collapsed;
-            }
-        }
-        #endregion
-
-        #region Method -> Pause_CanExecute
-        /// <summary>
-        /// Each time the CanExecute play command change, update the visibility of Play/Pause buttons in the player
-        /// </summary>
-        /// <param name="sender">Sender object</param>
-        /// <param name="e">CanExecuteRoutedEventArgs</param>
-        private void Pause_CanExecute(object sender, CanExecuteRoutedEventArgs e)
-        {
-            e.CanExecute = _mediaPlayerIsPlaying;
-            if (_mediaPlayerIsPlaying)
-            {
-                StatusBarItemPlay.Visibility = Visibility.Collapsed;
-                StatusBarItemPause.Visibility = Visibility.Visible;
-            }
-            else
-            {
-                StatusBarItemPlay.Visibility = Visibility.Visible;
-                StatusBarItemPause.Visibility = Visibility.Collapsed;
-            }
-        }
-        #endregion
-
-        #region Method -> Pause_Executed
-        /// <summary>
-        /// Pause the movie playing
-        /// </summary>
-        /// <param name="sender">Sender object</param>
-        /// <param name="e">CanExecuteRoutedEventArgs</param>
-        private void Pause_Executed(object sender, ExecutedRoutedEventArgs e)
-        {
-            mePlayer.Pause();
-            _mediaPlayerIsPlaying = false;
-            if (_mediaPlayerIsPlaying)
-            {
-                StatusBarItemPlay.Visibility = Visibility.Collapsed;
-                StatusBarItemPause.Visibility = Visibility.Visible;
-            }
-            else
-            {
-                StatusBarItemPlay.Visibility = Visibility.Visible;
-                StatusBarItemPause.Visibility = Visibility.Collapsed;
-            }
-        }
-        #endregion
-
         #region Method -> OnMovieStoppedDownloading
         /// <summary>
         /// Close the player and go back to the movie page when the downloading of the movie has stopped
@@ -350,11 +255,11 @@ namespace TVShow
         {
             DispatcherHelper.CheckBeginInvokeOnUI(() =>
             {
-                if (_mediaPlayerIsPlaying)
+                if (MediaPlayerIsPlaying)
                 {
                     mePlayer.Close();
                     mePlayer.Source = null;
-                    _mediaPlayerIsPlaying = false;
+                    MediaPlayerIsPlaying = false;
                 }
 
                 timer.Tick -= Timer_Tick;
@@ -384,6 +289,113 @@ namespace TVShow
         }
         #endregion
 
+        #region Method -> Timer_Tick
+        /// <summary>
+        /// Report the playing progress on the timeline
+        /// </summary>
+        /// <param name="sender">Sender object</param>
+        /// <param name="e">EventArgs</param>
+        private void Timer_Tick(object sender, EventArgs e)
+        {
+            if ((mePlayer.Source != null) && (mePlayer.NaturalDuration.HasTimeSpan) && (!UserIsDraggingSlider))
+            {
+                sliProgress.Minimum = 0;
+                sliProgress.Maximum = mePlayer.NaturalDuration.TimeSpan.TotalSeconds;
+                sliProgress.Value = mePlayer.Position.TotalSeconds;
+            }
+        }
+        #endregion
+
+        #region Method -> Play_CanExecute
+        /// <summary>
+        /// Each time the CanExecute play command change, update the visibility of Play/Pause buttons in the player
+        /// </summary>
+        /// <param name="sender">Sender object</param>
+        /// <param name="e">CanExecuteRoutedEventArgs</param>
+        private void Play_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = (mePlayer != null) && (mePlayer.Source != null);
+            if (MediaPlayerIsPlaying)
+            {
+                StatusBarItemPlay.Visibility = Visibility.Collapsed;
+                StatusBarItemPause.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                StatusBarItemPlay.Visibility = Visibility.Visible;
+                StatusBarItemPause.Visibility = Visibility.Collapsed;
+            }
+        }
+        #endregion
+
+        #region Method -> Play_Executed
+        /// <summary>
+        /// Play the current movie
+        /// </summary>
+        /// <param name="sender">Sender object</param>
+        /// <param name="e">ExecutedRoutedEventArgs</param>
+        private void Play_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            mePlayer.Play();
+            MediaPlayerIsPlaying = true;
+            if (MediaPlayerIsPlaying)
+            {
+                StatusBarItemPlay.Visibility = Visibility.Collapsed;
+                StatusBarItemPause.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                StatusBarItemPlay.Visibility = Visibility.Visible;
+                StatusBarItemPause.Visibility = Visibility.Collapsed;
+            }
+        }
+        #endregion
+
+        #region Method -> Pause_CanExecute
+        /// <summary>
+        /// Each time the CanExecute play command change, update the visibility of Play/Pause buttons in the player
+        /// </summary>
+        /// <param name="sender">Sender object</param>
+        /// <param name="e">CanExecuteRoutedEventArgs</param>
+        private void Pause_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = MediaPlayerIsPlaying;
+            if (MediaPlayerIsPlaying)
+            {
+                StatusBarItemPlay.Visibility = Visibility.Collapsed;
+                StatusBarItemPause.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                StatusBarItemPlay.Visibility = Visibility.Visible;
+                StatusBarItemPause.Visibility = Visibility.Collapsed;
+            }
+        }
+        #endregion
+
+        #region Method -> Pause_Executed
+        /// <summary>
+        /// Pause the movie playing
+        /// </summary>
+        /// <param name="sender">Sender object</param>
+        /// <param name="e">CanExecuteRoutedEventArgs</param>
+        private void Pause_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            mePlayer.Pause();
+            MediaPlayerIsPlaying = false;
+            if (MediaPlayerIsPlaying)
+            {
+                StatusBarItemPlay.Visibility = Visibility.Collapsed;
+                StatusBarItemPause.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                StatusBarItemPlay.Visibility = Visibility.Visible;
+                StatusBarItemPause.Visibility = Visibility.Collapsed;
+            }
+        }
+        #endregion        
+
         #region Method -> sliProgress_DragStarted
         /// <summary>
         /// Report when dragging is used
@@ -392,7 +404,7 @@ namespace TVShow
         /// <param name="e">DragStartedEventArgs</param>
         private void sliProgress_DragStarted(object sender, DragStartedEventArgs e)
         {
-            _userIsDraggingSlider = true;
+            UserIsDraggingSlider = true;
         }
         #endregion
 
@@ -404,7 +416,7 @@ namespace TVShow
         /// <param name="e">DragCompletedEventArgs</param>
         private void sliProgress_DragCompleted(object sender, DragCompletedEventArgs e)
         {
-            _userIsDraggingSlider = false;
+            UserIsDraggingSlider = false;
             mePlayer.Position = TimeSpan.FromSeconds(sliProgress.Value);
         }
         #endregion

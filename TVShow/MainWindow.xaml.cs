@@ -137,7 +137,7 @@ namespace TVShow
 
         #region Method -> OnMovieLoading
         /// <summary>
-        /// Fade in the opacity when a movie is loading
+        /// Fade in the movie page's opacity when a movie is loading
         /// </summary>
         /// <param name="sender">Sender object</param>
         /// <param name="e">EventArgs</param>

@@ -179,7 +179,7 @@ namespace TVShow.ViewModel
                     // Reset the CancellationToken for having the possibility to stop the search
                     CancellationLoadingToken = new CancellationTokenSource();
 
-                    // Impose a delay before each search request (otherwise we don't have time to clean things)
+                    // Impose a delay before each search request (otherwise we don't have time to clean things). We can also stop the search instantly with the token
                     await Task.Delay(1000, CancellationLoadingToken.Token);
 
                     // Let's do our search
@@ -218,11 +218,11 @@ namespace TVShow.ViewModel
                 List<MovieShortDetails> moviesToRecover = new List<MovieShortDetails>();
 
                 /* We want to load the previous page (the one which is on 2-top level of the current one)
-                 * Actually, the pagination system is pretty simple: there's constantly only 2 loaded pages (except for the first load, when there's only one page)
+                 * Actually, the pagination system is pretty simple: there's constantly only 2 loaded pages in the interface (except for the first load, when there's only one page)
                  * So, each time we load the next page, we clean the page which is on 2-top level
                  * Each time we load the previous page, we clean the page which is on 2-bottom level
                  * Anyway, the cleaned pages are stored in the savedMovies dictionnary which index each page (and for each page, we have our list of movies) so that it can be requested easily.
-                 * Why this pagination system ? 'cause UI is overloaded and slowed down dramatically after 40-50 pages loaded on Core i5 (yup, WPF is not really super efficient in terms of performance)
+                 * Why this pagination system ? 'cause UI is overloaded and slowed down dramatically after 40-50 pages on Core i5 (yup, WPF is not really super efficient in terms of performance)
                  * */
                 SavedMovies.TryGetValue(Pagination - 2, out moviesToRecover);
 

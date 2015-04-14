@@ -217,6 +217,7 @@ namespace TVShow.ViewModel
                 return;
             }
 
+            // Our loaded movie is here
             Movie = movieInfosAsyncResults.Item1;
 
             // Inform we loaded the requested movie
@@ -346,23 +347,29 @@ namespace TVShow.ViewModel
         /// <summary>
         /// Download a movie
         /// </summary>
+        /// <param name="movie">The movie to download</param>
         public async Task DownloadMovie(MovieFullDetails movie)
         {
             using (TorrentSession = new Session())
             {
                 IsDownloadingMovie = true;
+
+                // Inform subscribers we're actually loading a movie
                 OnMovieLoading(new EventArgs());
 
+                // Listening to a port which is randomly between 6881 and 6889
                 TorrentSession.ListenOn(6881, 6889);
 
                 var addParams = new AddTorrentParams
                 {
+                    // Where do we save the video file
                     SavePath = Constants.MovieDownloads,
                     // At this time, no quality selection is available in the interface, so we take the lowest
                     Url = movie.Torrents.Aggregate((i1, i2) => (i1.SizeBytes < i2.SizeBytes ? i1 : i2)).Url
                 };
 
                 TorrentHandle = TorrentSession.AddTorrent(addParams);
+                // We have to download sequentially, so that we're able to play the movie without waiting
                 TorrentHandle.SequentialDownload = true;
 
                 bool alreadyBuffered = false;
@@ -371,13 +378,12 @@ namespace TVShow.ViewModel
                     TorrentStatus status = TorrentHandle.QueryStatus();
                     double progress = status.Progress * 100.0;
 
-
                     if (status.IsSeeding || !IsDownloadingMovie)
                     {
                         return;
                     }
                     
-                    // Print our progress and sleep for a bit.
+                    // Inform subscribers of our progress
                     OnMovieLoadingProgress(new MovieLoadingProgressEventArgs(progress, status.DownloadRate / 1024));
 
                     // We consider 2% of progress is enough to start playing
@@ -385,10 +391,12 @@ namespace TVShow.ViewModel
                     {
                         try
                         {
+                            // We're looking for video file
                             foreach (string directory in Directory.GetDirectories(Constants.MovieDownloads))
                             {
                                 foreach (string filePath in Directory.GetFiles(directory, "*" + Constants.VideoFileExtension))
                                 {
+                                    // Inform subscribers we have finished buffering the movie
                                     OnMovieBuffered(new MovieBufferedEventArgs(filePath));
                                     alreadyBuffered = true;
                                 }
@@ -399,6 +407,7 @@ namespace TVShow.ViewModel
                             Console.WriteLine(e.Message);
                         }
                     }
+                    // Let sleep for a second before updating the torrent status
                     await Task.Delay(1000);
                 }
             }
@@ -414,8 +423,10 @@ namespace TVShow.ViewModel
         {
             await Task.Run(() =>
             {
+                // Inform subscriber we have stopped downloading a movie
                 OnMovieStoppedDownloading(new EventArgs());
                 IsDownloadingMovie = false;
+                // We remove the torrent (tell the tracker we're not client anymore), then remove the files
                 TorrentSession.RemoveTorrent(TorrentHandle, true);
             });
         }

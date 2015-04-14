@@ -20,6 +20,7 @@ namespace TVShow
     {
         private bool _mediaPlayerIsPlaying;
         private bool _userIsDraggingSlider;
+        DispatcherTimer timer;
 
         #region Properties
         #region Property -> MovieLoadingProgress
@@ -186,7 +187,7 @@ namespace TVShow
                 /*
                  * Usefull for sliProgress
                  */
-                DispatcherTimer timer = new DispatcherTimer();
+                timer = new DispatcherTimer();
                 timer.Interval = TimeSpan.FromSeconds(1);
                 timer.Tick += Timer_Tick;
                 timer.Start();
@@ -271,7 +272,7 @@ namespace TVShow
         }
         #endregion
 
-        #region Method -> Play_CanExecute
+        #region Method -> Play_Executed
         /// <summary>
         /// Play the current movie
         /// </summary>
@@ -355,6 +356,9 @@ namespace TVShow
                     mePlayer.Source = null;
                     _mediaPlayerIsPlaying = false;
                 }
+
+                timer.Tick -= Timer_Tick;
+                timer.Stop();
 
                 ProgressBar.Visibility = Visibility.Collapsed;
                 StopLoadMovieButton.Visibility = Visibility.Collapsed;

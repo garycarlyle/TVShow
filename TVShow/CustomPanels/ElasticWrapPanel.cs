@@ -81,9 +81,9 @@ namespace TVShow.CustomPanels
 
             Columns = (int)(availableSize.Width / DesiredColumnWidth);
 
-            foreach (UIElement item in Children)
+            foreach (UIElement child in Children)
             {
-                item.Measure(availableSize);
+                child.Measure(availableSize);
             }
 
             return base.MeasureOverride(availableSize);
@@ -107,12 +107,12 @@ namespace TVShow.CustomPanels
                 int index = 0;
                 double overflow = 0;
                 bool overflowAlreadyCount = false;
-                foreach (UIElement item in Children)
+                foreach (UIElement child in Children)
                 {
-                    item.Arrange(new Rect(columnWidth * column, top, columnWidth, item.DesiredSize.Height));
+                    child.Arrange(new Rect(columnWidth * column, top, columnWidth, child.DesiredSize.Height));
                     column++;
                     rowHeight = Children.Count >= Columns ?
-                         Math.Max(rowHeight, item.DesiredSize.Height) : Math.Min(rowHeight, item.DesiredSize.Height);
+                         Math.Max(rowHeight, child.DesiredSize.Height) : Math.Min(rowHeight, child.DesiredSize.Height);
                     index++;
 
                     // Check if the current element is at the end of a row and add an height overflow to get enough space for the next elements of the next row

@@ -234,9 +234,9 @@ namespace TVShow.ViewModel
 
                     // We have to reverse the movies list to respect the order of the page, because we stored it using a reverse order. Yep, things to improve here.
                     temp.Reverse();
-                    foreach (MovieShortDetails item in temp)
+                    foreach (MovieShortDetails movie in temp)
                     {
-                        Movies.Insert(0, item);
+                        Movies.Insert(0, movie);
                     }
 
                     // We remove the movies of the page on 2-bottom level
@@ -295,9 +295,9 @@ namespace TVShow.ViewModel
                     }
 
                     // We add our new page in the Movies collection
-                    foreach (MovieShortDetails item in pageAlreadyProcessed)
+                    foreach (MovieShortDetails movie in pageAlreadyProcessed)
                     {
-                        Movies.Add(item);
+                        Movies.Add(movie);
                     }
 
                     // Inform the subscribers we loaded movies
@@ -437,9 +437,9 @@ namespace TVShow.ViewModel
             if (actualValues == null)
             {
                 List<MovieShortDetails> storeMoviesValues = new List<MovieShortDetails>();
-                foreach (var item in movies)
+                foreach (var movie in movies)
                 {
-                    storeMoviesValues.Add(item);
+                    storeMoviesValues.Add(movie);
                 }
                 SavedMovies.Add(Pagination, storeMoviesValues);
             }
@@ -456,9 +456,9 @@ namespace TVShow.ViewModel
             SavedMovies.TryGetValue(page, out moviesToDrop);
             if (moviesToDrop != null)
             {
-                foreach (MovieShortDetails item in moviesToDrop)
+                foreach (MovieShortDetails movie in moviesToDrop)
                 {
-                    Movies.Remove(item);
+                    Movies.Remove(movie);
                 }
             }
         }

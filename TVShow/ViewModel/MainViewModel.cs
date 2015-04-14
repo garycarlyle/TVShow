@@ -425,7 +425,7 @@ namespace TVShow.ViewModel
                 IsDownloadingMovie = false;
                 // We remove the torrent (tell the tracker we're not client anymore), then remove the files
                 TorrentSession.RemoveTorrent(TorrentHandle, true);
-            });
+            }).ConfigureAwait(false);
         }
 
         #endregion

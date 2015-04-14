@@ -39,11 +39,11 @@ namespace TVShow.Resources.Styles
 
         private static void RatingChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
         {
-            Rating item = sender as Rating;
-            if (item != null)
+            Rating rating = sender as Rating;
+            if (rating != null)
             {
                 int newval = (int) e.NewValue;
-                UIElementCollection childs = ((Grid) (item.Content)).Children;
+                UIElementCollection childs = ((Grid) (rating.Content)).Children;
 
                 ToggleButton button;
 

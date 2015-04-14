@@ -61,6 +61,7 @@ namespace TVShow
                 {
                     if (MediaPlayerIsPlaying)
                     {
+                        mePlayer.Stop();
                         mePlayer.Close();
                         mePlayer.Source = null;
                         await vm.StopDownloadingMovie();

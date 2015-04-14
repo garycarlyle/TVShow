@@ -376,7 +376,7 @@ namespace TVShow.ViewModel
                     TorrentStatus status = TorrentHandle.QueryStatus();
                     double progress = status.Progress * 100.0;
 
-                    if (status.IsSeeding || !IsDownloadingMovie)
+                    if (status.IsFinished || !IsDownloadingMovie)
                     {
                         return;
                     }

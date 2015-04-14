@@ -9,7 +9,7 @@ TVShow is a project which aims to provide a simple interface to watch any movie.
 ## Well, is it legal?
 Depending on which country you live in, it may be not.
 
-## Hmm, it does remember me something...
+## Hmm, it reminds me of something...
 Well, you may be thinking about Popcorn Time, don't you? If so, yes. The concept is not new, and this project is clearly inspired from it. Also, my primary goal was to make an alternative, using .NET framework.
 
 ## What does it use?

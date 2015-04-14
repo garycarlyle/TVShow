@@ -18,7 +18,7 @@ using GalaSoft.MvvmLight.Command;
 namespace TVShow.ViewModel
 {
     /// <summary>
-    /// ViewModel which takes care of a movie (load and download)
+    /// ViewModel which takes care of a movie (retrieving infos from API and torrent downloading)
     /// </summary>
     public class MainViewModel : ViewModelBase
     {

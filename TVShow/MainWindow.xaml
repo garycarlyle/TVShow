@@ -18,15 +18,11 @@
         DataContext="{Binding Main, Source={StaticResource Locator}}"
         WindowStartupLocation="CenterScreen">
 
-    <Window.CommandBindings>
-        <CommandBinding Command="MediaCommands.Play" CanExecute="Play_CanExecute" Executed="Play_Executed" />
-        <CommandBinding Command="MediaCommands.Pause" CanExecute="Pause_CanExecute" Executed="Pause_Executed" />
-    </Window.CommandBindings>
-
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Skins/MainSkin.xaml" />
+                <ResourceDictionary Source="Resources/Styles/Icons.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <converters:NullImageConverter x:Key="NullImageConverter" />
             <converters:RatioConverter x:Key="RatioConverter" />
@@ -37,16 +33,28 @@
             <converters:BoolToVisibilityInverseConverter x:Key="BoolToVisibilityInverseConverter" />
         </ResourceDictionary>
     </Window.Resources>
+    
+    <Window.CommandBindings>
+        <CommandBinding Command="MediaCommands.Play" CanExecute="Play_CanExecute" Executed="Play_Executed" />
+        <CommandBinding Command="MediaCommands.Pause" CanExecute="Pause_CanExecute" Executed="Pause_Executed" />
+    </Window.CommandBindings>
 
-    <controls:MetroWindow.TitleTemplate>
-        <DataTemplate>
-            <TextBlock Text="TVShow"
-                       HorizontalAlignment="Center"
-                       VerticalAlignment="Center"
-                       FontSize="{DynamicResource WindowTitleFontSize}"
-                       FontFamily="{DynamicResource HeaderFontFamily}" />
-        </DataTemplate>
-    </controls:MetroWindow.TitleTemplate>
+    <controls:MetroWindow.RightWindowCommands>
+        <controls:WindowCommands>
+            <Button Click="ToggleFullScreen"
+                    ToolTip="Fullscreen (Press esc to quit fullscreen)">
+                <Rectangle Width="16"
+                           Height="16"
+                           Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}">
+                    <Rectangle.OpacityMask>
+                        <VisualBrush Stretch="Uniform"
+                                     Visual="{StaticResource appbar_fullscreen}" />
+                    </Rectangle.OpacityMask>
+                </Rectangle>
+            </Button>
+        </controls:WindowCommands>
+    </controls:MetroWindow.RightWindowCommands>
+
     <controls:MetroWindow.Flyouts>
         <controls:FlyoutsControl x:Name="flyoutsControl">
             <controls:Flyout x:Name="MoviePage" Header="{Binding Movie.Title}"
@@ -303,7 +311,7 @@
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
-                    <MediaElement Name="mePlayer" Grid.Row="0" LoadedBehavior="Manual" Stretch="Uniform"/>
+                    <MediaElement Name="MediaPlayer" Grid.Row="0" LoadedBehavior="Manual" Stretch="Uniform"/>
 
                     <StatusBar Grid.Row="1">
                         <StatusBar.ItemsPanel>
@@ -329,22 +337,22 @@
                             </Button>
                         </StatusBarItem>
                         <StatusBarItem Grid.Column="1" Background="#FF2F2F2F">
-                            <TextBlock Name="lblProgressStatus">00:00:00</TextBlock>
+                            <TextBlock Name="TextProgressStatus">00:00:00</TextBlock>
                         </StatusBarItem>
                         <StatusBarItem Grid.Column="2" HorizontalContentAlignment="Stretch" Background="#FF2F2F2F">
-                            <Slider Name="sliProgress"
+                            <Slider Name="SliderProgress"
                                     Style="{DynamicResource FlatSlider}"
-                                    Thumb.DragStarted="sliProgress_DragStarted"  
-                                    Thumb.DragCompleted="sliProgress_DragCompleted" 
-                                    ValueChanged="sliProgress_ValueChanged"
-                                    Width="{Binding ElementName=mePlayer, Path=ActualWidth, Mode=OneWay}"/>
+                                    Thumb.DragStarted="SliderProgress_DragStarted"  
+                                    Thumb.DragCompleted="SliderProgress_DragCompleted" 
+                                    ValueChanged="SliderProgress_ValueChanged"
+                                    Width="{Binding ElementName=MediaPlayer, Path=ActualWidth, Mode=OneWay}"/>
                         </StatusBarItem>
                         <StatusBarItem Grid.Column="3" Background="#FF2F2F2F">
-                            <Slider x:Name="pbVolume"
+                            <Slider x:Name="PbVolume"
                                 Minimum="0"
                                 Maximum="1"
                                 Style="{DynamicResource FlatSlider}"
-                                Value="{Binding ElementName=mePlayer, Path=Volume}"
+                                Value="{Binding ElementName=MediaPlayer, Path=Volume}"
                                 LargeChange="0.2"
                                 SmallChange="0.1"
                                 Width="100"
@@ -394,7 +402,7 @@
                     Content="Reload"
                     FontSize="18"
                     Visibility="{Binding Main.IsConnectionInError, Source={StaticResource Locator}, Converter={StaticResource BoolToVisibilityInverseConverter}}"
-                    Command="{Binding Movies.ReloadMoviesAfterConnectionInError, Source={StaticResource Locator}}"/>
+                    Command="{Binding Movies.ReloadMovies, Source={StaticResource Locator}}"/>
         </StackPanel>
     </Grid>
 </controls:MetroWindow>

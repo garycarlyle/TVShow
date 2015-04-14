@@ -118,12 +118,6 @@ namespace TVShow.UserControls
                     {
                         NoMouvieFound.Visibility = Visibility.Visible;
                     }
-
-                    // If we loaded movies and we're nor in the first pages nor at the end limit, we scroll to the middle of the page to let the user scroll down or up
-                    if (vm.Pagination != 1 && vm.Pagination != 2 && vm.Pagination != vm.PaginationLimit)
-                    {
-                        ScrollView.ScrollToVerticalOffset(ItemsList.ActualHeight / 2);
-                    }
                 }
             });
         }
@@ -156,17 +150,6 @@ namespace TVShow.UserControls
                     {
                         await vm.LoadNextPage(vm.SearchMoviesFilter);
                     }
-                }
-            }
-            else if (e.VerticalOffset.Equals(0.0) && e.VerticalChange < 0.0)
-            {
-                // We are at the top position of the window: we have to load the previous movies
-                var vm = DataContext as MoviesViewModel;
-
-                // We check if no loading is occuring
-                if (vm != null && !ProgressRing.IsActive)
-                {
-                    vm.LoadPreviousPage();
                 }
             }
         }

@@ -11,6 +11,7 @@ using TVShow.ViewModel;
 using GalaSoft.MvvmLight.Threading;
 using System.Globalization;
 using System.Windows.Controls;
+using System.Windows.Media;
 
 namespace TVShow
 {
@@ -37,6 +38,28 @@ namespace TVShow
         public string MovieLoadingProgress { get; set; }
         #endregion
 
+        private void ToggleFullScreen(object sender, RoutedEventArgs e)
+        {
+            UseNoneWindowStyle = true;
+            IgnoreTaskbarOnMaximize = true;
+            WindowState = WindowState.Maximized;
+            if (MediaPlayerIsPlaying)
+            {
+                MediaPlayer.Stretch = Stretch.Fill;
+            }
+        }
+
+        private void BackToBoxedScreen(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Escape)
+            {
+                UseNoneWindowStyle = false;
+                IgnoreTaskbarOnMaximize = false;
+                WindowState = WindowState.Normal;
+                MediaPlayer.Stretch = Stretch.Uniform;
+            }
+        }
+
         #endregion
 
         #region Constructor
@@ -62,9 +85,9 @@ namespace TVShow
                 {
                     if (vm.IsDownloadingMovie)
                     {
-                        mePlayer.Stop();
-                        mePlayer.Close();
-                        mePlayer.Source = null;
+                        MediaPlayer.Stop();
+                        MediaPlayer.Close();
+                        MediaPlayer.Source = null;
                         await vm.StopDownloadingMovie();
                     }
 
@@ -112,12 +135,14 @@ namespace TVShow
             );
 
             /*
-             * Usefull for sliProgress
+             * Usefull for SliderProgress
              */
             timer = new DispatcherTimer()
             {
                 Interval = TimeSpan.FromSeconds(1)
             };
+
+            PreviewKeyDown += new KeyEventHandler(BackToBoxedScreen);
         }
         #endregion
 
@@ -229,9 +254,9 @@ namespace TVShow
 
                 // Open the player and play the movie
                 MoviePlayer.IsOpen = true;
-                mePlayer.Source = new Uri(e.PathToFile);
-                mePlayer.Play();
-                mePlayer.StretchDirection = StretchDirection.Both;
+                MediaPlayer.Source = new Uri(e.PathToFile);
+                MediaPlayer.Play();
+                MediaPlayer.StretchDirection = StretchDirection.Both;
 
                 MediaPlayerIsPlaying = true;
 
@@ -287,9 +312,9 @@ namespace TVShow
             {
                 if (MediaPlayerIsPlaying)
                 {
-                    mePlayer.Stop();
-                    mePlayer.Close();
-                    mePlayer.Source = null;
+                    MediaPlayer.Stop();
+                    MediaPlayer.Close();
+                    MediaPlayer.Source = null;
                     MediaPlayerIsPlaying = false;
                 }
 
@@ -330,11 +355,11 @@ namespace TVShow
         /// <param name="e">EventArgs</param>
         private void Timer_Tick(object sender, EventArgs e)
         {
-            if ((mePlayer.Source != null) && (mePlayer.NaturalDuration.HasTimeSpan) && (!UserIsDraggingSlider))
+            if ((MediaPlayer.Source != null) && (MediaPlayer.NaturalDuration.HasTimeSpan) && (!UserIsDraggingSlider))
             {
-                sliProgress.Minimum = 0;
-                sliProgress.Maximum = mePlayer.NaturalDuration.TimeSpan.TotalSeconds;
-                sliProgress.Value = mePlayer.Position.TotalSeconds;
+                SliderProgress.Minimum = 0;
+                SliderProgress.Maximum = MediaPlayer.NaturalDuration.TimeSpan.TotalSeconds;
+                SliderProgress.Value = MediaPlayer.Position.TotalSeconds;
             }
         }
         #endregion
@@ -347,7 +372,7 @@ namespace TVShow
         /// <param name="e">CanExecuteRoutedEventArgs</param>
         private void Play_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
-            e.CanExecute = (mePlayer != null) && (mePlayer.Source != null);
+            e.CanExecute = (MediaPlayer != null) && (MediaPlayer.Source != null);
             if (MediaPlayerIsPlaying)
             {
                 StatusBarItemPlay.Visibility = Visibility.Collapsed;
@@ -369,7 +394,7 @@ namespace TVShow
         /// <param name="e">ExecutedRoutedEventArgs</param>
         private void Play_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            mePlayer.Play();
+            MediaPlayer.Play();
             MediaPlayerIsPlaying = true;
             if (MediaPlayerIsPlaying)
             {
@@ -414,7 +439,7 @@ namespace TVShow
         /// <param name="e">CanExecuteRoutedEventArgs</param>
         private void Pause_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            mePlayer.Pause();
+            MediaPlayer.Pause();
             MediaPlayerIsPlaying = false;
             if (MediaPlayerIsPlaying)
             {
@@ -429,43 +454,43 @@ namespace TVShow
         }
         #endregion        
 
-        #region Method -> sliProgress_DragStarted
+        #region Method -> SliderProgress_DragStarted
         /// <summary>
         /// Report when dragging is used
         /// </summary>
         /// <param name="sender">Sender object</param>
         /// <param name="e">DragStartedEventArgs</param>
-        private void sliProgress_DragStarted(object sender, DragStartedEventArgs e)
+        private void SliderProgress_DragStarted(object sender, DragStartedEventArgs e)
         {
             UserIsDraggingSlider = true;
         }
         #endregion
 
-        #region Method -> sliProgress_DragCompleted
+        #region Method -> SliderProgress_DragCompleted
         /// <summary>
         /// Report when user has finished dragging
         /// </summary>
         /// <param name="sender">Sender object</param>
         /// <param name="e">DragCompletedEventArgs</param>
-        private void sliProgress_DragCompleted(object sender, DragCompletedEventArgs e)
+        private void SliderProgress_DragCompleted(object sender, DragCompletedEventArgs e)
         {
             UserIsDraggingSlider = false;
-            mePlayer.Position = TimeSpan.FromSeconds(sliProgress.Value);
+            MediaPlayer.Position = TimeSpan.FromSeconds(SliderProgress.Value);
         }
         #endregion
 
-        #region Method -> sliProgress_ValueChanged
+        #region Method -> SliderProgress_ValueChanged
         /// <summary>
         /// Report runtime when progress changed
         /// </summary>
         /// <param name="sender">Sender object</param>
         /// <param name="e">RoutedPropertyChangedEventArgs</param>
-        private void sliProgress_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        private void SliderProgress_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             var vm = DataContext as MainViewModel;
             if (vm != null)
             {
-                lblProgressStatus.Text = TimeSpan.FromSeconds(sliProgress.Value).ToString(@"hh\:mm\:ss", CultureInfo.CurrentCulture) + " / " + TimeSpan.FromSeconds(vm.Movie.Runtime * 60).ToString(@"hh\:mm\:ss", CultureInfo.CurrentCulture);
+                TextProgressStatus.Text = TimeSpan.FromSeconds(SliderProgress.Value).ToString(@"hh\:mm\:ss", CultureInfo.CurrentCulture) + " / " + TimeSpan.FromSeconds(vm.Movie.Runtime * 60).ToString(@"hh\:mm\:ss", CultureInfo.CurrentCulture);
             }
         }
         #endregion
@@ -478,7 +503,7 @@ namespace TVShow
         /// <param name="e">MouseWheelEventArgs</param>
         private void Grid_MouseWheel(object sender, MouseWheelEventArgs e)
         {
-            mePlayer.Volume += (e.Delta > 0) ? 0.1 : -0.1;
+            MediaPlayer.Volume += (e.Delta > 0) ? 0.1 : -0.1;
         }
         #endregion
 

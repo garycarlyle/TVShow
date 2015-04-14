@@ -187,6 +187,7 @@ namespace TVShow.ViewModel
         #endregion
 
         #region Method -> GetMovie
+
         /// <summary>
         /// Get the requested movie
         /// </summary>
@@ -198,18 +199,16 @@ namespace TVShow.ViewModel
             CancellationLoadingToken = new CancellationTokenSource();
 
             // Get the requested movie using the service
-            Tuple<MovieFullDetails, IEnumerable<Exception>> movieInfosAsyncResults = await ApiService.GetMovieAsync(movieId,
-                CancellationLoadingToken);
+            Tuple<MovieFullDetails, IEnumerable<Exception>> movie =
+                await ApiService.GetMovieAsync(movieId,
+                    CancellationLoadingToken);
 
             // Check if we met any exception in the GetMoviesInfosAsync method
-            foreach (Exception e in movieInfosAsyncResults.Item2)
-            {
-                HandleException(e);
+            if (HandleExceptions(movie.Item2))
                 return;
-            }
 
             // Our loaded movie is here
-            Movie = movieInfosAsyncResults.Item1;
+            Movie = movie.Item1;
 
             // Inform we loaded the requested movie
             OnMovieLoaded(new EventArgs());
@@ -218,24 +217,15 @@ namespace TVShow.ViewModel
             CancellationLoadingToken = new CancellationTokenSource();
 
             // Download the movie poster
-            Tuple<string, IEnumerable<Exception>> moviePosterAsyncResults = await ApiService.DownloadMoviePosterAsync(Movie.ImdbCode,
-                Movie.Images.LargeCoverImage,
-                CancellationLoadingToken);
+            Tuple<string, IEnumerable<Exception>> moviePosterAsyncResults =
+                await ApiService.DownloadMoviePosterAsync(Movie.ImdbCode,
+                    Movie.Images.LargeCoverImage,
+                    CancellationLoadingToken);
 
             // Set the path to the poster image if no exception occured in the DownloadMoviePosterAsync method
-            if (moviePosterAsyncResults.Item2.All(a => a == null))
-            {
+
+            if (!HandleExceptions(moviePosterAsyncResults.Item2))
                 Movie.PosterImage = moviePosterAsyncResults.Item1;
-            }
-            else
-            {
-                // We met an exception in DownloadMoviePosterAsync method
-                foreach (Exception e in moviePosterAsyncResults.Item2)
-                {
-                    HandleException(e);
-                    return;
-                }
-            }
 
             // Reset the CancellationToken for having the possibility to stop downloading directors images
             CancellationLoadingToken = new CancellationTokenSource();
@@ -243,24 +233,14 @@ namespace TVShow.ViewModel
             // For each director, we download its image
             foreach (Director director in Movie.Directors)
             {
-                Tuple<string, IEnumerable<Exception>> directorsImagesAsyncResults = await ApiService.DownloadDirectorImageAsync(director.Name.Trim(),
-                    director.SmallImage,
-                    CancellationLoadingToken);
+                Tuple<string, IEnumerable<Exception>> directorsImagesAsyncResults =
+                    await ApiService.DownloadDirectorImageAsync(director.Name.Trim(),
+                        director.SmallImage,
+                        CancellationLoadingToken);
 
                 // Set the path to the director image if no exception occured in the DownloadDirectorImageAsync method
-                if (directorsImagesAsyncResults.Item2.All(a => a == null))
-                {
+                if (!HandleExceptions(directorsImagesAsyncResults.Item2))
                     director.SmallImagePath = directorsImagesAsyncResults.Item1;
-                }
-                else
-                {
-                    // We met an exception in DownloadDirectorImageAsync method
-                    foreach (Exception e in directorsImagesAsyncResults.Item2)
-                    {
-                        HandleException(e);
-                        return;
-                    }
-                }
             }
 
             // Reset the CancellationToken for having the possibility to stop downloading actors images
@@ -269,68 +249,57 @@ namespace TVShow.ViewModel
             // For each actor, we download its image
             foreach (Actor actor in Movie.Actors)
             {
-                Tuple<string, IEnumerable<Exception>> actorsImagesAsyncResults = await ApiService.DownloadActorImageAsync(actor.Name.Trim(),
-                    actor.SmallImage,
-                    CancellationLoadingToken);
+                Tuple<string, IEnumerable<Exception>> actorsImagesAsyncResults =
+                    await ApiService.DownloadActorImageAsync(actor.Name.Trim(),
+                        actor.SmallImage,
+                        CancellationLoadingToken);
 
                 // Set the path to the actor image if no exception occured in the DownloadActorImageAsync method
-                if (actorsImagesAsyncResults.Item2.All(a => a == null))
-                {
+                if (!HandleExceptions(actorsImagesAsyncResults.Item2))
                     actor.SmallImagePath = actorsImagesAsyncResults.Item1;
-                }
-                else
-                {
-                    // We met an exception in DownloadActorImageAsync method
-                    foreach (Exception e in actorsImagesAsyncResults.Item2)
-                    {
-                        HandleException(e);
-                        return;
-                    }
-                }
             }
 
             // Reset the CancellationToken for having the possibility to stop downloading the movie background image
             CancellationLoadingToken = new CancellationTokenSource();
 
-            Tuple<string, IEnumerable<Exception>> movieBackgroundImageResults = await ApiService.DownloadMovieBackgroundImageAsync(imdbCode, CancellationLoadingToken);
+            Tuple<string, IEnumerable<Exception>> movieBackgroundImageResults =
+                await ApiService.DownloadMovieBackgroundImageAsync(imdbCode, CancellationLoadingToken);
 
             // Set the path to the poster image if no exception occured in the DownloadMoviePosterAsync method
-            if (movieBackgroundImageResults.Item2.All(a => a == null))
-            {
+            if (!HandleExceptions(movieBackgroundImageResults.Item2))
                 Movie.BackgroundImage = movieBackgroundImageResults.Item1;
-            }
-            else
-            {
-                // We met an exception in DownloadMovieBackgroundImageAsync method
-                foreach (Exception e in movieBackgroundImageResults.Item2)
-                {
-                    HandleException(e);
-                    return;
-                }
-            }
         }
+
         #endregion
 
-        #region Method -> HandleException
+        #region Method -> HandleExceptions
         /// <summary>
-        /// Handle the exception
+        /// Handle list of exceptions
         /// </summary>
-        /// <param name="e">Exception</param>
-        private static void HandleException(Exception e)
+        /// <param name="exceptions">List of exceptions</param>
+        private bool HandleExceptions(IEnumerable<Exception> exceptions)
         {
-            // There's a connection error. Send the message and go back.
-            var we = e as WebException;
-            if (we != null)
+            foreach (var e in exceptions)
             {
-                Messenger.Default.Send<bool>(true, Constants.ConnectionErrorPropertyName);
-                return;
-            }
+                var taskCancelledException = e as TaskCanceledException;
+                if (taskCancelledException != null)
+                {
+                    // Something as cancelled the loading. We go back.
+                    return true;
+                }
 
-            var ctException = e as TaskCanceledException;
-            if (ctException != null)
-            {
-                // The user cancelled the loading
+                var webException = e as WebException;
+                if (webException != null)
+                {
+                    // There's a connection error. Send the message and go back.
+                    Messenger.Default.Send<bool>(true, Constants.ConnectionErrorPropertyName);
+                    return true;
+                }
+
+                // Another exception has occured. Go back.
+                return true;
             }
+            return false;
         }
         #endregion
 

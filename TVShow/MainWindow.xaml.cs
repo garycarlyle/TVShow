@@ -108,6 +108,14 @@ namespace TVShow
                 typeof(Timeline),
                 new FrameworkPropertyMetadata { DefaultValue = 30 }
             );
+
+            /*
+             * Usefull for sliProgress
+             */
+            timer = new DispatcherTimer()
+            {
+                Interval = TimeSpan.FromSeconds(1)
+            };
         }
         #endregion
 
@@ -196,13 +204,6 @@ namespace TVShow
             DispatcherHelper.CheckBeginInvokeOnUI(() =>
             {
                 #region Dispatcher Timer
-                /*
-                 * Usefull for sliProgress
-                 */
-                timer = new DispatcherTimer()
-                {
-                    Interval = TimeSpan.FromSeconds(1)                
-                };
                 timer.Tick += Timer_Tick;
                 timer.Start();
                 #endregion
@@ -264,11 +265,8 @@ namespace TVShow
                     MediaPlayerIsPlaying = false;
                 }
 
-                if (timer != null)
-                {
-                    timer.Tick -= Timer_Tick;
-                    timer.Stop();
-                }
+                timer.Tick -= Timer_Tick;
+                timer.Stop();
 
                 ProgressBar.Visibility = Visibility.Collapsed;
                 StopLoadMovieButton.Visibility = Visibility.Collapsed;

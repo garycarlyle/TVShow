@@ -35,7 +35,7 @@
 
     <Grid Name="Container" Margin="0,0,0,10" GotMouseCapture="Container_GotMouseCapture" KeyDown="Container_KeyDown">
         <controls:ProgressRing Name="ProgressRing" Panel.ZIndex="1"/>
-        <TextBlock Name="NoMouvieFound" 
+        <TextBlock x:Name="NoMouvieFound" 
                    Text="No movie found" 
                    Visibility="Collapsed" 
                    VerticalAlignment="Center" 

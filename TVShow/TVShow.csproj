@@ -235,24 +235,9 @@
     </Resource>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="boost_chrono-vc120-mt-1_55.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="boost_date_time-vc120-mt-1_55.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="boost_system-vc120-mt-1_55.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="boost_thread-vc120-mt-1_55.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Resource Include="Resources\Images\pause.png" />
     <Resource Include="Resources\Images\play.png" />
     <Resource Include="Resources\Images\stop.png" />
-    <Content Include="torrent.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\Resources.resx">

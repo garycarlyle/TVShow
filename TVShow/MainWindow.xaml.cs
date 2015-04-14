@@ -199,8 +199,10 @@ namespace TVShow
                 /*
                  * Usefull for sliProgress
                  */
-                timer = new DispatcherTimer();
-                timer.Interval = TimeSpan.FromSeconds(1);
+                timer = new DispatcherTimer()
+                {
+                    Interval = TimeSpan.FromSeconds(1)                
+                };
                 timer.Tick += Timer_Tick;
                 timer.Start();
                 #endregion
@@ -262,8 +264,11 @@ namespace TVShow
                     MediaPlayerIsPlaying = false;
                 }
 
-                timer.Tick -= Timer_Tick;
-                timer.Stop();
+                if (timer != null)
+                {
+                    timer.Tick -= Timer_Tick;
+                    timer.Stop();
+                }
 
                 ProgressBar.Visibility = Visibility.Collapsed;
                 StopLoadMovieButton.Visibility = Visibility.Collapsed;

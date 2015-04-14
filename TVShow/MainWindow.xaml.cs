@@ -10,6 +10,7 @@ using TVShow.Events;
 using TVShow.ViewModel;
 using GalaSoft.MvvmLight.Threading;
 using System.Globalization;
+using System.Windows.Controls;
 
 namespace TVShow
 {
@@ -59,7 +60,7 @@ namespace TVShow
                 var vm = DataContext as MainViewModel;
                 if (vm != null)
                 {
-                    if (MediaPlayerIsPlaying)
+                    if (vm.IsDownloadingMovie)
                     {
                         mePlayer.Stop();
                         mePlayer.Close();
@@ -134,11 +135,13 @@ namespace TVShow
                 {
                     ProgressBar.Visibility = Visibility.Visible;
                 }
-                else if (StopLoadMovieButton.Visibility == Visibility.Collapsed)
+
+                if (StopLoadingMovieButton.Visibility == Visibility.Collapsed)
                 {
-                    StopLoadMovieButton.Visibility = Visibility.Visible;
+                    StopLoadingMovieButton.Visibility = Visibility.Visible;
                 }
-                else if (LoadingText.Visibility == Visibility.Collapsed)
+
+                if (LoadingText.Visibility == Visibility.Collapsed)
                 {
                     LoadingText.Visibility = Visibility.Visible;
                 }
@@ -146,7 +149,7 @@ namespace TVShow
                 ProgressBar.Value = e.Progress;
 
                 // The percentage here is related to the buffering progress
-                double percentage = Math.Round(e.Progress, 1) / Helpers.Constants.MinimumBufferingBeforeMoviePlaying * 100;
+                double percentage = e.Progress/Helpers.Constants.MinimumBufferingBeforeMoviePlaying*100.0;
 
                 if (percentage >= 100)
                 {
@@ -155,11 +158,11 @@ namespace TVShow
 
                 if (e.DownloadRate >= 1000)
                 {
-                    LoadingText.Text = "Buffering : " + percentage + "%" + " ( " + e.DownloadRate / 1000 + " MB/s)";
+                    LoadingText.Text = "Buffering : " + Math.Round(percentage, 0) + "%" + " ( " + e.DownloadRate / 1000 + " MB/s)";
                 }
                 else
                 {
-                    LoadingText.Text = "Buffering : " + percentage + "%" + " ( " + e.DownloadRate + " kB/s)";
+                    LoadingText.Text = "Buffering : " + Math.Round(percentage, 0) + "%" + " ( " + e.DownloadRate + " kB/s)";
                 }
             });
         }
@@ -173,20 +176,24 @@ namespace TVShow
         /// <param name="e">EventArgs</param>
         private void OnMovieLoading(object sender, EventArgs e)
         {
-            #region Fade in opacity
-            DoubleAnimationUsingKeyFrames opacityAnimation = new DoubleAnimationUsingKeyFrames();
-            opacityAnimation.Duration = new Duration(TimeSpan.FromSeconds(0.5));
-            PowerEase opacityEasingFunction = new PowerEase();
-            opacityEasingFunction.EasingMode = EasingMode.EaseInOut;
-            EasingDoubleKeyFrame startOpacityEasing = new EasingDoubleKeyFrame(1, KeyTime.FromPercent(0));
-            EasingDoubleKeyFrame endOpacityEasing = new EasingDoubleKeyFrame(0.1, KeyTime.FromPercent(1.0),
-                opacityEasingFunction);
-            opacityAnimation.KeyFrames.Add(startOpacityEasing);
-            opacityAnimation.KeyFrames.Add(endOpacityEasing);
+            DispatcherHelper.CheckBeginInvokeOnUI(() =>
+            {
+                #region Fade in opacity
 
-            MovieContainer.BeginAnimation(OpacityProperty, opacityAnimation);
+                DoubleAnimationUsingKeyFrames opacityAnimation = new DoubleAnimationUsingKeyFrames();
+                opacityAnimation.Duration = new Duration(TimeSpan.FromSeconds(0.5));
+                PowerEase opacityEasingFunction = new PowerEase();
+                opacityEasingFunction.EasingMode = EasingMode.EaseInOut;
+                EasingDoubleKeyFrame startOpacityEasing = new EasingDoubleKeyFrame(1.0, KeyTime.FromPercent(0));
+                EasingDoubleKeyFrame endOpacityEasing = new EasingDoubleKeyFrame(0.0, KeyTime.FromPercent(1.0),
+                    opacityEasingFunction);
+                opacityAnimation.KeyFrames.Add(startOpacityEasing);
+                opacityAnimation.KeyFrames.Add(endOpacityEasing);
 
-            #endregion
+                Content.BeginAnimation(OpacityProperty, opacityAnimation);
+
+                #endregion
+            });
         }
         #endregion
 
@@ -214,15 +221,25 @@ namespace TVShow
             DispatcherHelper.CheckBeginInvokeOnUI(() =>
             {
                 #region Dispatcher Timer
+
                 timer.Tick += Timer_Tick;
                 timer.Start();
+
                 #endregion
 
                 // Open the player and play the movie
                 MoviePlayer.IsOpen = true;
                 mePlayer.Source = new Uri(e.PathToFile);
                 mePlayer.Play();
+                mePlayer.StretchDirection = StretchDirection.Both;
+
                 MediaPlayerIsPlaying = true;
+
+                ProgressBar.Visibility = Visibility.Collapsed;
+
+                StopLoadingMovieButton.Visibility = Visibility.Collapsed;
+
+                LoadingText.Visibility = Visibility.Collapsed;
             });
         }
         #endregion
@@ -282,7 +299,7 @@ namespace TVShow
                 #endregion
 
                 ProgressBar.Visibility = Visibility.Collapsed;
-                StopLoadMovieButton.Visibility = Visibility.Collapsed;
+                StopLoadingMovieButton.Visibility = Visibility.Collapsed;
                 LoadingText.Visibility = Visibility.Collapsed;
                 ProgressBar.Value = 0.0;
 
@@ -292,13 +309,13 @@ namespace TVShow
                 opacityAnimation.Duration = new Duration(TimeSpan.FromSeconds(0.5));
                 PowerEase opacityEasingFunction = new PowerEase();
                 opacityEasingFunction.EasingMode = EasingMode.EaseInOut;
-                EasingDoubleKeyFrame startOpacityEasing = new EasingDoubleKeyFrame(0.1, KeyTime.FromPercent(0));
-                EasingDoubleKeyFrame endOpacityEasing = new EasingDoubleKeyFrame(1, KeyTime.FromPercent(1.0),
+                EasingDoubleKeyFrame startOpacityEasing = new EasingDoubleKeyFrame(0.0, KeyTime.FromPercent(0));
+                EasingDoubleKeyFrame endOpacityEasing = new EasingDoubleKeyFrame(1.0, KeyTime.FromPercent(1.0),
                     opacityEasingFunction);
                 opacityAnimation.KeyFrames.Add(startOpacityEasing);
                 opacityAnimation.KeyFrames.Add(endOpacityEasing);
 
-                MovieContainer.BeginAnimation(OpacityProperty, opacityAnimation);
+                Content.BeginAnimation(OpacityProperty, opacityAnimation);
 
                 #endregion
             });

@@ -58,14 +58,7 @@ namespace TVShow.ViewModel
         public bool IsDownloadingMovie
         {
             get { return _isDownloadingMovie; }
-            set
-            {
-                if (_isDownloadingMovie != value)
-                {
-                    _isDownloadingMovie = value;
-                    RaisePropertyChanged(Constants.IsDownloadingMoviePropertyName);
-                }
-            }
+            set { Set(() => IsDownloadingMovie, ref _isDownloadingMovie, value, true); }
         }
         #endregion
 
@@ -145,7 +138,7 @@ namespace TVShow.ViewModel
         /// Initializes a new instance of the MainViewModel class.
         /// </summary>
         /// <param name="apiService">The service which will be used</param>
-        public MainViewModel(IService apiService)
+        private MainViewModel(IService apiService)
         {
             ApiService = apiService;
             Messenger.Default.Register<bool>(this, Constants.ConnectionErrorPropertyName, arg => OnConnectionError(new ConnectionErrorEventArgs(arg)));
@@ -342,47 +335,45 @@ namespace TVShow.ViewModel
         #endregion
 
         #region Method -> DownloadMovie
+
         /// <summary>
         /// Download a movie
         /// </summary>
         /// <param name="movie">The movie to download</param>
-        public async Task DownloadMovie(MovieFullDetails movie)
+        private async Task DownloadMovie(MovieFullDetails movie)
         {
-            using (TorrentSession = new Session())
+            TorrentSession = new Session();
+            IsDownloadingMovie = true;
+
+            // Inform subscribers we're actually loading a movie
+            OnMovieLoading(new EventArgs());
+
+            // Listening to a port which is randomly between 6881 and 6889
+            TorrentSession.ListenOn(6881, 6889);
+
+            var addParams = new AddTorrentParams
             {
-                IsDownloadingMovie = true;
+                // Where do we save the video file
+                SavePath = Constants.MovieDownloads,
+                // At this time, no quality selection is available in the interface, so we take the lowest
+                Url = movie.Torrents.Aggregate((i1, i2) => (i1.SizeBytes < i2.SizeBytes ? i1 : i2)).Url
+            };
 
-                // Inform subscribers we're actually loading a movie
-                OnMovieLoading(new EventArgs());
+            TorrentHandle = TorrentSession.AddTorrent(addParams);
+            // We have to download sequentially, so that we're able to play the movie without waiting
+            TorrentHandle.SequentialDownload = true;
 
-                // Listening to a port which is randomly between 6881 and 6889
-                TorrentSession.ListenOn(6881, 6889);
+            bool alreadyBuffered = false;
 
-                var addParams = new AddTorrentParams
-                {
-                    // Where do we save the video file
-                    SavePath = Constants.MovieDownloads,
-                    // At this time, no quality selection is available in the interface, so we take the lowest
-                    Url = movie.Torrents.Aggregate((i1, i2) => (i1.SizeBytes < i2.SizeBytes ? i1 : i2)).Url
-                };
-
-                TorrentHandle = TorrentSession.AddTorrent(addParams);
-                // We have to download sequentially, so that we're able to play the movie without waiting
-                TorrentHandle.SequentialDownload = true;
-
-                bool alreadyBuffered = false;
-                while (true)
+            await Task.Run(async () =>
+            {
+                while (IsDownloadingMovie)
                 {
                     TorrentStatus status = TorrentHandle.QueryStatus();
-                    double progress = status.Progress * 100.0;
+                    double progress = status.Progress*100.0;
 
-                    if (status.IsFinished || !IsDownloadingMovie)
-                    {
-                        return;
-                    }
-                    
                     // Inform subscribers of our progress
-                    OnMovieLoadingProgress(new MovieLoadingProgressEventArgs(progress, status.DownloadRate / 1024));
+                    OnMovieLoadingProgress(new MovieLoadingProgressEventArgs(progress, status.DownloadRate/1024));
 
                     // We consider 2% of progress is enough to start playing
                     if (progress >= Constants.MinimumBufferingBeforeMoviePlaying && !alreadyBuffered)
@@ -392,7 +383,10 @@ namespace TVShow.ViewModel
                             // We're looking for video file
                             foreach (string directory in Directory.GetDirectories(Constants.MovieDownloads))
                             {
-                                foreach (string filePath in Directory.GetFiles(directory, "*" + Constants.VideoFileExtension))
+                                foreach (
+                                    string filePath in
+                                        Directory.GetFiles(directory, "*" + Constants.VideoFileExtension)
+                                    )
                                 {
                                     // Inform subscribers we have finished buffering the movie
                                     OnMovieBuffered(new MovieBufferedEventArgs(filePath));
@@ -408,8 +402,9 @@ namespace TVShow.ViewModel
                     // Let sleep for a second before updating the torrent status
                     await Task.Delay(1000);
                 }
-            }
+            });
         }
+
         #endregion
 
         #region Method -> StopDownloadingMovie
@@ -420,12 +415,15 @@ namespace TVShow.ViewModel
         {
             await Task.Run(() =>
             {
-                // Inform subscriber we have stopped downloading a movie
-                OnMovieStoppedDownloading(new EventArgs());
-                IsDownloadingMovie = false;
-                // We remove the torrent (tell the tracker we're not client anymore), then remove the files
-                TorrentSession.RemoveTorrent(TorrentHandle, true);
-            }).ConfigureAwait(false);
+                if (IsDownloadingMovie)
+                {
+                    // Inform subscriber we have stopped downloading a movie
+                    OnMovieStoppedDownloading(new EventArgs());
+                    IsDownloadingMovie = false;
+                    TorrentSession.RemoveTorrent(TorrentHandle, true);
+                    TorrentSession.Dispose();
+                }
+            });
         }
 
         #endregion

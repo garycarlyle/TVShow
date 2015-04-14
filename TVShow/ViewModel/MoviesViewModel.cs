@@ -14,7 +14,7 @@ using GalaSoft.MvvmLight.Command;
 namespace TVShow.ViewModel
 {
     /// <summary>
-    /// ViewModel to interact with the Rest API model
+    /// ViewModel which takes care of movies' list (search, load and pagination)
     /// </summary>
     public class MoviesViewModel : ViewModelBase
     {

@@ -18,7 +18,7 @@ using GalaSoft.MvvmLight.Command;
 namespace TVShow.ViewModel
 {
     /// <summary>
-    /// The Main ViewModel of TVShow
+    /// ViewModel which takes care of a movie (load and download)
     /// </summary>
     public class MainViewModel : ViewModelBase
     {
@@ -43,7 +43,7 @@ namespace TVShow.ViewModel
         }
         #endregion
 
-        #region Property -> CancellationLoadMoviesToken
+        #region Property -> CancellationLoadingToken
         /// <summary>
         /// Token to cancel the loading of movies
         /// </summary>

@@ -26,14 +26,14 @@ namespace TVShow.ViewModel
 
         #region Property -> ApiService
         /// <summary>
-        /// Get or Set the ApiService
+        /// The service used to consume APIs
         /// </summary>
         private IService ApiService { get; set; }
         #endregion
 
         #region Property -> Movie
         /// <summary>
-        /// The selected movie which will be played
+        /// The movie to play, retrieved from YTS API
         /// </summary>
         private MovieFullDetails _movie = new MovieFullDetails();
         public MovieFullDetails Movie
@@ -121,9 +121,9 @@ namespace TVShow.ViewModel
         }
         #endregion
 
-        #region Command -> OpenMovieFlyoutCommand
+        #region Command -> LoadMovieCommand
 
-        public RelayCommand<MovieShortDetails> OpenMovieFlyoutCommand
+        public RelayCommand<MovieShortDetails> LoadMovieCommand
         {
             get;
             private set;
@@ -169,7 +169,7 @@ namespace TVShow.ViewModel
                 }
             });
 
-            OpenMovieFlyoutCommand = new RelayCommand<MovieShortDetails>(async movie =>
+            LoadMovieCommand = new RelayCommand<MovieShortDetails>(async movie =>
             {
                 await LoadMovie(new Tuple<int, string>(movie.Id, movie.ImdbCode));
             });

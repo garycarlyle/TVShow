@@ -48,7 +48,7 @@
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                             <StackPanel Margin="0,10,0,30" Width="230">
-                            <controls:Tile Style="{StaticResource LargeTileStyle}" Command="{Binding Main.OpenMovieFlyoutCommand, Source={StaticResource Locator}}" CommandParameter="{Binding }" Background="#FF2F2F2F">
+                            <controls:Tile Style="{StaticResource LargeTileStyle}" Command="{Binding Main.LoadMovieCommand, Source={StaticResource Locator}}" CommandParameter="{Binding }" Background="#FF2F2F2F">
                                     <Grid>
                                         <Image  Source="{Binding MediumCoverImageUri, Converter={StaticResource NullImageConverter}}" 
                                                 Stretch="UniformToFill" 

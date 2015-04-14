@@ -71,7 +71,7 @@
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>x86</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
@@ -156,8 +156,6 @@
     <Compile Include="Helpers\NoKeepAliveWebClient.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Helpers\Serializer.cs" />
-    <Compile Include="Helpers\Top10Listener.cs" />
     <Compile Include="Model\Cast\Actor.cs" />
     <Compile Include="Model\Movie\MovieImages.cs" />
     <Compile Include="Model\Movie\MovieShortDetails.cs" />

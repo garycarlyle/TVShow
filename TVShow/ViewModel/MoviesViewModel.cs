@@ -154,7 +154,7 @@ namespace TVShow.ViewModel
         private async Task SearchMovies(string searchFilter)
         {
             // We stop any movie loading before searching action 
-            await StopLoadingMovies();
+            StopLoadingMovies();
 
             CancellationLoadingToken = new CancellationTokenSource();
             
@@ -282,15 +282,12 @@ namespace TVShow.ViewModel
         /// <summary>
         /// Cancel the loading of movies 
         /// </summary>
-        public async Task StopLoadingMovies()
+        public void StopLoadingMovies()
         {
-            await Task.Run(() =>
+            if (CancellationLoadingToken != null && CancellationLoadingToken.Token.CanBeCanceled)
             {
-                if (CancellationLoadingToken != null && CancellationLoadingToken.Token.CanBeCanceled)
-                {
-                    CancellationLoadingToken.Cancel(true);
-                }
-            });
+                CancellationLoadingToken.Cancel(true);
+            }
         }
         #endregion
 

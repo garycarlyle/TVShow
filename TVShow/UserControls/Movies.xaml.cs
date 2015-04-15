@@ -161,12 +161,12 @@ namespace TVShow.UserControls
         /// </summary>
         /// <param name="sender">Sender object</param>
         /// <param name="e">MouseEventArgs</param>
-        private async void Container_GotMouseCapture(object sender, MouseEventArgs e)
+        private void Container_GotMouseCapture(object sender, MouseEventArgs e)
         {
             var vm = DataContext as MoviesViewModel;
             if (vm != null && ProgressRing.IsActive)
             {
-                await vm.StopLoadingMovies();
+                vm.StopLoadingMovies();
             }
         }
         #endregion
@@ -177,12 +177,12 @@ namespace TVShow.UserControls
         /// </summary>
         /// <param name="sender">Sender object</param>
         /// <param name="e">KeyEventArgs</param>
-        private async void Container_KeyDown(object sender, KeyEventArgs e)
+        private void Container_KeyDown(object sender, KeyEventArgs e)
         {
             var vm = DataContext as MoviesViewModel;
             if (vm != null && ProgressRing.IsActive)
             {
-                await vm.StopLoadingMovies();
+                vm.StopLoadingMovies();
             }
         }
         #endregion

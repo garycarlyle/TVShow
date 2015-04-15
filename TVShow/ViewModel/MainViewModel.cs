@@ -266,7 +266,7 @@ namespace TVShow.ViewModel
         /// Handle list of exceptions
         /// </summary>
         /// <param name="exceptions">List of exceptions</param>
-        private bool HandleExceptions(IEnumerable<Exception> exceptions)
+        private static bool HandleExceptions(IEnumerable<Exception> exceptions)
         {
             foreach (var e in exceptions)
             {

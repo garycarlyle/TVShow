@@ -138,6 +138,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Comparers\MovieComparer.cs" />
     <Compile Include="Converters\BoolToVisiblityInverseConverter.cs" />
     <Compile Include="Converters\GenresConverter.cs" />
     <Compile Include="Converters\BoolToVisibilityConverter.cs" />

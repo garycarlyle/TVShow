@@ -11,6 +11,7 @@ using TVShow.Model.Api;
 using TVShow.Model.Movie;
 using GalaSoft.MvvmLight.Command;
 using TVShow.Events;
+using TVShow.Comparers;
 
 namespace TVShow.ViewModel
 {
@@ -356,24 +357,6 @@ namespace TVShow.ViewModel
             Messenger.Default.Unregister<Tuple<int, string>>(this);
             Messenger.Default.Unregister<PropertyChangedMessage<string>>(this);
             base.Cleanup();
-        }
-    }
-
-    class MovieComparer : IEqualityComparer<MovieShortDetails>
-    {
-        public bool Equals(MovieShortDetails movie1, MovieShortDetails movie2)
-        {
-            if (movie1.Id == movie2.Id)
-            {
-                return true;
-            }
-            return false;
-        }
-
-        public int GetHashCode(MovieShortDetails movie)
-        {
-            int hCode = movie.Id ^ movie.DateUploadedUnix;
-            return hCode.GetHashCode();
         }
     }
 }

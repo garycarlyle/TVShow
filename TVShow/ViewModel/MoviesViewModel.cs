@@ -155,10 +155,6 @@ namespace TVShow.ViewModel
         {
             // We stop any movie loading before searching action 
             StopLoadingMovies();
-
-            // Reset the token
-            CancellationLoadingToken.Dispose();
-            CancellationLoadingToken = new CancellationTokenSource();
             
             // We start from scratch : clean everything to not interfer with the results
             Movies.Clear();

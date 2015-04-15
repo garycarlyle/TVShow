@@ -166,9 +166,6 @@ namespace TVShow.ViewModel
 
             if (!String.IsNullOrEmpty(searchFilter))
             {
-                // Inform the subscribers we're actually searching for movies
-                OnMoviesLoading(new EventArgs());
-
                 // Let's do our search
                 await LoadNextPage(searchFilter);
             }

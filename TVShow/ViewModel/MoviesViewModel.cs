@@ -153,7 +153,7 @@ namespace TVShow.ViewModel
         /// <param name="searchFilter">The parameter of the search</param>
         private async Task SearchMovies(string searchFilter)
         {
-            // We stop any movie loading before searching action 
+            // We stop any loading before searching 
             StopLoadingMovies();
             
             // We start from scratch : clean everything to not interfer with the results
@@ -162,12 +162,12 @@ namespace TVShow.ViewModel
 
             if (!String.IsNullOrEmpty(searchFilter))
             {
-                // Let's do our search
+                // Retrieve page with the search filter
                 await LoadNextPage(searchFilter);
             }
             else
             {
-                // Load the first set of movies
+                // No filter: load the first page without criteria
                 await LoadNextPage();
             }
         }

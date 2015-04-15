@@ -20,24 +20,28 @@ namespace TVShow.Model.Api
     public class Service : IService
     {
         #region Methods
+
         #region Method -> GetMoviesAsync
         /// <summary>
-        /// Get list of movies regarding a optionnal search parameter, a maximum movies per page, a page number (pagination) and a cancellationToken
+        /// Get list of movies regarding an optional search parameter, a maximum number of movies per page, a page number (for pagination) and a cancellation token
         /// </summary>
         /// <param name="searchParameter">Search parameter</param>
         /// <param name="maxMoviesPerPage">MaxMoviesPerPage</param>
         /// <param name="pageNumberToLoad">Page number to load</param>
         /// <param name="cancellationToken">cancellationToken</param>
-        public async Task<Tuple<IEnumerable<MovieShortDetails>, IEnumerable<Exception>>> GetMoviesAsync(string searchParameter, 
+        public async Task<Tuple<IEnumerable<MovieShortDetails>, IEnumerable<Exception>>> GetMoviesAsync(
+            string searchParameter,
             int maxMoviesPerPage,
-            int pageNumberToLoad, 
+            int pageNumberToLoad,
             CancellationTokenSource cancellationToken)
         {
             var client = new RestClient(Constants.YtsApiEndpoint);
             var request = new RestRequest("/{segment}", Method.GET);
             request.AddUrlSegment("segment", "list_movies.json");
+
             request.AddParameter("limit", maxMoviesPerPage);
             request.AddParameter("page", pageNumberToLoad);
+
             if (String.IsNullOrEmpty(searchParameter))
             {
                 request.AddParameter("sort_by", "like_count");
@@ -46,6 +50,7 @@ namespace TVShow.Model.Api
             {
                 request.AddParameter("query_term", searchParameter);
             }
+
             List<Exception> ex = new List<Exception>();
             WrapperMovieShortDetails results = new WrapperMovieShortDetails();
             try
@@ -54,7 +59,7 @@ namespace TVShow.Model.Api
                 if (response != null)
                 {
                     results =
-                    JsonConvert.DeserializeObject<WrapperMovieShortDetails>(response.Content);
+                        JsonConvert.DeserializeObject<WrapperMovieShortDetails>(response.Content);
                 }
             }
             catch (TaskCanceledException e)
@@ -72,12 +77,9 @@ namespace TVShow.Model.Api
 
             if (results != null && results.Data != null && results.Data.Movies != null)
             {
-                return new Tuple<IEnumerable<MovieShortDetails>,IEnumerable<Exception>>(results.Data.Movies, ex);
+                return new Tuple<IEnumerable<MovieShortDetails>, IEnumerable<Exception>>(results.Data.Movies, ex);
             }
-            else
-            {
-                return new Tuple<IEnumerable<MovieShortDetails>,IEnumerable<Exception>>(null, ex);
-            }
+            return new Tuple<IEnumerable<MovieShortDetails>, IEnumerable<Exception>>(null, ex);
         }
         #endregion
 
@@ -87,7 +89,7 @@ namespace TVShow.Model.Api
         /// </summary>
         /// <param name="movieId">The unique identifier of a movie</param>
         /// <param name="cancellationToken">cancellationToken</param>
-        public async Task<Tuple<MovieFullDetails, IEnumerable<Exception>>> GetMovieAsync(int movieId, 
+        public async Task<Tuple<MovieFullDetails, IEnumerable<Exception>>> GetMovieAsync(int movieId,
             CancellationTokenSource cancellationToken)
         {
             var restClient = new RestClient(Constants.YtsApiEndpoint);
@@ -123,10 +125,7 @@ namespace TVShow.Model.Api
             {
                 return new Tuple<MovieFullDetails, IEnumerable<Exception>>(responseWrapper.Movie, ex);
             }
-            else
-            {
-                return new Tuple<MovieFullDetails, IEnumerable<Exception>>(null, ex);
-            }
+            return new Tuple<MovieFullDetails, IEnumerable<Exception>>(null, ex);
         }
         #endregion
 
@@ -137,7 +136,8 @@ namespace TVShow.Model.Api
         /// <param name="imdbCode">The unique identifier of a movie</param>
         /// <param name="torentUrl">The torrent URL</param>
         /// <param name="cancellationToken">cancellationToken</param>
-        public async Task<Tuple<string, IEnumerable<Exception>>> DownloadMovieTorrentAsync(string imdbCode, string torentUrl,
+        public async Task<Tuple<string, IEnumerable<Exception>>> DownloadMovieTorrentAsync(string imdbCode,
+            string torentUrl,
             CancellationTokenSource cancellationToken)
         {
             List<Exception> ex = new List<Exception>();
@@ -150,13 +150,14 @@ namespace TVShow.Model.Api
                         DownloadFileAsync(imdbCode,
                             new Uri(torentUrl), Constants.FileType.TorrentFile,
                             cancellationToken.Token);
+
                 if (torrentFile != null)
                 {
                     if (torrentFile.Item2 == null)
                     {
                         torrentFile = new Tuple<string, Exception>(Constants.TorrentDirectory +
-                                                                  imdbCode +
-                                                                  ".torrent", new Exception());
+                                                                   imdbCode +
+                                                                   ".torrent", new Exception());
                     }
                     else
                     {
@@ -179,17 +180,13 @@ namespace TVShow.Model.Api
 
             if (torrentFile != null && torrentFile.Item1 != null)
             {
-                return new Tuple<string,IEnumerable<Exception>>(torrentFile.Item1, ex);
+                return new Tuple<string, IEnumerable<Exception>>(torrentFile.Item1, ex);
             }
-            else
-            {
-                return new Tuple<string,IEnumerable<Exception>>(null, ex);
-            }
+            return new Tuple<string, IEnumerable<Exception>>(null, ex);
         }
         #endregion
 
         #region Method -> DownloadMovieCoverAsync
-
         /// <summary>
         /// Download the movie cover
         /// </summary>
@@ -242,15 +239,11 @@ namespace TVShow.Model.Api
             {
                 return new Tuple<string, IEnumerable<Exception>>(coverImage.Item1, ex);
             }
-            else
-            {
-                return new Tuple<string,IEnumerable<Exception>>(null, ex);
-            }
+            return new Tuple<string, IEnumerable<Exception>>(null, ex);
         }
         #endregion
 
         #region Method -> DownloadMoviePosterAsync
-
         /// <summary>
         /// Download the movie poster
         /// </summary>
@@ -262,7 +255,7 @@ namespace TVShow.Model.Api
             CancellationTokenSource cancellationToken)
         {
             List<Exception> ex = new List<Exception>();
-            Tuple<string, Exception> posterImage = new Tuple<string,Exception>(String.Empty, new Exception());
+            Tuple<string, Exception> posterImage = new Tuple<string, Exception>(String.Empty, new Exception());
 
             try
             {
@@ -277,8 +270,8 @@ namespace TVShow.Model.Api
                     if (posterImage.Item2 == null)
                     {
                         posterImage = new Tuple<string, Exception>(Constants.PosterMovieDirectory +
-                                                                  imdbCode +
-                                                                  Constants.ImageFileExtension, new Exception());
+                                                                   imdbCode +
+                                                                   Constants.ImageFileExtension, new Exception());
                     }
                     else
                     {
@@ -301,17 +294,13 @@ namespace TVShow.Model.Api
 
             if (posterImage != null && posterImage.Item1 != null)
             {
-                return new Tuple<string,IEnumerable<Exception>>(posterImage.Item1, ex);
+                return new Tuple<string, IEnumerable<Exception>>(posterImage.Item1, ex);
             }
-            else
-            {
-                return new Tuple<string,IEnumerable<Exception>>(null, ex);
-            }
+            return new Tuple<string, IEnumerable<Exception>>(null, ex);
         }
         #endregion
 
         #region Method -> DownloadDirectorImageAsync
-
         /// <summary>
         /// Download the directors images
         /// </summary>
@@ -338,8 +327,8 @@ namespace TVShow.Model.Api
                     if (directorImage.Item2 == null)
                     {
                         directorImage = new Tuple<string, Exception>(Constants.DirectorMovieDirectory +
-                                                                  name +
-                                                                  Constants.ImageFileExtension, new Exception());
+                                                                     name +
+                                                                     Constants.ImageFileExtension, new Exception());
                     }
                     else
                     {
@@ -362,18 +351,13 @@ namespace TVShow.Model.Api
 
             if (directorImage != null && directorImage.Item1 != null)
             {
-                return new Tuple<string,IEnumerable<Exception>>(directorImage.Item1, ex);
+                return new Tuple<string, IEnumerable<Exception>>(directorImage.Item1, ex);
             }
-            else
-            {
-                return new Tuple<string,IEnumerable<Exception>>(null, ex);
-            }
+            return new Tuple<string, IEnumerable<Exception>>(null, ex);
         }
-
         #endregion
 
         #region Method -> DownloadActorImageAsync
-
         /// <summary>
         /// Download the actors images
         /// </summary>
@@ -424,18 +408,13 @@ namespace TVShow.Model.Api
 
             if (actorImage != null && actorImage.Item1 != null)
             {
-                return new Tuple<string,IEnumerable<Exception>>(actorImage.Item1, ex);
+                return new Tuple<string, IEnumerable<Exception>>(actorImage.Item1, ex);
             }
-            else
-            {
-                return new Tuple<string,IEnumerable<Exception>>(null, ex);
-            }
+            return new Tuple<string, IEnumerable<Exception>>(null, ex);
         }
-
         #endregion
 
         #region Method -> DownloadMovieBackgroundImageAsync
-
         /// <summary>
         /// Download the movie background image
         /// </summary>
@@ -481,14 +460,11 @@ namespace TVShow.Model.Api
             {
                 ex.Add(e);
             }
-
             return new Tuple<string,IEnumerable<Exception>>(backgroundImage, ex);
         }
-
         #endregion
 
         #region Method -> DownloadFileAsync
-
         /// <summary>
         /// Download a file
         /// </summary>
@@ -622,8 +598,8 @@ namespace TVShow.Model.Api
 
             return new Tuple<string, Exception>(fileName, null);
         }
-
         #endregion
+
         #endregion
     }    
 }

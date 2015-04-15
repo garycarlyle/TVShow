@@ -205,7 +205,14 @@ namespace TVShow.ViewModel
                         Pagination,
                         CancellationLoadingToken);
 
-                moviesCount = results.Item1 != null ? results.Item1.Count() : 0;
+                if (String.IsNullOrEmpty(searchFilter))
+                {
+                    moviesCount = results.Item1 != null ? results.Item1.Count() : 0;
+                }
+                else
+                {
+                    moviesCount = results.Item1 != null ? results.Item1.Count(movie => movie.Title.IndexOf(searchFilter, StringComparison.OrdinalIgnoreCase) >= 0) : 0;
+                }
 
                 // Check if we met any exception in the GetMoviesInfosAsync method
                 if (HandleExceptions(results.Item2))
@@ -217,9 +224,8 @@ namespace TVShow.ViewModel
 
                 if (results.Item1 != null) 
                 { 
-                    MovieComparer comparer = new MovieComparer();
                     // Now we download the cover image for each movie
-                    foreach (var movie in results.Item1.Except(Movies, comparer))
+                    foreach (var movie in results.Item1.Except(Movies, new MovieComparer()))
                     {
                         // The API filters on titles, actor's name and director's name. Here we just want to filter on title movie.
                         if (String.IsNullOrEmpty(searchFilter) || (!String.IsNullOrEmpty(searchFilter) && movie.Title.IndexOf(searchFilter, StringComparison.OrdinalIgnoreCase) >= 0))

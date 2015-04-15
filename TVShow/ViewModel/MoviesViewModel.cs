@@ -157,6 +157,7 @@ namespace TVShow.ViewModel
             StopLoadingMovies();
 
             // Reset the token
+            CancellationLoadingToken.Dispose();
             CancellationLoadingToken = new CancellationTokenSource();
             
             // We start from scratch : clean everything to not interfer with the results
@@ -193,6 +194,7 @@ namespace TVShow.ViewModel
                 (!String.IsNullOrEmpty(searchFilter) && !String.IsNullOrEmpty(SearchMoviesFilter)))
             {
                 // Reset the token
+                CancellationLoadingToken.Dispose();
                 CancellationLoadingToken = new CancellationTokenSource();
 
                 // We update the current pagination

@@ -141,6 +141,10 @@ namespace TVShow.ViewModel
         private MainViewModel(IService apiService)
         {
             ApiService = apiService;
+
+            // Set the CancellationToken for having the possibility to stop a task
+            CancellationLoadingToken = new CancellationTokenSource();
+
             Messenger.Default.Register<bool>(this, Constants.ConnectionErrorPropertyName, arg => OnConnectionError(new ConnectionErrorEventArgs(arg)));
 
             StopDownloadingMovieCommand = new RelayCommand(async () =>
@@ -195,9 +199,6 @@ namespace TVShow.ViewModel
         /// <param name="imdbCode">The IMDb code</param>
         private async Task GetMovie(int movieId, string imdbCode)
         {
-            // Reset the CancellationToken for having the possibility to stop the process
-            CancellationLoadingToken = new CancellationTokenSource();
-
             // Get the requested movie using the service
             Tuple<MovieFullDetails, IEnumerable<Exception>> movie =
                 await ApiService.GetMovieAsync(movieId,
@@ -213,9 +214,6 @@ namespace TVShow.ViewModel
             // Inform we loaded the requested movie
             OnMovieLoaded(new EventArgs());
 
-            // Reset the CancellationToken for having the possibility to stop downloading the movie poster
-            CancellationLoadingToken = new CancellationTokenSource();
-
             // Download the movie poster
             Tuple<string, IEnumerable<Exception>> moviePosterAsyncResults =
                 await ApiService.DownloadMoviePosterAsync(Movie.ImdbCode,
@@ -226,9 +224,6 @@ namespace TVShow.ViewModel
 
             if (!HandleExceptions(moviePosterAsyncResults.Item2))
                 Movie.PosterImage = moviePosterAsyncResults.Item1;
-
-            // Reset the CancellationToken for having the possibility to stop downloading directors images
-            CancellationLoadingToken = new CancellationTokenSource();
 
             // For each director, we download its image
             foreach (Director director in Movie.Directors)
@@ -243,9 +238,6 @@ namespace TVShow.ViewModel
                     director.SmallImagePath = directorsImagesAsyncResults.Item1;
             }
 
-            // Reset the CancellationToken for having the possibility to stop downloading actors images
-            CancellationLoadingToken = new CancellationTokenSource();
-
             // For each actor, we download its image
             foreach (Actor actor in Movie.Actors)
             {
@@ -258,9 +250,6 @@ namespace TVShow.ViewModel
                 if (!HandleExceptions(actorsImagesAsyncResults.Item2))
                     actor.SmallImagePath = actorsImagesAsyncResults.Item1;
             }
-
-            // Reset the CancellationToken for having the possibility to stop downloading the movie background image
-            CancellationLoadingToken = new CancellationTokenSource();
 
             Tuple<string, IEnumerable<Exception>> movieBackgroundImageResults =
                 await ApiService.DownloadMovieBackgroundImageAsync(imdbCode, CancellationLoadingToken);

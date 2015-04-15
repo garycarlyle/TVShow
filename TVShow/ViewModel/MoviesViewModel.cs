@@ -125,6 +125,11 @@ namespace TVShow.ViewModel
         {
             ApiService = apiService;
 
+            // Set the CancellationToken for having the possibility to stop a task
+            CancellationLoadingToken = new CancellationTokenSource();
+
+            MaxMoviesPerPage = Helpers.Constants.MaxMoviesPerPage;
+
             ReloadMovies = new RelayCommand(async () =>
             {
                 Messenger.Default.Send<bool>(false, Helpers.Constants.ConnectionErrorPropertyName);
@@ -151,27 +156,22 @@ namespace TVShow.ViewModel
             // We stop any movie loading before searching action 
             await StopLoadingMovies();
 
+            CancellationLoadingToken = new CancellationTokenSource();
+            
+            // We start from scratch : clean everything to not interfer with the results
+            Movies.Clear();
+            Pagination = 0;
+
             if (!String.IsNullOrEmpty(searchFilter))
             {
-                // We start from scratch : clean everything to not interfer with the results
-                Movies.Clear();
-                Pagination = 0;
-
                 // Inform the subscribers we're actually searching for movies
                 OnMoviesLoading(new EventArgs());
-
-                // Reset the CancellationToken for having the possibility to stop the search
-                CancellationLoadingToken = new CancellationTokenSource();
 
                 // Let's do our search
                 await LoadNextPage(searchFilter);
             }
             else
             {
-                // We cleaned the search filter : let's start cleaning data
-                Movies.Clear();
-                Pagination = 0;
-
                 // Load the first set of movies
                 await LoadNextPage();
             }
@@ -191,9 +191,6 @@ namespace TVShow.ViewModel
             if ((String.IsNullOrEmpty(searchFilter) && String.IsNullOrEmpty(SearchMoviesFilter)) ||
                 (!String.IsNullOrEmpty(searchFilter) && !String.IsNullOrEmpty(SearchMoviesFilter)))
             {
-                // Reset the CancellationToken for having the possibility to stop loading
-                CancellationLoadingToken = new CancellationTokenSource();
-
                 // We update the current pagination
                 Pagination++;
 
@@ -216,36 +213,30 @@ namespace TVShow.ViewModel
                 // Check if we met any exception in the GetMoviesInfosAsync method
                 if (HandleExceptions(results.Item2)) return;
 
-                if (!String.IsNullOrEmpty(searchFilter))
-                {
-                    /*
-                     * The API filters on titles, actor's name and director's name. Here we just want to filter on title movie.
-                     * */
-                    movies =
-                        results.Item1.Where(
-                            a => a.Title.IndexOf(searchFilter, StringComparison.OrdinalIgnoreCase) >= 0);
-                }
-
                 // Now we download the cover image for each movie
                 foreach (var movie in movies)
                 {
-                    Movies.Add(movie);
-
-                    // Download the cover image of the movie
-                    Tuple<string, IEnumerable<Exception>> movieCover =
-                        await ApiService.DownloadMovieCoverAsync(movie.ImdbCode,
-                            movie.MediumCoverImage,
-                            CancellationLoadingToken);
-
-                    // Check if we met any exception
-                    if (HandleExceptions(movieCover.Item2)) return;
-
-                    // We associate the path of the cover image to each movie
-                    foreach (var movieItem in Movies)
+                    // The API filters on titles, actor's name and director's name. Here we just want to filter on title movie.
+                    if (String.IsNullOrEmpty(searchFilter) || (!String.IsNullOrEmpty(searchFilter) && movie.Title.IndexOf(searchFilter, StringComparison.OrdinalIgnoreCase) >= 0))
                     {
-                        if (movieItem.ImdbCode == movie.ImdbCode)
+                        Movies.Add(movie);
+
+                        // Download the cover image of the movie
+                        Tuple<string, IEnumerable<Exception>> movieCover =
+                            await ApiService.DownloadMovieCoverAsync(movie.ImdbCode,
+                                movie.MediumCoverImage,
+                                CancellationLoadingToken);
+
+                        // Check if we met any exception
+                        if (HandleExceptions(movieCover.Item2)) return;
+
+                        // We associate the path of the cover image to each movie
+                        foreach (var movieItem in Movies)
                         {
-                            movieItem.MediumCoverImageUri = movieCover.Item1;
+                            if (movieItem.ImdbCode == movie.ImdbCode)
+                            {
+                                movieItem.MediumCoverImageUri = movieCover.Item1;
+                            }
                         }
                     }
                 }
@@ -295,7 +286,7 @@ namespace TVShow.ViewModel
         {
             await Task.Run(() =>
             {
-                if (CancellationLoadingToken != null)
+                if (CancellationLoadingToken != null && CancellationLoadingToken.Token.CanBeCanceled)
                 {
                     CancellationLoadingToken.Cancel(true);
                 }

@@ -68,6 +68,11 @@ namespace TVShow.Helpers
         public const double MinimumBufferingBeforeMoviePlaying = 2.0;
 
         /// <summary>
+        /// The maximum number of movies per page to load from the API
+        /// </summary>
+        public const int MaxMoviesPerPage = 20;
+
+        /// <summary>
         /// Extension of image file
         /// </summary>
         public const string ImageFileExtension = ".jpg";

@@ -90,31 +90,35 @@ namespace TVShow.UserControls
         /// </summary>
         /// <param name="sender">Sender object</param>
         /// <param name="e">EventArgs</param>
-        private void OnMoviesLoaded(object sender, EventArgs e)
+        private void OnMoviesLoaded(object sender, NumberOfLoadedMoviesEventArgs e)
         {
             // We have to deal with the DispatcherHelper, otherwise we're having the classic cross-thread access exception
             DispatcherHelper.CheckBeginInvokeOnUI(() =>
             {
-                ProgressRing.IsActive = false;
+                // We exclude exceptions like TaskCancelled when getting back results
+                if ((e.NumberOfMovies == 0 && !e.IsExceptionThrown) || (e.NumberOfMovies != 0 && !e.IsExceptionThrown))
+                {
+                    ProgressRing.IsActive = false;
 
-                #region Fade out opacity
-                DoubleAnimationUsingKeyFrames opacityAnimation = new DoubleAnimationUsingKeyFrames();
-                opacityAnimation.Duration = new Duration(TimeSpan.FromSeconds(0.5));
-                PowerEase opacityEasingFunction = new PowerEase();
-                opacityEasingFunction.EasingMode = EasingMode.EaseInOut;
-                EasingDoubleKeyFrame startOpacityEasing = new EasingDoubleKeyFrame(0.2, KeyTime.FromPercent(0));
-                EasingDoubleKeyFrame endOpacityEasing = new EasingDoubleKeyFrame(1, KeyTime.FromPercent(1.0),
-                    opacityEasingFunction);
-                opacityAnimation.KeyFrames.Add(startOpacityEasing);
-                opacityAnimation.KeyFrames.Add(endOpacityEasing);
-                ItemsList.BeginAnimation(OpacityProperty, opacityAnimation);
-                #endregion
+                    #region Fade out opacity
+                    DoubleAnimationUsingKeyFrames opacityAnimation = new DoubleAnimationUsingKeyFrames();
+                    opacityAnimation.Duration = new Duration(TimeSpan.FromSeconds(0.5));
+                    PowerEase opacityEasingFunction = new PowerEase();
+                    opacityEasingFunction.EasingMode = EasingMode.EaseInOut;
+                    EasingDoubleKeyFrame startOpacityEasing = new EasingDoubleKeyFrame(0.2, KeyTime.FromPercent(0));
+                    EasingDoubleKeyFrame endOpacityEasing = new EasingDoubleKeyFrame(1, KeyTime.FromPercent(1.0),
+                        opacityEasingFunction);
+                    opacityAnimation.KeyFrames.Add(startOpacityEasing);
+                    opacityAnimation.KeyFrames.Add(endOpacityEasing);
+                    ItemsList.BeginAnimation(OpacityProperty, opacityAnimation);
+                    #endregion
+                }
 
                 var vm = DataContext as MoviesViewModel;
                 if (vm != null)
                 {
-                    // If we searched movies and there's no result, display the NoMovieFound label
-                    if (!vm.Movies.Any() && !String.IsNullOrEmpty(vm.SearchMoviesFilter))
+                    // If we searched movies and there's no result, display the NoMovieFound label (we exclude exceptions like TaskCancelled when getting back results)
+                    if (!vm.Movies.Any() && e.NumberOfMovies == 0 && !e.IsExceptionThrown)
                     {
                         NoMouvieFound.Visibility = Visibility.Visible;
                     }
@@ -155,38 +159,6 @@ namespace TVShow.UserControls
         }
         #endregion
 
-        #region Method -> Container_GotMouseCapture
-        /// <summary>
-        /// When got mouse capture, stop loading movies
-        /// </summary>
-        /// <param name="sender">Sender object</param>
-        /// <param name="e">MouseEventArgs</param>
-        private void Container_GotMouseCapture(object sender, MouseEventArgs e)
-        {
-            var vm = DataContext as MoviesViewModel;
-            if (vm != null && ProgressRing.IsActive)
-            {
-                vm.StopLoadingMovies();
-            }
-        }
-        #endregion
-
-        #region Method -> Container_KeyDown
-        /// <summary>
-        /// When key down, stop loading movies
-        /// </summary>
-        /// <param name="sender">Sender object</param>
-        /// <param name="e">KeyEventArgs</param>
-        private void Container_KeyDown(object sender, KeyEventArgs e)
-        {
-            var vm = DataContext as MoviesViewModel;
-            if (vm != null && ProgressRing.IsActive)
-            {
-                vm.StopLoadingMovies();
-            }
-        }
-        #endregion
-
         #region Method -> ElasticWrapPanel_Loaded
         /// <summary>
         /// Subscribe NumberOfColumnsChanged to the NumberOfColumnsChanged event of the ElasticWrapPanel
@@ -212,7 +184,7 @@ namespace TVShow.UserControls
         private void NumberOfColumnsChanged(object sender, NumberOfColumnChangedEventArgs e)
         {
             var vm = DataContext as MoviesViewModel;
-            if (vm != null && ProgressRing.IsActive)
+            if (vm != null)
             {
                 vm.MaxMoviesPerPage = e.NumberOfColumns * Helpers.Constants.NumberOfRowsPerPage;
             }

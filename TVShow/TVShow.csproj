@@ -150,8 +150,8 @@
     <Compile Include="Events\ConnexionErrorEventArgs.cs" />
     <Compile Include="Events\MovieLoadingProgressEventArgs.cs" />
     <Compile Include="Events\MovieBufferedEventArgs.cs" />
-    <Compile Include="Events\MoviePageIsOpenEventArgs.cs" />
     <Compile Include="Events\NumberOfColumnsChangedEventArgs.cs" />
+    <Compile Include="Events\NumberOfLoadedMoviesEventArgs.cs" />
     <Compile Include="Helpers\Constants.cs" />
     <Compile Include="Helpers\NoKeepAliveWebClient.cs">
       <SubType>Component</SubType>

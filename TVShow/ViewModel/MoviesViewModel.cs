@@ -10,6 +10,7 @@ using GalaSoft.MvvmLight.Messaging;
 using TVShow.Model.Api;
 using TVShow.Model.Movie;
 using GalaSoft.MvvmLight.Command;
+using TVShow.Events;
 
 namespace TVShow.ViewModel
 {
@@ -195,6 +196,8 @@ namespace TVShow.ViewModel
                 // Inform the subscribers we're actually loading movies
                 OnMoviesLoading(new EventArgs());
 
+                int moviesCount = 0;
+
                 // The page to load is new, never met it before, so we load the new page via the service
                 Tuple<IEnumerable<MovieShortDetails>, IEnumerable<Exception>> results =
                     await ApiService.GetMoviesAsync(searchFilter,
@@ -202,23 +205,25 @@ namespace TVShow.ViewModel
                         Pagination,
                         CancellationLoadingToken);
 
+                moviesCount = results.Item1 != null ? results.Item1.Count() : 0;
+
                 // Check if we met any exception in the GetMoviesInfosAsync method
                 if (HandleExceptions(results.Item2))
                 {
                     // Inform the subscribers we loaded movies
-                    OnMoviesLoaded(new EventArgs());
+                    OnMoviesLoaded(new NumberOfLoadedMoviesEventArgs(moviesCount, true));
                     return;
                 }
 
-                if (results.Item1 != null) { 
-                // Now we download the cover image for each movie
-                    foreach (var movie in results.Item1)
+                if (results.Item1 != null) 
+                { 
+                    MovieComparer comparer = new MovieComparer();
+                    // Now we download the cover image for each movie
+                    foreach (var movie in results.Item1.Except(Movies, comparer))
                     {
                         // The API filters on titles, actor's name and director's name. Here we just want to filter on title movie.
                         if (String.IsNullOrEmpty(searchFilter) || (!String.IsNullOrEmpty(searchFilter) && movie.Title.IndexOf(searchFilter, StringComparison.OrdinalIgnoreCase) >= 0))
                         {
-                            Movies.Add(movie);
-
                             // Download the cover image of the movie
                             Tuple<string, IEnumerable<Exception>> movieCover =
                                 await ApiService.DownloadMovieCoverAsync(movie.ImdbCode,
@@ -226,22 +231,22 @@ namespace TVShow.ViewModel
                                     CancellationLoadingToken);
 
                             // Check if we met any exception
-                            if (HandleExceptions(movieCover.Item2)) return;
-
-                            // We associate the path of the cover image to each movie
-                            foreach (var movieItem in Movies)
+                            if (HandleExceptions(movieCover.Item2)) 
                             {
-                                if (movieItem.ImdbCode == movie.ImdbCode)
-                                {
-                                    movieItem.MediumCoverImageUri = movieCover.Item1;
-                                }
+                                // Inform the subscribers we loaded movies
+                                OnMoviesLoaded(new NumberOfLoadedMoviesEventArgs(moviesCount, true));
+                                return;
                             }
+
+                            movie.MediumCoverImageUri = movieCover.Item1;
+
+                            Movies.Add(movie);
                         }
                     }
                 }
 
                 // Inform the subscribers we loaded movies
-                OnMoviesLoaded(new EventArgs());
+                OnMoviesLoaded(new NumberOfLoadedMoviesEventArgs(moviesCount, false));
             }
         }
         #endregion
@@ -287,7 +292,7 @@ namespace TVShow.ViewModel
         /// <summary>
         /// Cancel the loading of movies 
         /// </summary>
-        public void StopLoadingMovies()
+        private void StopLoadingMovies()
         {
             if (CancellationLoadingToken != null)
             {
@@ -323,14 +328,14 @@ namespace TVShow.ViewModel
         /// <summary>
         /// MoviesLoaded event
         /// </summary>
-        public event EventHandler<EventArgs> MoviesLoaded;
+        public event EventHandler<NumberOfLoadedMoviesEventArgs> MoviesLoaded;
         /// <summary>
         /// On finished loading movies
         /// </summary>
-        ///<param name="e">EventArgs parameter</param>
-        protected virtual void OnMoviesLoaded(EventArgs e)
+        ///<param name="e">Number of loaded movies</param>
+        protected virtual void OnMoviesLoaded(NumberOfLoadedMoviesEventArgs e)
         {
-            EventHandler<EventArgs> handler = MoviesLoaded;
+            EventHandler<NumberOfLoadedMoviesEventArgs> handler = MoviesLoaded;
             if (handler != null)
             {
                 handler(this, e);
@@ -345,6 +350,24 @@ namespace TVShow.ViewModel
             Messenger.Default.Unregister<Tuple<int, string>>(this);
             Messenger.Default.Unregister<PropertyChangedMessage<string>>(this);
             base.Cleanup();
+        }
+    }
+
+    class MovieComparer : IEqualityComparer<MovieShortDetails>
+    {
+        public bool Equals(MovieShortDetails movie1, MovieShortDetails movie2)
+        {
+            if (movie1.Id == movie2.Id)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public int GetHashCode(MovieShortDetails movie)
+        {
+            int hCode = movie.Id ^ movie.DateUploadedUnix;
+            return hCode.GetHashCode();
         }
     }
 }

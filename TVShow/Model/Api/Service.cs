@@ -488,6 +488,7 @@ namespace TVShow.Model.Api
         #endregion
 
         #region Method -> DownloadFileAsync
+
         /// <summary>
         /// Download a file
         /// </summary>
@@ -495,7 +496,8 @@ namespace TVShow.Model.Api
         /// <param name="fileUri">Path to the file</param>
         /// <param name="fileType">The filetype</param>
         /// <param name="ct">The cancellation token</param>
-        private static async Task<Tuple<string,Exception>> DownloadFileAsync(string fileName, Uri fileUri, Constants.FileType fileType, CancellationToken ct)
+        private static async Task<Tuple<string, Exception>> DownloadFileAsync(string fileName, Uri fileUri,
+            Constants.FileType fileType, CancellationToken ct)
         {
             string pathDirectory = String.Empty;
             string extension = String.Empty;
@@ -543,76 +545,66 @@ namespace TVShow.Model.Api
                 }
             }
 
-            if (!File.Exists(downloadToDirectory))
+            using (var webClient = new NoKeepAliveWebClient())
             {
-                try
+                ct.Register(webClient.CancelAsync);
+                if (!File.Exists(downloadToDirectory))
                 {
-                    using (var webClient = new NoKeepAliveWebClient())
+                    try
                     {
-                        ct.Register(webClient.CancelAsync);
-                        if (!File.Exists(downloadToDirectory))
+                        await webClient.DownloadFileTaskAsync(fileUri,
+                            @downloadToDirectory);
+
+                        try
+                        {
+                            FileInfo fi = new FileInfo(downloadToDirectory);
+                            if (fi.Length == 0)
+                            {
+                                return new Tuple<string, Exception>(fileName, new Exception());
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            return new Tuple<string, Exception>(fileName, e);
+                        }
+
+                    }
+                    catch (WebException e)
+                    {
+                        return new Tuple<string, Exception>(fileName, e);
+                    }
+                    catch (Exception e)
+                    {
+                        return new Tuple<string, Exception>(fileName, e);
+                    }
+                }
+                else
+                {
+                    try
+                    {
+                        FileInfo fi = new FileInfo(downloadToDirectory);
+                        if (fi.Length == 0)
                         {
                             try
                             {
-                                await webClient.DownloadFileTaskAsync(fileUri,
-                                    @downloadToDirectory);
-
+                                File.Delete(downloadToDirectory);
                                 try
                                 {
-                                    FileInfo fi = new FileInfo(downloadToDirectory);
-                                    if (fi.Length == 0)
+                                    await webClient.DownloadFileTaskAsync(fileUri, @downloadToDirectory);
+
+                                    FileInfo newfi = new FileInfo(downloadToDirectory);
+                                    if (newfi.Length == 0)
                                     {
                                         return new Tuple<string, Exception>(fileName, new Exception());
                                     }
                                 }
-                                catch (Exception e)
+                                catch (WebException e)
                                 {
                                     return new Tuple<string, Exception>(fileName, e);
                                 }
-
-                            }
-                            catch (WebException e)
-                            {
-                                return new Tuple<string, Exception>(fileName, e);
-                            }
-                            catch (Exception e)
-                            {
-                                return new Tuple<string, Exception>(fileName, e);
-                            }
-                        }
-                        else
-                        {
-                            try
-                            {
-                                FileInfo fi = new FileInfo(downloadToDirectory);
-                                if (fi.Length == 0)
+                                catch (Exception e)
                                 {
-                                    try
-                                    {
-                                        File.Delete(downloadToDirectory);
-                                        try
-                                        {
-                                            await webClient.DownloadFileTaskAsync(fileUri, @downloadToDirectory);
-
-                                            FileInfo newfi = new FileInfo(downloadToDirectory);
-                                            if (newfi.Length == 0)
-                                            {
-                                                return new Tuple<string, Exception>(fileName, new Exception());
-                                            }
-                                        }
-                                        catch (WebException e)
-                                        {
-                                            return new Tuple<string, Exception>(fileName, e);
-                                        }
-                                        catch (Exception e)
-                                        {
-                                            return new Tuple<string, Exception>(fileName, e);
-                                        }
-                                    }
-                                    catch (Exception e)
-                                    {
-                                        return new Tuple<string, Exception>(fileName, e);
-                                    }
+                                    return new Tuple<string, Exception>(fileName, e);
                                 }
                             }
                             catch (Exception e)
@@ -621,15 +613,16 @@ namespace TVShow.Model.Api
                             }
                         }
                     }
-                }
-                catch (Exception e)
-                {
-                    return new Tuple<string, Exception>(fileName, e);
+                    catch (Exception e)
+                    {
+                        return new Tuple<string, Exception>(fileName, e);
+                    }
                 }
             }
 
             return new Tuple<string, Exception>(fileName, null);
         }
+
         #endregion
         #endregion
     }    

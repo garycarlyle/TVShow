@@ -280,9 +280,12 @@ namespace TVShow.ViewModel
                 var webException = e as WebException;
                 if (webException != null)
                 {
-                    // There's a connection error. Send the message and go back.
-                    Messenger.Default.Send<bool>(true, Constants.ConnectionErrorPropertyName);
-                    return true;
+                    if (webException.Status == WebExceptionStatus.NameResolutionFailure)
+                    {
+                        // There's a connection error.
+                        Messenger.Default.Send<bool>(true, Constants.ConnectionErrorPropertyName);
+                        return true;
+                    }
                 }
 
                 // Another exception has occured. Go back.

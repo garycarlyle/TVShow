@@ -155,7 +155,7 @@ namespace TVShow.ViewModel
         {
             // We stop any loading before searching 
             StopLoadingMovies();
-            
+
             // We start from scratch : clean everything to not interfer with the results
             Movies.Clear();
             Pagination = 0;
@@ -186,8 +186,7 @@ namespace TVShow.ViewModel
             if ((String.IsNullOrEmpty(searchFilter) && String.IsNullOrEmpty(SearchMoviesFilter)) ||
                 (!String.IsNullOrEmpty(searchFilter) && !String.IsNullOrEmpty(SearchMoviesFilter)))
             {
-                // Reset the token
-                CancellationLoadingToken.Dispose();
+                // Set the CancellationToken for having the possibility to stop a task
                 CancellationLoadingToken = new CancellationTokenSource();
 
                 // We update the current pagination
@@ -203,42 +202,46 @@ namespace TVShow.ViewModel
                         Pagination,
                         CancellationLoadingToken);
 
-                // These are the loaded movies
-                IEnumerable<MovieShortDetails> movies = results.Item1;
-
-                // Inform the subscribers we loaded movies
-                OnMoviesLoaded(new EventArgs());
-
                 // Check if we met any exception in the GetMoviesInfosAsync method
-                if (HandleExceptions(results.Item2)) return;
-
-                // Now we download the cover image for each movie
-                foreach (var movie in movies)
+                if (HandleExceptions(results.Item2))
                 {
-                    // The API filters on titles, actor's name and director's name. Here we just want to filter on title movie.
-                    if (String.IsNullOrEmpty(searchFilter) || (!String.IsNullOrEmpty(searchFilter) && movie.Title.IndexOf(searchFilter, StringComparison.OrdinalIgnoreCase) >= 0))
+                    // Inform the subscribers we loaded movies
+                    OnMoviesLoaded(new EventArgs());
+                    return;
+                }
+
+                if (results.Item1 != null) { 
+                // Now we download the cover image for each movie
+                    foreach (var movie in results.Item1)
                     {
-                        Movies.Add(movie);
-
-                        // Download the cover image of the movie
-                        Tuple<string, IEnumerable<Exception>> movieCover =
-                            await ApiService.DownloadMovieCoverAsync(movie.ImdbCode,
-                                movie.MediumCoverImage,
-                                CancellationLoadingToken);
-
-                        // Check if we met any exception
-                        if (HandleExceptions(movieCover.Item2)) return;
-
-                        // We associate the path of the cover image to each movie
-                        foreach (var movieItem in Movies)
+                        // The API filters on titles, actor's name and director's name. Here we just want to filter on title movie.
+                        if (String.IsNullOrEmpty(searchFilter) || (!String.IsNullOrEmpty(searchFilter) && movie.Title.IndexOf(searchFilter, StringComparison.OrdinalIgnoreCase) >= 0))
                         {
-                            if (movieItem.ImdbCode == movie.ImdbCode)
+                            Movies.Add(movie);
+
+                            // Download the cover image of the movie
+                            Tuple<string, IEnumerable<Exception>> movieCover =
+                                await ApiService.DownloadMovieCoverAsync(movie.ImdbCode,
+                                    movie.MediumCoverImage,
+                                    CancellationLoadingToken);
+
+                            // Check if we met any exception
+                            if (HandleExceptions(movieCover.Item2)) return;
+
+                            // We associate the path of the cover image to each movie
+                            foreach (var movieItem in Movies)
                             {
-                                movieItem.MediumCoverImageUri = movieCover.Item1;
+                                if (movieItem.ImdbCode == movie.ImdbCode)
+                                {
+                                    movieItem.MediumCoverImageUri = movieCover.Item1;
+                                }
                             }
                         }
                     }
                 }
+
+                // Inform the subscribers we loaded movies
+                OnMoviesLoaded(new EventArgs());
             }
         }
         #endregion
@@ -263,10 +266,13 @@ namespace TVShow.ViewModel
                 var webException = e as WebException;
                 if (webException != null)
                 {
-                    // There's a connection error. Send the message and go back.
-                    Messenger.Default.Send<bool>(true, Helpers.Constants.ConnectionErrorPropertyName);
-                    Pagination--;
-                    return true;
+                    if (webException.Status == WebExceptionStatus.NameResolutionFailure)
+                    {
+                        // There's a connection error.
+                        Messenger.Default.Send<bool>(true, Helpers.Constants.ConnectionErrorPropertyName);
+                        Pagination--;
+                        return true;
+                    }
                 }
 
                 // Another exception has occured. Go back.
@@ -283,7 +289,7 @@ namespace TVShow.ViewModel
         /// </summary>
         public void StopLoadingMovies()
         {
-            if (CancellationLoadingToken != null && CancellationLoadingToken.Token.CanBeCanceled)
+            if (CancellationLoadingToken != null)
             {
                 CancellationLoadingToken.Cancel(true);
             }

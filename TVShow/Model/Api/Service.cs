@@ -51,8 +51,11 @@ namespace TVShow.Model.Api
             try
             {
                 IRestResponse response = await client.ExecuteTaskAsync(request, cancellationToken.Token);
-                results =
-                JsonConvert.DeserializeObject<WrapperMovieShortDetails>(response.Content);
+                if (response != null)
+                {
+                    results =
+                    JsonConvert.DeserializeObject<WrapperMovieShortDetails>(response.Content);
+                }
             }
             catch (TaskCanceledException e)
             {
@@ -100,15 +103,12 @@ namespace TVShow.Model.Api
             try
             {
                 IRestResponse response = await restClient.ExecuteTaskAsync(request, cancellationToken.Token);
-                if (response.StatusCode != HttpStatusCode.InternalServerError)
+                if (response != null)
                 {
                     responseWrapper =
                         JsonConvert.DeserializeObject<WrapperMovieFullDetails>(response.Content);
                 }
-                else
-                {
-                    ex.Add(new Exception());
-                }
+
             }
             catch (WebException webException)
             {
@@ -150,16 +150,22 @@ namespace TVShow.Model.Api
                         DownloadFileAsync(imdbCode,
                             new Uri(torentUrl), Constants.FileType.TorrentFile,
                             cancellationToken.Token);
-
-                if (torrentFile.Item2 == null)
+                if (torrentFile != null)
                 {
-                    torrentFile = new Tuple<string, Exception>(Constants.TorrentDirectory +
-                                                              imdbCode +
-                                                              ".torrent", new Exception());
+                    if (torrentFile.Item2 == null)
+                    {
+                        torrentFile = new Tuple<string, Exception>(Constants.TorrentDirectory +
+                                                                  imdbCode +
+                                                                  ".torrent", new Exception());
+                    }
+                    else
+                    {
+                        ex.Add(torrentFile.Item2);
+                    }
                 }
                 else
                 {
-                    ex.Add(torrentFile.Item2);
+                    ex.Add(new Exception());
                 }
             }
             catch (WebException webException)
@@ -205,15 +211,22 @@ namespace TVShow.Model.Api
                             new Uri(imageUrl), Constants.FileType.CoverImage,
                             cancellationToken.Token);
 
-                if (coverImage.Item2 == null)
+                if (coverImage != null)
                 {
-                    coverImage = new Tuple<string, Exception>(Constants.CoverMoviesDirectory +
-                                                              imdbCode +
-                                                              Constants.ImageFileExtension, new Exception());
+                    if (coverImage.Item2 == null)
+                    {
+                        coverImage = new Tuple<string, Exception>(Constants.CoverMoviesDirectory +
+                                                                  imdbCode +
+                                                                  Constants.ImageFileExtension, new Exception());
+                    }
+                    else
+                    {
+                        ex.Add(coverImage.Item2);
+                    }
                 }
                 else
                 {
-                    ex.Add(coverImage.Item2);
+                    ex.Add(new Exception());
                 }
             }
             catch (WebException webException)
@@ -259,15 +272,22 @@ namespace TVShow.Model.Api
                             new Uri(imageUrl), Constants.FileType.PosterImage,
                             cancellationToken.Token);
 
-                if (posterImage.Item2 == null)
+                if (posterImage != null)
                 {
-                    posterImage = new Tuple<string, Exception>(Constants.PosterMovieDirectory +
-                                                              imdbCode +
-                                                              Constants.ImageFileExtension, new Exception());
+                    if (posterImage.Item2 == null)
+                    {
+                        posterImage = new Tuple<string, Exception>(Constants.PosterMovieDirectory +
+                                                                  imdbCode +
+                                                                  Constants.ImageFileExtension, new Exception());
+                    }
+                    else
+                    {
+                        ex.Add(posterImage.Item2);
+                    }
                 }
                 else
                 {
-                    ex.Add(posterImage.Item2);
+                    ex.Add(new Exception());
                 }
             }
             catch (WebException webException)
@@ -313,15 +333,22 @@ namespace TVShow.Model.Api
                             new Uri(imageUrl), Constants.FileType.DirectorImage,
                             cancellationToken.Token);
 
-                if (directorImage.Item2 == null)
+                if (directorImage != null)
                 {
-                    directorImage = new Tuple<string, Exception>(Constants.DirectorMovieDirectory +
-                                                              name +
-                                                              Constants.ImageFileExtension, new Exception());
+                    if (directorImage.Item2 == null)
+                    {
+                        directorImage = new Tuple<string, Exception>(Constants.DirectorMovieDirectory +
+                                                                  name +
+                                                                  Constants.ImageFileExtension, new Exception());
+                    }
+                    else
+                    {
+                        ex.Add(directorImage.Item2);
+                    }
                 }
                 else
                 {
-                    ex.Add(directorImage.Item2);
+                    ex.Add(new Exception());
                 }
             }
             catch (WebException webException)
@@ -368,15 +395,22 @@ namespace TVShow.Model.Api
                             new Uri(imageUrl), Constants.FileType.ActorImage,
                             cancellationToken.Token);
 
-                if (actorImage.Item2 == null)
+                if (actorImage != null)
                 {
-                    actorImage = new Tuple<string, Exception>(Constants.ActorMovieDirectory +
-                                                              name +
-                                                              Constants.ImageFileExtension, new Exception());
+                    if (actorImage.Item2 == null)
+                    {
+                        actorImage = new Tuple<string, Exception>(Constants.ActorMovieDirectory +
+                                                                  name +
+                                                                  Constants.ImageFileExtension, new Exception());
+                    }
+                    else
+                    {
+                        ex.Add(actorImage.Item2);
+                    }
                 }
                 else
                 {
-                    ex.Add(actorImage.Item2);
+                    ex.Add(new Exception());
                 }
             }
             catch (WebException webException)
@@ -422,13 +456,21 @@ namespace TVShow.Model.Api
             {
                 Tuple<string, Exception> res =
                     await DownloadFileAsync(imdbCode, imageUri, Constants.FileType.BackgroundImage, cancellationToken.Token);
-                if (res.Item2 == null)
+
+                if (res != null)
                 {
-                    backgroundImage = Constants.BackgroundMovieDirectory + imdbCode + Constants.ImageFileExtension;
+                    if (res.Item2 == null)
+                    {
+                        backgroundImage = Constants.BackgroundMovieDirectory + imdbCode + Constants.ImageFileExtension;
+                    }
+                    else
+                    {
+                        ex.Add(res.Item2);
+                    }
                 }
                 else
                 {
-                    ex.Add(res.Item2);
+                    ex.Add(new Exception());
                 }
             }
             catch (WebException webException)

@@ -175,86 +175,86 @@ namespace TVShow.ViewModel
         #endregion
 
         #region Method -> LoadNextPage
+
         /// <summary>
         /// Load next page with an optional search parameter
         /// </summary>
         /// <param name="searchFilter">An optional search parameter which is specified to the API</param>
         public async Task LoadNextPage(string searchFilter = null)
         {
-            /* Check if we're searching with filter (if so, the method parameter and SearchMoviesFilter property should not be empty)
-             * Otherwise, both should be empty
-             * */
-            if ((String.IsNullOrEmpty(searchFilter) && String.IsNullOrEmpty(SearchMoviesFilter)) ||
-                (!String.IsNullOrEmpty(searchFilter) && !String.IsNullOrEmpty(SearchMoviesFilter)))
+            // Set the CancellationToken for having the possibility to stop a task
+            CancellationLoadingToken = new CancellationTokenSource();
+
+            // We update the current pagination
+            Pagination++;
+
+            // Inform the subscribers we're actually loading movies
+            OnMoviesLoading(new EventArgs());
+
+            int moviesCount = 0;
+
+            // The page to load is new, never met it before, so we load the new page via the service
+            Tuple<IEnumerable<MovieShortDetails>, IEnumerable<Exception>> results =
+                await ApiService.GetMoviesAsync(searchFilter,
+                    MaxMoviesPerPage,
+                    Pagination,
+                    CancellationLoadingToken);
+
+            if (String.IsNullOrEmpty(searchFilter))
             {
-                // Set the CancellationToken for having the possibility to stop a task
-                CancellationLoadingToken = new CancellationTokenSource();
+                moviesCount = results.Item1 != null ? results.Item1.Count() : 0;
+            }
+            else
+            {
+                moviesCount = results.Item1 != null
+                    ? results.Item1.Count(
+                        movie => movie.Title.IndexOf(searchFilter, StringComparison.OrdinalIgnoreCase) >= 0)
+                    : 0;
+            }
 
-                // We update the current pagination
-                Pagination++;
+            // Check if we met any exception in the GetMoviesInfosAsync method
+            if (HandleExceptions(results.Item2))
+            {
+                // Inform the subscribers we loaded movies
+                OnMoviesLoaded(new NumberOfLoadedMoviesEventArgs(moviesCount, true));
+                return;
+            }
 
-                // Inform the subscribers we're actually loading movies
-                OnMoviesLoading(new EventArgs());
-
-                int moviesCount = 0;
-
-                // The page to load is new, never met it before, so we load the new page via the service
-                Tuple<IEnumerable<MovieShortDetails>, IEnumerable<Exception>> results =
-                    await ApiService.GetMoviesAsync(searchFilter,
-                        MaxMoviesPerPage,
-                        Pagination,
-                        CancellationLoadingToken);
-
-                if (String.IsNullOrEmpty(searchFilter))
+            if (results.Item1 != null)
+            {
+                // Now we download the cover image for each movie
+                foreach (var movie in results.Item1.Except(Movies, new MovieComparer()))
                 {
-                    moviesCount = results.Item1 != null ? results.Item1.Count() : 0;
-                }
-                else
-                {
-                    moviesCount = results.Item1 != null ? results.Item1.Count(movie => movie.Title.IndexOf(searchFilter, StringComparison.OrdinalIgnoreCase) >= 0) : 0;
-                }
-
-                // Check if we met any exception in the GetMoviesInfosAsync method
-                if (HandleExceptions(results.Item2))
-                {
-                    // Inform the subscribers we loaded movies
-                    OnMoviesLoaded(new NumberOfLoadedMoviesEventArgs(moviesCount, true));
-                    return;
-                }
-
-                if (results.Item1 != null) 
-                { 
-                    // Now we download the cover image for each movie
-                    foreach (var movie in results.Item1.Except(Movies, new MovieComparer()))
+                    // The API filters on titles, actor's name and director's name. Here we just want to filter on title movie.
+                    if (String.IsNullOrEmpty(searchFilter) ||
+                        (!String.IsNullOrEmpty(searchFilter) &&
+                         movie.Title.IndexOf(searchFilter, StringComparison.OrdinalIgnoreCase) >= 0))
                     {
-                        // The API filters on titles, actor's name and director's name. Here we just want to filter on title movie.
-                        if (String.IsNullOrEmpty(searchFilter) || (!String.IsNullOrEmpty(searchFilter) && movie.Title.IndexOf(searchFilter, StringComparison.OrdinalIgnoreCase) >= 0))
+                        // Download the cover image of the movie
+                        Tuple<string, IEnumerable<Exception>> movieCover =
+                            await ApiService.DownloadMovieCoverAsync(movie.ImdbCode,
+                                movie.MediumCoverImage,
+                                CancellationLoadingToken);
+
+                        // Check if we met any exception
+                        if (HandleExceptions(movieCover.Item2))
                         {
-                            // Download the cover image of the movie
-                            Tuple<string, IEnumerable<Exception>> movieCover =
-                                await ApiService.DownloadMovieCoverAsync(movie.ImdbCode,
-                                    movie.MediumCoverImage,
-                                    CancellationLoadingToken);
-
-                            // Check if we met any exception
-                            if (HandleExceptions(movieCover.Item2)) 
-                            {
-                                // Inform the subscribers we loaded movies
-                                OnMoviesLoaded(new NumberOfLoadedMoviesEventArgs(moviesCount, true));
-                                return;
-                            }
-
-                            movie.MediumCoverImageUri = movieCover.Item1;
-
-                            Movies.Add(movie);
+                            // Inform the subscribers we loaded movies
+                            OnMoviesLoaded(new NumberOfLoadedMoviesEventArgs(moviesCount, true));
+                            return;
                         }
+
+                        movie.MediumCoverImageUri = movieCover.Item1;
+
+                        Movies.Add(movie);
                     }
                 }
-
-                // Inform the subscribers we loaded movies
-                OnMoviesLoaded(new NumberOfLoadedMoviesEventArgs(moviesCount, false));
             }
+
+            // Inform the subscribers we loaded movies
+            OnMoviesLoaded(new NumberOfLoadedMoviesEventArgs(moviesCount, false));
         }
+
         #endregion
 
         #region Method -> HandleExceptions

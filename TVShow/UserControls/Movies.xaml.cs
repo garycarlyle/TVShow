@@ -95,7 +95,7 @@ namespace TVShow.UserControls
             DispatcherHelper.CheckBeginInvokeOnUI(() =>
             {
                 // We exclude exceptions like TaskCancelled when getting back results
-                if (e != null && (e.NumberOfMovies == 0 && !e.IsExceptionThrown) || (e.NumberOfMovies != 0 && !e.IsExceptionThrown))
+                if ((e.NumberOfMovies == 0 && !e.IsExceptionThrown) || (e.NumberOfMovies != 0 && !e.IsExceptionThrown))
                 {
                     ProgressRing.IsActive = false;
 
@@ -117,7 +117,7 @@ namespace TVShow.UserControls
                 if (vm != null)
                 {
                     // If we searched movies and there's no result, display the NoMovieFound label (we exclude exceptions like TaskCancelled when getting back results)
-                    if (e != null && (!vm.Movies.Any() && e.NumberOfMovies == 0 && !e.IsExceptionThrown))
+                    if (!vm.Movies.Any() && e.NumberOfMovies == 0 && !e.IsExceptionThrown)
                     {
                         NoMouvieFound.Visibility = Visibility.Visible;
                     }

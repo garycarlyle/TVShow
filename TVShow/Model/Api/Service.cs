@@ -55,7 +55,7 @@ namespace TVShow.Model.Api
             WrapperMovieShortDetails results = new WrapperMovieShortDetails();
             try
             {
-                IRestResponse response = await client.ExecuteTaskAsync(request, cancellationToken.Token);
+                IRestResponse response = await client.ExecuteTaskAsync(request, cancellationToken.Token).ConfigureAwait(false);
                 if (response != null)
                 {
                     results =
@@ -104,7 +104,7 @@ namespace TVShow.Model.Api
             WrapperMovieFullDetails responseWrapper = new WrapperMovieFullDetails();
             try
             {
-                IRestResponse response = await restClient.ExecuteTaskAsync(request, cancellationToken.Token);
+                IRestResponse response = await restClient.ExecuteTaskAsync(request, cancellationToken.Token).ConfigureAwait(false);
                 if (response != null)
                 {
                     responseWrapper =
@@ -149,7 +149,7 @@ namespace TVShow.Model.Api
                     await
                         DownloadFileAsync(imdbCode,
                             new Uri(torentUrl), Constants.FileType.TorrentFile,
-                            cancellationToken.Token);
+                            cancellationToken.Token).ConfigureAwait(false);
 
                 if (torrentFile != null)
                 {
@@ -206,7 +206,7 @@ namespace TVShow.Model.Api
                     await
                         DownloadFileAsync(imdbCode,
                             new Uri(imageUrl), Constants.FileType.CoverImage,
-                            cancellationToken.Token);
+                            cancellationToken.Token).ConfigureAwait(false);
 
                 if (coverImage != null)
                 {
@@ -263,7 +263,7 @@ namespace TVShow.Model.Api
                     await
                         DownloadFileAsync(imdbCode,
                             new Uri(imageUrl), Constants.FileType.PosterImage,
-                            cancellationToken.Token);
+                            cancellationToken.Token).ConfigureAwait(false);
 
                 if (posterImage != null)
                 {
@@ -320,7 +320,7 @@ namespace TVShow.Model.Api
                     await
                         DownloadFileAsync(name,
                             new Uri(imageUrl), Constants.FileType.DirectorImage,
-                            cancellationToken.Token);
+                            cancellationToken.Token).ConfigureAwait(false);
 
                 if (directorImage != null)
                 {
@@ -377,7 +377,7 @@ namespace TVShow.Model.Api
                     await
                         DownloadFileAsync(name,
                             new Uri(imageUrl), Constants.FileType.ActorImage,
-                            cancellationToken.Token);
+                            cancellationToken.Token).ConfigureAwait(false);
 
                 if (actorImage != null)
                 {
@@ -434,7 +434,7 @@ namespace TVShow.Model.Api
             try
             {
                 Tuple<string, Exception> res =
-                    await DownloadFileAsync(imdbCode, imageUri, Constants.FileType.BackgroundImage, cancellationToken.Token);
+                    await DownloadFileAsync(imdbCode, imageUri, Constants.FileType.BackgroundImage, cancellationToken.Token).ConfigureAwait(false);
 
                 if (res != null)
                 {
@@ -529,7 +529,7 @@ namespace TVShow.Model.Api
                     try
                     {
                         await webClient.DownloadFileTaskAsync(fileUri,
-                            @downloadToDirectory);
+                            @downloadToDirectory).ConfigureAwait(false);
 
                         try
                         {
@@ -566,7 +566,7 @@ namespace TVShow.Model.Api
                                 File.Delete(downloadToDirectory);
                                 try
                                 {
-                                    await webClient.DownloadFileTaskAsync(fileUri, @downloadToDirectory);
+                                    await webClient.DownloadFileTaskAsync(fileUri, @downloadToDirectory).ConfigureAwait(false);
 
                                     FileInfo newfi = new FileInfo(downloadToDirectory);
                                     if (newfi.Length == 0)

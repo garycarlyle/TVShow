@@ -56,7 +56,7 @@
     </controls:MetroWindow.RightWindowCommands>
 
     <controls:MetroWindow.Flyouts>
-        <controls:FlyoutsControl x:Name="flyoutsControl">
+        <controls:FlyoutsControl x:Name="FlyoutsControl">
             <controls:Flyout x:Name="MoviePage" Header="{Binding Movie.Title}"
                              Position="Right"
                              AnimateOpacity="True"
@@ -70,6 +70,15 @@
                                    HorizontalAlignment="Center"
                                    FontSize="18"
                                    Visibility="Collapsed"></TextBlock>
+                        <controls:MetroProgressBar 
+                                       x:Name="MovieProgressBar"
+                                       IsIndeterminate="True"
+                                       Minimum="0"
+                                       Maximum="100"
+                                       Width="400"
+                                       EllipseDiameter="5"
+                                       Foreground="{DynamicResource AccentColorBrush}"
+                                       Visibility="Collapsed"/>
                         <controls:MetroProgressBar 
                                             x:Name="ProgressBar"
                                             Minimum="0.0"

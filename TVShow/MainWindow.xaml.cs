@@ -74,7 +74,7 @@ namespace TVShow
             Loaded += MainWindow_Loaded;
 
             // Action when window is about to close
-            Closing += async (s, e) =>
+            Closing += (s, e) =>
             {
                 // Unsubscribe events
                 Loaded -= MainWindow_Loaded;
@@ -88,7 +88,7 @@ namespace TVShow
                         MediaPlayer.Stop();
                         MediaPlayer.Close();
                         MediaPlayer.Source = null;
-                        await vm.StopDownloadingMovie();
+                        vm.StopDownloadingMovie();
                     }
 
                     // Unsubscribe events
@@ -97,6 +97,7 @@ namespace TVShow
                     vm.StoppedDownloadingMovie -= OnStoppedDownloadingMovie;
                     vm.LoadedMovie -= OnLoadedMovie;
                     vm.BufferedMovie -= OnBufferedMovie;
+                    vm.LoadingMovieProgress -= OnLoadingMovieProgress;
                 }
 
                 ViewModelLocator.Cleanup();
@@ -121,6 +122,7 @@ namespace TVShow
                 vm.DownloadingMovie += OnDownloadingMovie;
                 vm.StoppedDownloadingMovie += OnStoppedDownloadingMovie;
                 vm.LoadedMovie += OnLoadedMovie;
+                vm.LoadingMovie += OnLoadingMovie;
                 vm.BufferedMovie += OnBufferedMovie;
                 vm.LoadingMovieProgress += OnLoadingMovieProgress;
             }
@@ -144,6 +146,7 @@ namespace TVShow
 
             PreviewKeyDown += new KeyEventHandler(BackToBoxedScreen);
         }
+
         #endregion
 
         #region Method -> OnLoadingMovieProgress
@@ -204,7 +207,6 @@ namespace TVShow
             DispatcherHelper.CheckBeginInvokeOnUI(() =>
             {
                 #region Fade in opacity
-
                 DoubleAnimationUsingKeyFrames opacityAnimation = new DoubleAnimationUsingKeyFrames();
                 opacityAnimation.Duration = new Duration(TimeSpan.FromSeconds(0.5));
                 PowerEase opacityEasingFunction = new PowerEase();
@@ -216,22 +218,52 @@ namespace TVShow
                 opacityAnimation.KeyFrames.Add(endOpacityEasing);
 
                 Content.BeginAnimation(OpacityProperty, opacityAnimation);
-
                 #endregion
             });
         }
         #endregion
 
+        #region Method -> OnLoadingMovie
+        /// <summary>
+        /// Open the movie flyout when a movie is selected from the main interface, show progress and hide content
+        /// </summary>
+        /// <param name="sender">Sender object</param>
+        /// <param name="e">EventArgs</param>
+        void OnLoadingMovie(object sender, EventArgs e)
+        {
+            MoviePage.IsOpen = true;
+            
+            MovieProgressBar.Visibility = Visibility.Visible;
+            MovieContainer.Visibility = Visibility.Collapsed;
+
+            MovieContainer.Opacity = 0.0;
+        }
+        #endregion
+
         #region Method -> OnLoadedMovie
         /// <summary>
-        /// Open the movie flyout when a movie is selected from the main interface
+        /// Show content and hide progress when a movie is loaded
         /// </summary>
         /// <param name="sender">Sender object</param>
         /// <param name="e">EventArgs</param>
         void OnLoadedMovie(object sender, EventArgs e)
         {
-            MovieContainer.Opacity = 1.0;
-            MoviePage.IsOpen = true;
+            MovieProgressBar.Visibility = Visibility.Collapsed;
+            MovieContainer.Visibility = Visibility.Visible;
+
+            #region Fade in opacity
+            DoubleAnimationUsingKeyFrames opacityAnimation = new DoubleAnimationUsingKeyFrames();
+            opacityAnimation.Duration = new Duration(TimeSpan.FromSeconds(0.5));
+            PowerEase opacityEasingFunction = new PowerEase();
+            opacityEasingFunction.EasingMode = EasingMode.EaseInOut;
+            EasingDoubleKeyFrame startOpacityEasing = new EasingDoubleKeyFrame(0.0, KeyTime.FromPercent(0));
+            EasingDoubleKeyFrame endOpacityEasing = new EasingDoubleKeyFrame(1.0, KeyTime.FromPercent(1.0),
+                opacityEasingFunction);
+            opacityAnimation.KeyFrames.Add(startOpacityEasing);
+            opacityAnimation.KeyFrames.Add(endOpacityEasing);
+
+            MovieContainer.BeginAnimation(OpacityProperty, opacityAnimation);
+            #endregion
         }
         #endregion
 
@@ -285,6 +317,11 @@ namespace TVShow
                     "You seem to have an internet connection error. Please retry.",
                     MessageDialogStyle.Affirmative, settings);
 
+            if (MoviesUc.ProgressRing.IsActive)
+            {
+                MoviesUc.ProgressRing.IsActive = false;
+            }
+
             // Catch the response's user (when clicked OK)
             if (result == MessageDialogResult.Affirmative)
             {
@@ -292,7 +329,6 @@ namespace TVShow
                 if (MoviePage.IsOpen)
                 {
                     MoviePage.IsOpen = false;
-
                     // Hide the movies list (the connection is in error, so no movie manipulation is available)
                     MoviesUc.Opacity = 0;
                 }

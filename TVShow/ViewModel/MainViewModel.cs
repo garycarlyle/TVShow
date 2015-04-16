@@ -50,6 +50,13 @@ namespace TVShow.ViewModel
         private CancellationTokenSource CancellationLoadingToken { get; set; }
         #endregion
 
+        #region Property -> CancellationDownloadingToken
+        /// <summary>
+        /// Token to cancel the downloading of a movie
+        /// </summary>
+        public CancellationTokenSource CancellationDownloadingToken { get; set; }
+        #endregion
+
         #region Property -> IsDownloadingMovie
         private bool _isDownloadingMovie;
         /// <summary>
@@ -73,20 +80,6 @@ namespace TVShow.ViewModel
             set { Set(() => IsConnectionInError, ref _isConnectionInError, value, true); }
         }
 
-        #endregion
-
-        #region Property -> TorrentSession
-        /// <summary>
-        /// The session of the current torrent
-        /// </summary>
-        private Session TorrentSession { get; set; }
-        #endregion
-
-        #region Property -> TorrentHandle
-        /// <summary>
-        /// The handle of the current torrent
-        /// </summary>
-        private TorrentHandle TorrentHandle { get; set; }
         #endregion
 
         #endregion
@@ -145,27 +138,27 @@ namespace TVShow.ViewModel
             // Set the CancellationToken for having the possibility to stop a task
             CancellationLoadingToken = new CancellationTokenSource();
 
+            CancellationDownloadingToken = new CancellationTokenSource();
+
             Messenger.Default.Register<bool>(this, Constants.ConnectionErrorPropertyName, arg => OnConnectionError(new ConnectionErrorEventArgs(arg)));
 
-            StopDownloadingMovieCommand = new RelayCommand(async () =>
+            StopDownloadingMovieCommand = new RelayCommand(() =>
             {
-                if (IsDownloadingMovie)
-                {
-                    await StopDownloadingMovie();
-                }
+                StopDownloadingMovie();
             });
 
             DownloadMovieCommand = new RelayCommand(async () =>
             {
                 if (Movie != null && !IsDownloadingMovie)
                 {
+                    CancellationDownloadingToken = new CancellationTokenSource();
                     await DownloadMovie(Movie);
                 }
             });
 
             LoadMovieCommand = new RelayCommand<MovieShortDetails>(async movie =>
             {
-                await LoadMovie(new Tuple<int, string>(movie.Id, movie.ImdbCode));
+                await LoadMovie(movie.Id, movie.ImdbCode);
             });
         }
         #endregion
@@ -176,43 +169,33 @@ namespace TVShow.ViewModel
 
         #region Method -> LoadMovie
         /// <summary>
-        /// Load the requested movie
-        /// </summary>
-        /// <param name="movieCodes">The movieID and IMDb code</param>
-        private async Task LoadMovie(Tuple<int, string> movieCodes)
-        {
-            if (Movie == null || !String.IsNullOrEmpty(Movie.Title))
-            {
-                Movie = new MovieFullDetails();
-            }
-
-            await GetMovie(movieCodes.Item1, movieCodes.Item2);
-        }
-        #endregion
-
-        #region Method -> GetMovie
-
-        /// <summary>
         /// Get the requested movie
         /// </summary>
         /// <param name="movieId">The movie ID</param>
         /// <param name="imdbCode">The IMDb code</param>
-        private async Task GetMovie(int movieId, string imdbCode)
+        private async Task LoadMovie(int movieId, string imdbCode)
         {
+            Movie = new MovieFullDetails();
+            OnLoadingMovie(new EventArgs());
+
             // Get the requested movie using the service
             Tuple<MovieFullDetails, IEnumerable<Exception>> movie =
                 await ApiService.GetMovieAsync(movieId,
                     CancellationLoadingToken);
 
-            // Inform we loaded the requested movie
-            OnLoadedMovie(new EventArgs());
-
             // Check if we met any exception in the GetMoviesInfosAsync method
             if (HandleExceptions(movie.Item2))
+            {
+                // Inform we loaded the requested movie
+                OnLoadedMovie(new EventArgs());
                 return;
+            }
 
             // Our loaded movie is here
             Movie = movie.Item1;
+
+            // Inform we loaded the requested movie
+            OnLoadedMovie(new EventArgs());
 
             // Download the movie poster
             Tuple<string, IEnumerable<Exception>> moviePosterAsyncResults =
@@ -258,7 +241,6 @@ namespace TVShow.ViewModel
             if (!HandleExceptions(movieBackgroundImageResults.Item2))
                 Movie.BackgroundImage = movieBackgroundImageResults.Item1;
         }
-
         #endregion
 
         #region Method -> HandleExceptions
@@ -296,41 +278,39 @@ namespace TVShow.ViewModel
         #endregion
 
         #region Method -> DownloadMovie
-
         /// <summary>
         /// Download a movie
         /// </summary>
         /// <param name="movie">The movie to download</param>
         private async Task DownloadMovie(MovieFullDetails movie)
         {
-            TorrentSession = new Session();
-            IsDownloadingMovie = true;
-
-            // Inform subscribers we're actually loading a movie
-            OnDownloadingMovie(new EventArgs());
-
-            // Listening to a port which is randomly between 6881 and 6889
-            TorrentSession.ListenOn(6881, 6889);
-
-            var addParams = new AddTorrentParams
+            using (Session session = new Session())
             {
-                // Where do we save the video file
-                SavePath = Constants.MovieDownloads,
-                // At this time, no quality selection is available in the interface, so we take the lowest
-                Url = movie.Torrents.Aggregate((i1, i2) => (i1.SizeBytes < i2.SizeBytes ? i1 : i2)).Url
-            };
+                IsDownloadingMovie = true;
 
-            TorrentHandle = TorrentSession.AddTorrent(addParams);
-            // We have to download sequentially, so that we're able to play the movie without waiting
-            TorrentHandle.SequentialDownload = true;
+                // Inform subscribers we're actually loading a movie
+                OnDownloadingMovie(new EventArgs());
 
-            bool alreadyBuffered = false;
+                // Listening to a port which is randomly between 6881 and 6889
+                session.ListenOn(6881, 6889);
 
-            await Task.Run(async () =>
-            {
+                var addParams = new AddTorrentParams
+                {
+                    // Where do we save the video file
+                    SavePath = Constants.MovieDownloads,
+                    // At this time, no quality selection is available in the interface, so we take the lowest
+                    Url = movie.Torrents.Aggregate((i1, i2) => (i1.SizeBytes < i2.SizeBytes ? i1 : i2)).Url
+                };
+
+                TorrentHandle handle = session.AddTorrent(addParams);
+                // We have to download sequentially, so that we're able to play the movie without waiting
+                handle.SequentialDownload = true;
+
+                bool alreadyBuffered = false;
+
                 while (IsDownloadingMovie)
                 {
-                    TorrentStatus status = TorrentHandle.QueryStatus();
+                    TorrentStatus status = handle.QueryStatus();
                     double progress = status.Progress*100.0;
 
                     // Inform subscribers of our progress
@@ -361,35 +341,34 @@ namespace TVShow.ViewModel
                         }
                     }
                     // Let sleep for a second before updating the torrent status
-                    await Task.Delay(1000);
+                    await Task.Delay(1000, CancellationDownloadingToken.Token).ContinueWith(_ =>
+                    {
+                        if (CancellationDownloadingToken.IsCancellationRequested && session != null)
+                        {
+                            OnStoppedDownloadingMovie(new EventArgs());
+                            IsDownloadingMovie = false;
+                            session.RemoveTorrent(handle, true);
+                        }
+                    }).ConfigureAwait(false);
                 }
-            });
+            }
         }
-
         #endregion
 
         #region Method -> StopDownloadingMovie
         /// <summary>
-        /// Cancel the download of a movie 
+        /// Stop downloading a movie
         /// </summary>
-        public async Task StopDownloadingMovie()
+        public void StopDownloadingMovie()
         {
-            await Task.Run(() =>
+            if (CancellationDownloadingToken != null)
             {
-                if (IsDownloadingMovie)
-                {
-                    // Inform subscriber we have stopped downloading a movie
-                    OnStoppedDownloadingMovie(new EventArgs());
-                    IsDownloadingMovie = false;
-                    TorrentSession.RemoveTorrent(TorrentHandle, true);
-                    TorrentSession.Dispose();
-                }
-            });
+                CancellationDownloadingToken.Cancel();
+            }
         }
-
+        #endregion  
+      
         #endregion
-
-        #endregion        
 
         #region Events
 
@@ -451,6 +430,25 @@ namespace TVShow.ViewModel
         protected virtual void OnDownloadingMovie(EventArgs e)
         {
             EventHandler<EventArgs> handler = DownloadingMovie;
+            if (handler != null)
+            {
+                handler(this, e);
+            }
+        }
+        #endregion
+
+        #region Event -> OnLoadingMovie
+        /// <summary>
+        /// LoadingMovie event
+        /// </summary>
+        public event EventHandler<EventArgs> LoadingMovie;
+        /// <summary>
+        /// When movie is selected
+        /// </summary>
+        ///<param name="e">e</param>
+        protected virtual void OnLoadingMovie(EventArgs e)
+        {
+            EventHandler<EventArgs> handler = LoadingMovie;
             if (handler != null)
             {
                 handler(this, e);

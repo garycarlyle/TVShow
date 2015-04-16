@@ -43,7 +43,7 @@ namespace TVShow
             UseNoneWindowStyle = true;
             IgnoreTaskbarOnMaximize = true;
             WindowState = WindowState.Maximized;
-            if (MediaPlayerIsPlaying)
+            if (MediaPlayer != null && MediaPlayer.Source != null)
             {
                 MediaPlayer.Stretch = Stretch.Fill;
             }
@@ -93,10 +93,10 @@ namespace TVShow
 
                     // Unsubscribe events
                     vm.ConnectionError -= OnConnectionInError;
-                    vm.MovieLoading -= OnMovieLoading;
-                    vm.MovieStoppedDownloading -= OnMovieStoppedDownloading;
-                    vm.MovieLoaded -= OnMovieSelected;
-                    vm.MovieBuffered -= OnMovieBuffered;
+                    vm.DownloadingMovie -= OnDownloadingMovie;
+                    vm.StoppedDownloadingMovie -= OnStoppedDownloadingMovie;
+                    vm.LoadedMovie -= OnLoadedMovie;
+                    vm.BufferedMovie -= OnBufferedMovie;
                 }
 
                 ViewModelLocator.Cleanup();
@@ -118,11 +118,11 @@ namespace TVShow
             if (vm != null)
             {
                 vm.ConnectionError += OnConnectionInError;
-                vm.MovieLoading += OnMovieLoading;
-                vm.MovieStoppedDownloading += OnMovieStoppedDownloading;
-                vm.MovieLoaded += OnMovieSelected;
-                vm.MovieBuffered += OnMovieBuffered;
-                vm.MovieLoadingProgress += OnMovieLoadingProgress;
+                vm.DownloadingMovie += OnDownloadingMovie;
+                vm.StoppedDownloadingMovie += OnStoppedDownloadingMovie;
+                vm.LoadedMovie += OnLoadedMovie;
+                vm.BufferedMovie += OnBufferedMovie;
+                vm.LoadingMovieProgress += OnLoadingMovieProgress;
             }
 
             /*
@@ -146,13 +146,13 @@ namespace TVShow
         }
         #endregion
 
-        #region Method -> OnMovieLoadingProgress
+        #region Method -> OnLoadingMovieProgress
         /// <summary>
         /// Report progress when a movie is loading and set to visible the progressbar, the cancel button and the LoadingText label
         /// </summary>
         /// <param name="sender">Sender object</param>
         /// <param name="e">MovieLoadingProgressEventArgs</param>
-        private void OnMovieLoadingProgress(object sender, MovieLoadingProgressEventArgs e)
+        private void OnLoadingMovieProgress(object sender, MovieLoadingProgressEventArgs e)
         {
             DispatcherHelper.CheckBeginInvokeOnUI(() =>
             {
@@ -193,13 +193,13 @@ namespace TVShow
         }
         #endregion
 
-        #region Method -> OnMovieLoading
+        #region Method -> OnDownloadingMovie
         /// <summary>
         /// Fade in the movie page's opacity when a movie is loading
         /// </summary>
         /// <param name="sender">Sender object</param>
         /// <param name="e">EventArgs</param>
-        private void OnMovieLoading(object sender, EventArgs e)
+        private void OnDownloadingMovie(object sender, EventArgs e)
         {
             DispatcherHelper.CheckBeginInvokeOnUI(() =>
             {
@@ -222,26 +222,26 @@ namespace TVShow
         }
         #endregion
 
-        #region Method -> OnMovieSelected
+        #region Method -> OnLoadedMovie
         /// <summary>
         /// Open the movie flyout when a movie is selected from the main interface
         /// </summary>
         /// <param name="sender">Sender object</param>
         /// <param name="e">EventArgs</param>
-        void OnMovieSelected(object sender, EventArgs e)
+        void OnLoadedMovie(object sender, EventArgs e)
         {
             MovieContainer.Opacity = 1.0;
             MoviePage.IsOpen = true;
         }
         #endregion
 
-        #region Method -> OnMovieBuffered
+        #region Method -> OnBufferedMovie
         /// <summary>
         /// Play the movie when buffered
         /// </summary>
         /// <param name="sender">Sender object</param>
         /// <param name="e">MovieBufferedEventArgs</param>
-        private void OnMovieBuffered(object sender, MovieBufferedEventArgs e)
+        private void OnBufferedMovie(object sender, MovieBufferedEventArgs e)
         {
             DispatcherHelper.CheckBeginInvokeOnUI(() =>
             {
@@ -300,17 +300,17 @@ namespace TVShow
         }
         #endregion
 
-        #region Method -> OnMovieStoppedDownloading
+        #region Method -> OnStoppedDownloadingMovie
         /// <summary>
         /// Close the player and go back to the movie page when the downloading of the movie has stopped
         /// </summary>
         /// <param name="sender">Sender object</param>
         /// <param name="e">EventArgs</param>
-        private void OnMovieStoppedDownloading(object sender, EventArgs e)
+        private void OnStoppedDownloadingMovie(object sender, EventArgs e)
         {
             DispatcherHelper.CheckBeginInvokeOnUI(() =>
             {
-                if (MediaPlayerIsPlaying)
+                if (MediaPlayer != null && MediaPlayer.Source != null)
                 {
                     MediaPlayer.Stop();
                     MediaPlayer.Close();
@@ -396,16 +396,9 @@ namespace TVShow
         {
             MediaPlayer.Play();
             MediaPlayerIsPlaying = true;
-            if (MediaPlayerIsPlaying)
-            {
-                StatusBarItemPlay.Visibility = Visibility.Collapsed;
-                StatusBarItemPause.Visibility = Visibility.Visible;
-            }
-            else
-            {
-                StatusBarItemPlay.Visibility = Visibility.Visible;
-                StatusBarItemPause.Visibility = Visibility.Collapsed;
-            }
+
+            StatusBarItemPlay.Visibility = Visibility.Collapsed;
+            StatusBarItemPause.Visibility = Visibility.Visible;
         }
         #endregion
 
@@ -441,16 +434,9 @@ namespace TVShow
         {
             MediaPlayer.Pause();
             MediaPlayerIsPlaying = false;
-            if (MediaPlayerIsPlaying)
-            {
-                StatusBarItemPlay.Visibility = Visibility.Collapsed;
-                StatusBarItemPause.Visibility = Visibility.Visible;
-            }
-            else
-            {
-                StatusBarItemPlay.Visibility = Visibility.Visible;
-                StatusBarItemPause.Visibility = Visibility.Collapsed;
-            }
+
+            StatusBarItemPlay.Visibility = Visibility.Visible;
+            StatusBarItemPause.Visibility = Visibility.Collapsed;
         }
         #endregion        
 

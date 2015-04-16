@@ -204,15 +204,15 @@ namespace TVShow.ViewModel
                 await ApiService.GetMovieAsync(movieId,
                     CancellationLoadingToken);
 
+            // Inform we loaded the requested movie
+            OnLoadedMovie(new EventArgs());
+
             // Check if we met any exception in the GetMoviesInfosAsync method
             if (HandleExceptions(movie.Item2))
                 return;
 
             // Our loaded movie is here
             Movie = movie.Item1;
-
-            // Inform we loaded the requested movie
-            OnMovieLoaded(new EventArgs());
 
             // Download the movie poster
             Tuple<string, IEnumerable<Exception>> moviePosterAsyncResults =
@@ -307,7 +307,7 @@ namespace TVShow.ViewModel
             IsDownloadingMovie = true;
 
             // Inform subscribers we're actually loading a movie
-            OnMovieLoading(new EventArgs());
+            OnDownloadingMovie(new EventArgs());
 
             // Listening to a port which is randomly between 6881 and 6889
             TorrentSession.ListenOn(6881, 6889);
@@ -334,7 +334,7 @@ namespace TVShow.ViewModel
                     double progress = status.Progress*100.0;
 
                     // Inform subscribers of our progress
-                    OnMovieLoadingProgress(new MovieLoadingProgressEventArgs(progress, status.DownloadRate/1024));
+                    OnLoadingMovieProgress(new MovieLoadingProgressEventArgs(progress, status.DownloadRate/1024));
 
                     // We consider 2% of progress is enough to start playing
                     if (progress >= Constants.MinimumBufferingBeforeMoviePlaying && !alreadyBuffered)
@@ -350,7 +350,7 @@ namespace TVShow.ViewModel
                                     )
                                 {
                                     // Inform subscribers we have finished buffering the movie
-                                    OnMovieBuffered(new MovieBufferedEventArgs(filePath));
+                                    OnBufferedMovie(new MovieBufferedEventArgs(filePath));
                                     alreadyBuffered = true;
                                 }
                             }
@@ -379,7 +379,7 @@ namespace TVShow.ViewModel
                 if (IsDownloadingMovie)
                 {
                     // Inform subscriber we have stopped downloading a movie
-                    OnMovieStoppedDownloading(new EventArgs());
+                    OnStoppedDownloadingMovie(new EventArgs());
                     IsDownloadingMovie = false;
                     TorrentSession.RemoveTorrent(TorrentHandle, true);
                     TorrentSession.Dispose();
@@ -420,18 +420,18 @@ namespace TVShow.ViewModel
         }
         #endregion
 
-        #region Event -> OnMovieLoadingProgress
+        #region Event -> OnLoadingMovieProgress
         /// <summary>
         /// MovieLoadingProgress event
         /// </summary>
-        public event EventHandler<MovieLoadingProgressEventArgs> MovieLoadingProgress;
+        public event EventHandler<MovieLoadingProgressEventArgs> LoadingMovieProgress;
         /// <summary>
         /// When movie is loading
         /// </summary>
         ///<param name="e">MovieLoadingProgressEventArgs parameter</param>
-        protected virtual void OnMovieLoadingProgress(MovieLoadingProgressEventArgs e)
+        protected virtual void OnLoadingMovieProgress(MovieLoadingProgressEventArgs e)
         {
-            EventHandler<MovieLoadingProgressEventArgs> handler = MovieLoadingProgress;
+            EventHandler<MovieLoadingProgressEventArgs> handler = LoadingMovieProgress;
             if (handler != null)
             {
                 handler(this, e);
@@ -439,18 +439,18 @@ namespace TVShow.ViewModel
         }
         #endregion
 
-        #region Event -> OnMovieLoading
+        #region Event -> OnDownloadingMovie
         /// <summary>
-        /// MovieLoading event
+        /// DownloadingMovie event
         /// </summary>
-        public event EventHandler<EventArgs> MovieLoading;
+        public event EventHandler<EventArgs> DownloadingMovie;
         /// <summary>
-        /// When movie is loading
+        /// When movie is downloading
         /// </summary>
         ///<param name="e">EventArgs parameter</param>
-        protected virtual void OnMovieLoading(EventArgs e)
+        protected virtual void OnDownloadingMovie(EventArgs e)
         {
-            EventHandler<EventArgs> handler = MovieLoading;
+            EventHandler<EventArgs> handler = DownloadingMovie;
             if (handler != null)
             {
                 handler(this, e);
@@ -458,18 +458,18 @@ namespace TVShow.ViewModel
         }
         #endregion
 
-        #region Event -> OnMovieLoaded
+        #region Event -> OnLoadedMovie
         /// <summary>
-        /// MovieSelected event
+        /// LoadedMovie event
         /// </summary>
-        public event EventHandler<EventArgs> MovieLoaded;
+        public event EventHandler<EventArgs> LoadedMovie;
         /// <summary>
         /// When movie is selected
         /// </summary>
         ///<param name="e">e</param>
-        protected virtual void OnMovieLoaded(EventArgs e)
+        protected virtual void OnLoadedMovie(EventArgs e)
         {
-            EventHandler<EventArgs> handler = MovieLoaded;
+            EventHandler<EventArgs> handler = LoadedMovie;
             if (handler != null)
             {
                 handler(this, e);
@@ -477,18 +477,18 @@ namespace TVShow.ViewModel
         }
         #endregion
 
-        #region Event -> OnMovieStoppedDownloading
+        #region Event -> OnStoppedDownloadingMovie
         /// <summary>
-        /// MovieStoppedDownloading event
+        /// StoppedDownloadingMovie event
         /// </summary>
-        public event EventHandler<EventArgs> MovieStoppedDownloading;
+        public event EventHandler<EventArgs> StoppedDownloadingMovie;
         /// <summary>
         /// When movie is stopped downloading
         /// </summary>
         ///<param name="e">EventArgs parameter</param>
-        protected virtual void OnMovieStoppedDownloading(EventArgs e)
+        protected virtual void OnStoppedDownloadingMovie(EventArgs e)
         {
-            EventHandler<EventArgs> handler = MovieStoppedDownloading;
+            EventHandler<EventArgs> handler = StoppedDownloadingMovie;
             if (handler != null)
             {
                 handler(this, e);
@@ -496,18 +496,18 @@ namespace TVShow.ViewModel
         }
         #endregion
 
-        #region Event -> OnMovieBuffered
+        #region Event -> OnBufferedMovie
         /// <summary>
-        /// MovieBuffered event
+        /// BufferedMovie event
         /// </summary>
-        public event EventHandler<MovieBufferedEventArgs> MovieBuffered;
+        public event EventHandler<MovieBufferedEventArgs> BufferedMovie;
         /// <summary>
         /// When a movie is finished buffering
         /// </summary>
         ///<param name="e">MovieBufferedEventArgs parameter</param>
-        protected virtual void OnMovieBuffered(MovieBufferedEventArgs e)
+        protected virtual void OnBufferedMovie(MovieBufferedEventArgs e)
         {
-            EventHandler<MovieBufferedEventArgs> handler = MovieBuffered;
+            EventHandler<MovieBufferedEventArgs> handler = BufferedMovie;
             if (handler != null)
             {
                 handler(this, e);

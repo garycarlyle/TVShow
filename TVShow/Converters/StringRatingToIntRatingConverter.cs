@@ -31,11 +31,11 @@ namespace TVShow.Converters
                 }
                 catch (FormatException)
                 {
-                    throw new FormatException();
+                    return result;
                 }
                 catch (OverflowException)
                 {
-                    throw new OverflowException();
+                    return result;
                 }
 
                 if (!double.Equals(result, 0.0))
@@ -58,7 +58,7 @@ namespace TVShow.Converters
         public object ConvertBack(object value, Type targetType,
             object parameter, CultureInfo culture)
         {
-            throw new NotImplementedException();
+            return DependencyProperty.UnsetValue;
         }
         #endregion
     }

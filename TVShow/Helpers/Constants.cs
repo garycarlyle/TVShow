@@ -53,6 +53,11 @@ namespace TVShow.Helpers
         public static readonly string TMDbClientID = "52db02421219a8b6b4a8eed1df0b8bd8";
 
         /// <summary>
+        /// Background image size for movie, retrieved from TMDb
+        /// </summary>
+        public static readonly string BackgroundImageSizeTMDb = "original";
+
+        /// <summary>
         /// Maximum width of the movie title in the main interface until sliding
         /// </summary>
         public const int MaxWidthBeforeSlidingTitle = 160;

@@ -426,7 +426,7 @@ namespace TVShow.Model.Api
             TMDbClient tmDbclient = new TMDbClient(Helpers.Constants.TMDbClientID);
             tmDbclient.GetConfig();
             TMDbLib.Objects.Movies.Movie movie = tmDbclient.GetMovie(imdbCode, MovieMethods.Images);
-            Uri imageUri = tmDbclient.GetImageUrl("original",
+            Uri imageUri = tmDbclient.GetImageUrl(Helpers.Constants.BackgroundImageSizeTMDb,
                 movie.Images.Backdrops.Aggregate((i1, i2) => i1.VoteAverage > i2.VoteAverage ? i1 : i2).FilePath);
 
             List<Exception> ex = new List<Exception>();

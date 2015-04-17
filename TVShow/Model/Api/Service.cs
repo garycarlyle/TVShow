@@ -149,7 +149,7 @@ namespace TVShow.Model.Api
                     await
                         DownloadFileAsync(imdbCode,
                             new Uri(torentUrl), Constants.FileType.TorrentFile,
-                            cancellationToken.Token);
+                            cancellationToken.Token).ConfigureAwait(false);
 
                 if (torrentFile != null)
                 {
@@ -206,7 +206,7 @@ namespace TVShow.Model.Api
                     await
                         DownloadFileAsync(imdbCode,
                             new Uri(imageUrl), Constants.FileType.CoverImage,
-                            cancellationToken.Token);
+                            cancellationToken.Token).ConfigureAwait(false);
 
                 if (coverImage != null)
                 {
@@ -263,7 +263,7 @@ namespace TVShow.Model.Api
                     await
                         DownloadFileAsync(imdbCode,
                             new Uri(imageUrl), Constants.FileType.PosterImage,
-                            cancellationToken.Token);
+                            cancellationToken.Token).ConfigureAwait(false);
 
                 if (posterImage != null)
                 {
@@ -320,7 +320,7 @@ namespace TVShow.Model.Api
                     await
                         DownloadFileAsync(name,
                             new Uri(imageUrl), Constants.FileType.DirectorImage,
-                            cancellationToken.Token);
+                            cancellationToken.Token).ConfigureAwait(false);
 
                 if (directorImage != null)
                 {
@@ -377,7 +377,7 @@ namespace TVShow.Model.Api
                     await
                         DownloadFileAsync(name,
                             new Uri(imageUrl), Constants.FileType.ActorImage,
-                            cancellationToken.Token);
+                            cancellationToken.Token).ConfigureAwait(false);
 
                 if (actorImage != null)
                 {
@@ -438,7 +438,7 @@ namespace TVShow.Model.Api
                 try
                 {
                     Tuple<string, Exception> res =
-                        await DownloadFileAsync(imdbCode, imageUri, Constants.FileType.BackgroundImage, cancellationToken.Token);
+                        await DownloadFileAsync(imdbCode, imageUri, Constants.FileType.BackgroundImage, cancellationToken.Token).ConfigureAwait(false);
 
                     if (res != null)
                     {

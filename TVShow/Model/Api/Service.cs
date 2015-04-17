@@ -55,7 +55,7 @@ namespace TVShow.Model.Api
             WrapperMovieShortDetails results = new WrapperMovieShortDetails();
             try
             {
-                IRestResponse response = await client.ExecuteTaskAsync(request, cancellationToken.Token).ConfigureAwait(false);
+                IRestResponse response = await client.ExecuteTaskAsync(request, cancellationToken.Token);
                 if (response != null)
                 {
                     results =
@@ -104,7 +104,7 @@ namespace TVShow.Model.Api
             WrapperMovieFullDetails responseWrapper = new WrapperMovieFullDetails();
             try
             {
-                IRestResponse response = await restClient.ExecuteTaskAsync(request, cancellationToken.Token).ConfigureAwait(false);
+                IRestResponse response = await restClient.ExecuteTaskAsync(request, cancellationToken.Token);
                 if (response != null)
                 {
                     responseWrapper =
@@ -141,7 +141,7 @@ namespace TVShow.Model.Api
             CancellationTokenSource cancellationToken)
         {
             List<Exception> ex = new List<Exception>();
-            Tuple<string, Exception> torrentFile = new Tuple<string, Exception>(String.Empty, new Exception());
+            Tuple<string, Exception> torrentFile = new Tuple<string, Exception>(String.Empty, null);
 
             try
             {
@@ -149,7 +149,7 @@ namespace TVShow.Model.Api
                     await
                         DownloadFileAsync(imdbCode,
                             new Uri(torentUrl), Constants.FileType.TorrentFile,
-                            cancellationToken.Token).ConfigureAwait(false);
+                            cancellationToken.Token);
 
                 if (torrentFile != null)
                 {
@@ -157,7 +157,7 @@ namespace TVShow.Model.Api
                     {
                         torrentFile = new Tuple<string, Exception>(Constants.TorrentDirectory +
                                                                    imdbCode +
-                                                                   ".torrent", new Exception());
+                                                                   ".torrent", null);
                     }
                     else
                     {
@@ -198,7 +198,7 @@ namespace TVShow.Model.Api
             CancellationTokenSource cancellationToken)
         {
             List<Exception> ex = new List<Exception>();
-            Tuple<string, Exception> coverImage = new Tuple<string, Exception>(String.Empty, new Exception());
+            Tuple<string, Exception> coverImage = new Tuple<string, Exception>(String.Empty, null);
 
             try
             {
@@ -206,7 +206,7 @@ namespace TVShow.Model.Api
                     await
                         DownloadFileAsync(imdbCode,
                             new Uri(imageUrl), Constants.FileType.CoverImage,
-                            cancellationToken.Token).ConfigureAwait(false);
+                            cancellationToken.Token);
 
                 if (coverImage != null)
                 {
@@ -214,7 +214,7 @@ namespace TVShow.Model.Api
                     {
                         coverImage = new Tuple<string, Exception>(Constants.CoverMoviesDirectory +
                                                                   imdbCode +
-                                                                  Constants.ImageFileExtension, new Exception());
+                                                                  Constants.ImageFileExtension, null);
                     }
                     else
                     {
@@ -255,7 +255,7 @@ namespace TVShow.Model.Api
             CancellationTokenSource cancellationToken)
         {
             List<Exception> ex = new List<Exception>();
-            Tuple<string, Exception> posterImage = new Tuple<string, Exception>(String.Empty, new Exception());
+            Tuple<string, Exception> posterImage = new Tuple<string, Exception>(String.Empty, null);
 
             try
             {
@@ -263,7 +263,7 @@ namespace TVShow.Model.Api
                     await
                         DownloadFileAsync(imdbCode,
                             new Uri(imageUrl), Constants.FileType.PosterImage,
-                            cancellationToken.Token).ConfigureAwait(false);
+                            cancellationToken.Token);
 
                 if (posterImage != null)
                 {
@@ -271,7 +271,7 @@ namespace TVShow.Model.Api
                     {
                         posterImage = new Tuple<string, Exception>(Constants.PosterMovieDirectory +
                                                                    imdbCode +
-                                                                   Constants.ImageFileExtension, new Exception());
+                                                                   Constants.ImageFileExtension, null);
                     }
                     else
                     {
@@ -312,7 +312,7 @@ namespace TVShow.Model.Api
             CancellationTokenSource cancellationToken)
         {
             List<Exception> ex = new List<Exception>();
-            Tuple<string, Exception> directorImage = new Tuple<string, Exception>(String.Empty, new Exception());
+            Tuple<string, Exception> directorImage = new Tuple<string, Exception>(String.Empty, null);
 
             try
             {
@@ -320,7 +320,7 @@ namespace TVShow.Model.Api
                     await
                         DownloadFileAsync(name,
                             new Uri(imageUrl), Constants.FileType.DirectorImage,
-                            cancellationToken.Token).ConfigureAwait(false);
+                            cancellationToken.Token);
 
                 if (directorImage != null)
                 {
@@ -328,7 +328,7 @@ namespace TVShow.Model.Api
                     {
                         directorImage = new Tuple<string, Exception>(Constants.DirectorMovieDirectory +
                                                                      name +
-                                                                     Constants.ImageFileExtension, new Exception());
+                                                                     Constants.ImageFileExtension, null);
                     }
                     else
                     {
@@ -369,7 +369,7 @@ namespace TVShow.Model.Api
             CancellationTokenSource cancellationToken)
         {
             List<Exception> ex = new List<Exception>();
-            Tuple<string, Exception> actorImage = new Tuple<string, Exception>(String.Empty, new Exception());
+            Tuple<string, Exception> actorImage = new Tuple<string, Exception>(String.Empty, null);
 
             try
             {
@@ -377,7 +377,7 @@ namespace TVShow.Model.Api
                     await
                         DownloadFileAsync(name,
                             new Uri(imageUrl), Constants.FileType.ActorImage,
-                            cancellationToken.Token).ConfigureAwait(false);
+                            cancellationToken.Token);
 
                 if (actorImage != null)
                 {
@@ -385,7 +385,7 @@ namespace TVShow.Model.Api
                     {
                         actorImage = new Tuple<string, Exception>(Constants.ActorMovieDirectory +
                                                                   name +
-                                                                  Constants.ImageFileExtension, new Exception());
+                                                                  Constants.ImageFileExtension, null);
                     }
                     else
                     {
@@ -426,48 +426,58 @@ namespace TVShow.Model.Api
             List<Exception> ex = new List<Exception>();
             string backgroundImage = String.Empty;
 
-            TMDbClient tmDbclient = new TMDbClient(Helpers.Constants.TMDbClientID);
+            TMDbClient tmDbclient = new TMDbClient(Constants.TMDbClientID);
             tmDbclient.GetConfig();
 
-            TMDbLib.Objects.Movies.Movie movie = tmDbclient.GetMovie(imdbCode, MovieMethods.Images);
-            if (movie.ImdbId != null)
+            try
             {
-                Uri imageUri = tmDbclient.GetImageUrl(Helpers.Constants.BackgroundImageSizeTMDb,
-                    movie.Images.Backdrops.Aggregate((i1, i2) => i1.VoteAverage > i2.VoteAverage ? i1 : i2).FilePath);
-
-                try
+                TMDbLib.Objects.Movies.Movie movie = tmDbclient.GetMovie(imdbCode, MovieMethods.Images);
+                if (movie.ImdbId != null)
                 {
-                    Tuple<string, Exception> res =
-                        await DownloadFileAsync(imdbCode, imageUri, Constants.FileType.BackgroundImage, cancellationToken.Token).ConfigureAwait(false);
+                    Uri imageUri = tmDbclient.GetImageUrl(Constants.BackgroundImageSizeTMDb,
+                        movie.Images.Backdrops.Aggregate((i1, i2) => i1.VoteAverage > i2.VoteAverage ? i1 : i2).FilePath);
 
-                    if (res != null)
+                    try
                     {
-                        if (res.Item2 == null)
+                        Tuple<string, Exception> res =
+                            await
+                                DownloadFileAsync(imdbCode, imageUri, Constants.FileType.BackgroundImage,
+                                    cancellationToken.Token);
+
+                        if (res != null)
                         {
-                            backgroundImage = Constants.BackgroundMovieDirectory + imdbCode + Constants.ImageFileExtension;
+                            if (res.Item2 == null)
+                            {
+                                backgroundImage = Constants.BackgroundMovieDirectory + imdbCode +
+                                                  Constants.ImageFileExtension;
+                            }
+                            else
+                            {
+                                ex.Add(res.Item2);
+                            }
                         }
                         else
                         {
-                            ex.Add(res.Item2);
+                            ex.Add(new Exception());
                         }
                     }
-                    else
+                    catch (WebException webException)
                     {
-                        ex.Add(new Exception());
+                        ex.Add(webException);
+                    }
+                    catch (TaskCanceledException e)
+                    {
+                        ex.Add(e);
                     }
                 }
-                catch (WebException webException)
+                else
                 {
-                    ex.Add(webException);
-                }
-                catch (TaskCanceledException e)
-                {
-                    ex.Add(e);
+                    ex.Add(new Exception());
                 }
             }
-            else
+            catch (Exception e)
             {
-                ex.Add(new Exception());
+                ex.Add(e);
             }
 
             return new Tuple<string, IEnumerable<Exception>>(backgroundImage, ex);
@@ -485,128 +495,134 @@ namespace TVShow.Model.Api
         private static async Task<Tuple<string, Exception>> DownloadFileAsync(string fileName, Uri fileUri,
             Constants.FileType fileType, CancellationToken ct)
         {
-            string pathDirectory = String.Empty;
-            string extension = String.Empty;
-            switch (fileType)
+            if (fileUri != null)
             {
-                case Constants.FileType.BackgroundImage:
-                    pathDirectory = Constants.BackgroundMovieDirectory;
-                    extension = Constants.ImageFileExtension;
-                    break;
-                case Constants.FileType.CoverImage:
-                    pathDirectory = Constants.CoverMoviesDirectory;
-                    extension = Constants.ImageFileExtension;
-                    break;
-                case Constants.FileType.PosterImage:
-                    pathDirectory = Constants.PosterMovieDirectory;
-                    extension = Constants.ImageFileExtension;
-                    break;
-                case Constants.FileType.DirectorImage:
-                    pathDirectory = Constants.DirectorMovieDirectory;
-                    extension = Constants.ImageFileExtension;
-                    break;
-                case Constants.FileType.ActorImage:
-                    pathDirectory = Constants.ActorMovieDirectory;
-                    extension = Constants.ImageFileExtension;
-                    break;
-                case Constants.FileType.TorrentFile:
-                    pathDirectory = Constants.TorrentDirectory;
-                    extension = Constants.TorrentFileExtension;
-                    break;
-                default:
-                    return new Tuple<string, Exception>(fileName, new Exception());
-            }
-            string downloadToDirectory = pathDirectory + fileName + extension;
-
-
-            if (!Directory.Exists(pathDirectory))
-            {
-                try
+                string pathDirectory = String.Empty;
+                string extension = String.Empty;
+                switch (fileType)
                 {
-                    Directory.CreateDirectory(pathDirectory);
+                    case Constants.FileType.BackgroundImage:
+                        pathDirectory = Constants.BackgroundMovieDirectory;
+                        extension = Constants.ImageFileExtension;
+                        break;
+                    case Constants.FileType.CoverImage:
+                        pathDirectory = Constants.CoverMoviesDirectory;
+                        extension = Constants.ImageFileExtension;
+                        break;
+                    case Constants.FileType.PosterImage:
+                        pathDirectory = Constants.PosterMovieDirectory;
+                        extension = Constants.ImageFileExtension;
+                        break;
+                    case Constants.FileType.DirectorImage:
+                        pathDirectory = Constants.DirectorMovieDirectory;
+                        extension = Constants.ImageFileExtension;
+                        break;
+                    case Constants.FileType.ActorImage:
+                        pathDirectory = Constants.ActorMovieDirectory;
+                        extension = Constants.ImageFileExtension;
+                        break;
+                    case Constants.FileType.TorrentFile:
+                        pathDirectory = Constants.TorrentDirectory;
+                        extension = Constants.TorrentFileExtension;
+                        break;
+                    default:
+                        return new Tuple<string, Exception>(fileName, new Exception());
                 }
-                catch (Exception e)
-                {
-                    return new Tuple<string, Exception>(fileName, e);
-                }
-            }
+                string downloadToDirectory = pathDirectory + fileName + extension;
 
-            using (var webClient = new NoKeepAliveWebClient())
-            {
-                ct.Register(webClient.CancelAsync);
-                if (!File.Exists(downloadToDirectory))
+
+                if (!Directory.Exists(pathDirectory))
                 {
                     try
                     {
-                        await webClient.DownloadFileTaskAsync(fileUri,
-                            downloadToDirectory).ConfigureAwait(false);
-
-                        try
-                        {
-                            FileInfo fi = new FileInfo(downloadToDirectory);
-                            if (fi.Length == 0)
-                            {
-                                return new Tuple<string, Exception>(fileName, new Exception());
-                            }
-                        }
-                        catch (Exception e)
-                        {
-                            return new Tuple<string, Exception>(fileName, e);
-                        }
-
-                    }
-                    catch (WebException e)
-                    {
-                        return new Tuple<string, Exception>(fileName, e);
+                        Directory.CreateDirectory(pathDirectory);
                     }
                     catch (Exception e)
                     {
                         return new Tuple<string, Exception>(fileName, e);
                     }
                 }
-                else
+
+                using (var webClient = new NoKeepAliveWebClient())
                 {
-                    try
+                    ct.Register(webClient.CancelAsync);
+                    if (!File.Exists(downloadToDirectory))
                     {
-                        FileInfo fi = new FileInfo(downloadToDirectory);
-                        if (fi.Length == 0)
+                        try
                         {
+                            await webClient.DownloadFileTaskAsync(fileUri,
+                                downloadToDirectory);
+
                             try
                             {
-                                File.Delete(downloadToDirectory);
-                                try
+                                FileInfo fi = new FileInfo(downloadToDirectory);
+                                if (fi.Length == 0)
                                 {
-                                    await webClient.DownloadFileTaskAsync(fileUri, downloadToDirectory).ConfigureAwait(false);
-
-                                    FileInfo newfi = new FileInfo(downloadToDirectory);
-                                    if (newfi.Length == 0)
-                                    {
-                                        return new Tuple<string, Exception>(fileName, new Exception());
-                                    }
-                                }
-                                catch (WebException e)
-                                {
-                                    return new Tuple<string, Exception>(fileName, e);
-                                }
-                                catch (Exception e)
-                                {
-                                    return new Tuple<string, Exception>(fileName, e);
+                                    return new Tuple<string, Exception>(fileName, new Exception());
                                 }
                             }
                             catch (Exception e)
                             {
                                 return new Tuple<string, Exception>(fileName, e);
                             }
+
+                        }
+                        catch (WebException e)
+                        {
+                            return new Tuple<string, Exception>(fileName, e);
+                        }
+                        catch (Exception e)
+                        {
+                            return new Tuple<string, Exception>(fileName, e);
                         }
                     }
-                    catch (Exception e)
+                    else
                     {
-                        return new Tuple<string, Exception>(fileName, e);
+                        try
+                        {
+                            FileInfo fi = new FileInfo(downloadToDirectory);
+                            if (fi.Length == 0)
+                            {
+                                try
+                                {
+                                    File.Delete(downloadToDirectory);
+                                    try
+                                    {
+                                        await
+                                            webClient.DownloadFileTaskAsync(fileUri, downloadToDirectory);
+
+                                        FileInfo newfi = new FileInfo(downloadToDirectory);
+                                        if (newfi.Length == 0)
+                                        {
+                                            return new Tuple<string, Exception>(fileName, new Exception());
+                                        }
+                                    }
+                                    catch (WebException e)
+                                    {
+                                        return new Tuple<string, Exception>(fileName, e);
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        return new Tuple<string, Exception>(fileName, e);
+                                    }
+                                }
+                                catch (Exception e)
+                                {
+                                    return new Tuple<string, Exception>(fileName, e);
+                                }
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            return new Tuple<string, Exception>(fileName, e);
+                        }
                     }
                 }
+
+                return new Tuple<string, Exception>(fileName, null);
             }
 
-            return new Tuple<string, Exception>(fileName, null);
+            return new Tuple<string, Exception>(fileName, new Exception());
         }
         #endregion
 

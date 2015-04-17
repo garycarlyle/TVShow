@@ -231,12 +231,15 @@ namespace TVShow
         /// <param name="e">EventArgs</param>
         void OnLoadingMovie(object sender, EventArgs e)
         {
-            MoviePage.IsOpen = true;
-            
-            MovieProgressBar.Visibility = Visibility.Visible;
-            MovieContainer.Visibility = Visibility.Collapsed;
+            DispatcherHelper.CheckBeginInvokeOnUI(() =>
+            {
+                MoviePage.IsOpen = true;
 
-            MovieContainer.Opacity = 0.0;
+                MovieProgressBar.Visibility = Visibility.Visible;
+                MovieContainer.Visibility = Visibility.Collapsed;
+
+                MovieContainer.Opacity = 0.0;
+            });
         }
         #endregion
 
@@ -248,22 +251,27 @@ namespace TVShow
         /// <param name="e">EventArgs</param>
         void OnLoadedMovie(object sender, EventArgs e)
         {
-            MovieProgressBar.Visibility = Visibility.Collapsed;
-            MovieContainer.Visibility = Visibility.Visible;
+            DispatcherHelper.CheckBeginInvokeOnUI(() =>
+            {
+                MovieProgressBar.Visibility = Visibility.Collapsed;
+                MovieContainer.Visibility = Visibility.Visible;
 
-            #region Fade in opacity
-            DoubleAnimationUsingKeyFrames opacityAnimation = new DoubleAnimationUsingKeyFrames();
-            opacityAnimation.Duration = new Duration(TimeSpan.FromSeconds(0.5));
-            PowerEase opacityEasingFunction = new PowerEase();
-            opacityEasingFunction.EasingMode = EasingMode.EaseInOut;
-            EasingDoubleKeyFrame startOpacityEasing = new EasingDoubleKeyFrame(0.0, KeyTime.FromPercent(0));
-            EasingDoubleKeyFrame endOpacityEasing = new EasingDoubleKeyFrame(1.0, KeyTime.FromPercent(1.0),
-                opacityEasingFunction);
-            opacityAnimation.KeyFrames.Add(startOpacityEasing);
-            opacityAnimation.KeyFrames.Add(endOpacityEasing);
+                #region Fade in opacity
 
-            MovieContainer.BeginAnimation(OpacityProperty, opacityAnimation);
-            #endregion
+                DoubleAnimationUsingKeyFrames opacityAnimation = new DoubleAnimationUsingKeyFrames();
+                opacityAnimation.Duration = new Duration(TimeSpan.FromSeconds(0.5));
+                PowerEase opacityEasingFunction = new PowerEase();
+                opacityEasingFunction.EasingMode = EasingMode.EaseInOut;
+                EasingDoubleKeyFrame startOpacityEasing = new EasingDoubleKeyFrame(0.0, KeyTime.FromPercent(0));
+                EasingDoubleKeyFrame endOpacityEasing = new EasingDoubleKeyFrame(1.0, KeyTime.FromPercent(1.0),
+                    opacityEasingFunction);
+                opacityAnimation.KeyFrames.Add(startOpacityEasing);
+                opacityAnimation.KeyFrames.Add(endOpacityEasing);
+
+                MovieContainer.BeginAnimation(OpacityProperty, opacityAnimation);
+
+                #endregion
+            });
         }
         #endregion
 
@@ -293,9 +301,7 @@ namespace TVShow
                 MediaPlayerIsPlaying = true;
 
                 ProgressBar.Visibility = Visibility.Collapsed;
-
                 StopLoadingMovieButton.Visibility = Visibility.Collapsed;
-
                 LoadingText.Visibility = Visibility.Collapsed;
             });
         }

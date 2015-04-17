@@ -181,7 +181,7 @@ namespace TVShow.ViewModel
             // Get the requested movie using the service
             Tuple<MovieFullDetails, IEnumerable<Exception>> movie =
                 await ApiService.GetMovieAsync(movieId,
-                    CancellationLoadingToken);
+                    CancellationLoadingToken).ConfigureAwait(false);
 
             // Check if we met any exception in the GetMoviesInfosAsync method
             if (HandleExceptions(movie.Item2))
@@ -201,10 +201,9 @@ namespace TVShow.ViewModel
             Tuple<string, IEnumerable<Exception>> moviePosterAsyncResults =
                 await ApiService.DownloadMoviePosterAsync(Movie.ImdbCode,
                     Movie.Images.LargeCoverImage,
-                    CancellationLoadingToken);
+                    CancellationLoadingToken).ConfigureAwait(false);
 
             // Set the path to the poster image if no exception occured in the DownloadMoviePosterAsync method
-
             if (!HandleExceptions(moviePosterAsyncResults.Item2))
                 Movie.PosterImage = moviePosterAsyncResults.Item1;
 
@@ -214,7 +213,7 @@ namespace TVShow.ViewModel
                 Tuple<string, IEnumerable<Exception>> directorsImagesAsyncResults =
                     await ApiService.DownloadDirectorImageAsync(director.Name.Trim(),
                         director.SmallImage,
-                        CancellationLoadingToken);
+                        CancellationLoadingToken).ConfigureAwait(false);
 
                 // Set the path to the director image if no exception occured in the DownloadDirectorImageAsync method
                 if (!HandleExceptions(directorsImagesAsyncResults.Item2))
@@ -227,7 +226,7 @@ namespace TVShow.ViewModel
                 Tuple<string, IEnumerable<Exception>> actorsImagesAsyncResults =
                     await ApiService.DownloadActorImageAsync(actor.Name.Trim(),
                         actor.SmallImage,
-                        CancellationLoadingToken);
+                        CancellationLoadingToken).ConfigureAwait(false);
 
                 // Set the path to the actor image if no exception occured in the DownloadActorImageAsync method
                 if (!HandleExceptions(actorsImagesAsyncResults.Item2))
@@ -235,7 +234,7 @@ namespace TVShow.ViewModel
             }
 
             Tuple<string, IEnumerable<Exception>> movieBackgroundImageResults =
-                await ApiService.DownloadMovieBackgroundImageAsync(imdbCode, CancellationLoadingToken);
+                await ApiService.DownloadMovieBackgroundImageAsync(imdbCode, CancellationLoadingToken).ConfigureAwait(false);
 
             // Set the path to the poster image if no exception occured in the DownloadMoviePosterAsync method
             if (!HandleExceptions(movieBackgroundImageResults.Item2))

@@ -100,22 +100,24 @@ namespace TVShow.CustomPanels
             if (Columns != 0)
             {
                 double columnWidth = Math.Floor(finalSize.Width / Columns);
-                double totalHeight = 0;
-                double top = 0;
-                double rowHeight = 0;
+                double totalHeight = 0.0;
+                double top = 0.0;
+                double rowHeight = 0.0;
+                double overflow = 0.0;
                 int column = 0;
                 int index = 0;
-                double overflow = 0;
                 bool overflowAlreadyCount = false;
+
                 foreach (UIElement child in Children)
                 {
+                    // Compute the tile size and position
                     child.Arrange(new Rect(columnWidth * column, top, columnWidth, child.DesiredSize.Height));
                     column++;
                     rowHeight = Children.Count >= Columns ?
                          Math.Max(rowHeight, child.DesiredSize.Height) : Math.Min(rowHeight, child.DesiredSize.Height);
                     index++;
 
-                    // Check if the current element is at the end of a row and add an height overflow to get enough space for the next elements of the next row
+                    // Check if the current element is at the end of a row and add an height overflow to get enough space for the next elements of the second  row
                     if (column == Columns && Children.Count != index && (Children.Count - index + 1) <= Columns && !overflowAlreadyCount)
                     {
                         overflow = rowHeight;
@@ -129,6 +131,7 @@ namespace TVShow.CustomPanels
                             totalHeight += rowHeight;
                         }
                     }
+
                     if (column == Columns)
                     {
                         column = 0;
@@ -136,6 +139,7 @@ namespace TVShow.CustomPanels
                         rowHeight = 0;
                     }
                 }
+
                 if (Children.Count >= Columns)
                 {
                     totalHeight = totalHeight/Columns + overflow;
@@ -151,7 +155,7 @@ namespace TVShow.CustomPanels
 
         #region Method -> OnDesiredColumnWidthChanged
         /// <summary>
-        /// Fired when DependencyProperty DesiredColumnWidthProperty is changed
+        /// Inform when DesiredColumnWidthProperty has changed
         /// </summary>
         /// <param name="e">e</param>
         /// <param name="obj">obj</param>
@@ -170,7 +174,7 @@ namespace TVShow.CustomPanels
         /// </summary>
         public event EventHandler<NumberOfColumnChangedEventArgs> NumberOfColumnsChanged;
         /// <summary>
-        /// Advertise when the current number of columns changed in the ElasticWrapPanel
+        /// Inform when the current number of columns changed in the ElasticWrapPanel
         /// </summary>
         ///<param name="e">e</param>
         protected virtual void OnNumberOfColumnsChanged(NumberOfColumnChangedEventArgs e)

@@ -45,17 +45,22 @@ namespace TVShow.Helpers
         /// <summary>
         /// YtsApiEndpoint Endpoint to YTS
         /// </summary>
-        public static readonly string YtsApiEndpoint = "http://yts.to/api/v2";
+        public const string YtsApiEndpoint = "http://yts.to/api/v2";
 
         /// <summary>
         /// Client ID for TMDb
         /// </summary>
-        public static readonly string TMDbClientID = "52db02421219a8b6b4a8eed1df0b8bd8";
+        public const string TmDbClientId = "52db02421219a8b6b4a8eed1df0b8bd8";
 
         /// <summary>
         /// Background image size for movie, retrieved from TMDb
         /// </summary>
-        public static readonly string BackgroundImageSizeTMDb = "original";
+        public const string BackgroundImageSizeTmDb = "original";
+
+        /// <summary>
+        /// Generic path to youtube video
+        /// </summary>
+        public const string YoutubePath = "http://www.youtube.com/watch?v=";
 
         /// <summary>
         /// Maximum width of the movie title in the main interface until sliding

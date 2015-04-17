@@ -14,6 +14,8 @@ using TVShow.Model.Cast;
 using TVShow.Model.Movie;
 using TVShow.Events;
 using GalaSoft.MvvmLight.Command;
+using TMDbLib.Objects.Movies;
+using YoutubeExtractor;
 
 namespace TVShow.ViewModel
 {
@@ -54,7 +56,7 @@ namespace TVShow.ViewModel
         /// <summary>
         /// Token to cancel the downloading of a movie
         /// </summary>
-        public CancellationTokenSource CancellationDownloadingToken { get; set; }
+        private CancellationTokenSource CancellationDownloadingToken { get; set; }
         #endregion
 
         #region Property -> IsDownloadingMovie
@@ -112,6 +114,14 @@ namespace TVShow.ViewModel
         }
         #endregion
 
+        #region Command -> GetTrailerCommand
+        public RelayCommand GetTrailerCommand
+        {
+            get;
+            private set;
+        }
+        #endregion
+
         #endregion
 
         #region Constructors
@@ -159,6 +169,11 @@ namespace TVShow.ViewModel
             LoadMovieCommand = new RelayCommand<MovieShortDetails>(async movie =>
             {
                 await LoadMovie(movie.Id, movie.ImdbCode);
+            });
+
+            GetTrailerCommand = new RelayCommand(() =>
+            {
+                GetTrailer(Movie.ImdbCode);
             });
         }
         #endregion
@@ -241,6 +256,89 @@ namespace TVShow.ViewModel
                 Movie.BackgroundImage = movieBackgroundImageResults.Item1;
         }
         #endregion
+
+        #region Method -> GetTrailer
+        /// <summary>
+        /// Get trailer of a movie
+        /// </summary>
+        /// <param name="imdbId">The IMDb Id of the movie</param>
+        private async Task GetTrailer(string imdbId)
+        {
+            Tuple<Trailers, Exception> trailer =
+                ApiService.GetMovieTrailer(imdbId);
+
+            VideoInfo video = null;
+
+            try
+            {
+                video = await GetVideoInfoForStreaming(Constants.YoutubePath + trailer.Item1.Youtube.Select(x => x.Source).FirstOrDefault(), YoutubeStreamingQuality.High);
+
+                if (video != null && video.RequiresDecryption)
+                {
+                    await Task.Run(() => DownloadUrlResolver.DecryptDownloadUrl(video));
+                }
+            }
+            catch (Exception ex)
+            {
+                if (ex is WebException || ex is VideoNotAvailableException || ex is YoutubeParseException)
+                {
+                    OnLoadedTrailer(new TrailerLoadedEventArgs(video.DownloadUrl, true));
+                }
+            }
+
+            if (video == null)
+            {
+                OnLoadedTrailer(new TrailerLoadedEventArgs(video.DownloadUrl, true));
+            }
+
+            OnLoadedTrailer(new TrailerLoadedEventArgs(video.DownloadUrl, false));
+        }
+
+        #endregion
+
+        private static async Task<VideoInfo> GetVideoInfoForStreaming(string youtubeLink, YoutubeStreamingQuality qualitySetting)
+        {
+            IEnumerable<VideoInfo> videoInfos = await Task.Run(() => DownloadUrlResolver.GetDownloadUrls(youtubeLink, false));
+
+            IEnumerable<VideoInfo> filtered = videoInfos
+                .Where(info => info.VideoType == VideoType.Mp4 && !info.Is3D && info.AdaptiveType == AdaptiveType.None);
+
+            return GetVideoByStreamingQuality(filtered, qualitySetting);
+        }
+
+        private static VideoInfo GetVideoByStreamingQuality(IEnumerable<VideoInfo> videos, YoutubeStreamingQuality quality)
+        {
+            videos = videos.ToList(); // Prevent multiple enumeration
+
+            if (quality == YoutubeStreamingQuality.High)
+            {
+                return videos.OrderByDescending(x => x.Resolution)
+                    .FirstOrDefault();
+            }
+
+            IEnumerable<int> preferredResolutions = StreamingQualityMap[quality];
+
+            IEnumerable<VideoInfo> preferredVideos = videos
+                .Where(info => preferredResolutions.Contains(info.Resolution))
+                .OrderByDescending(info => info.Resolution);
+
+            VideoInfo video = preferredVideos.FirstOrDefault();
+
+            if (video == null)
+            {
+                return GetVideoByStreamingQuality(videos, (YoutubeStreamingQuality)(((int)quality) - 1));
+            }
+
+            return video;
+        }
+
+        private static readonly IReadOnlyDictionary<YoutubeStreamingQuality, IEnumerable<int>> StreamingQualityMap =
+    new Dictionary<YoutubeStreamingQuality, IEnumerable<int>>
+            {
+                { YoutubeStreamingQuality.High, new HashSet<int> { 1080, 720 } },
+                { YoutubeStreamingQuality.Medium, new HashSet<int> { 480 } },
+                { YoutubeStreamingQuality.Low, new HashSet<int> { 360, 240 } }
+            };
 
         #region Method -> HandleExceptions
         /// <summary>
@@ -505,6 +603,25 @@ namespace TVShow.ViewModel
         protected virtual void OnBufferedMovie(MovieBufferedEventArgs e)
         {
             EventHandler<MovieBufferedEventArgs> handler = BufferedMovie;
+            if (handler != null)
+            {
+                handler(this, e);
+            }
+        }
+        #endregion
+
+        #region Event -> OnLoadedTrailer
+        /// <summary>
+        /// LoadedTrailer event
+        /// </summary>
+        public event EventHandler<TrailerLoadedEventArgs> LoadedTrailer;
+        /// <summary>
+        /// When a the trailer of a movie is finished loading
+        /// </summary>
+        ///<param name="e">MovieBufferedEventArgs parameter</param>
+        protected virtual void OnLoadedTrailer(TrailerLoadedEventArgs e)
+        {
+            EventHandler<TrailerLoadedEventArgs> handler = LoadedTrailer;
             if (handler != null)
             {
                 handler(this, e);

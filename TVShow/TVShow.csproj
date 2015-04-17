@@ -132,6 +132,9 @@
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
+    <Reference Include="YoutubeExtractor">
+      <HintPath>..\packages\YoutubeExtractor.0.10.6\lib\net35\YoutubeExtractor.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
@@ -153,10 +156,12 @@
     <Compile Include="Events\MovieBufferedEventArgs.cs" />
     <Compile Include="Events\NumberOfColumnsChangedEventArgs.cs" />
     <Compile Include="Events\NumberOfLoadedMoviesEventArgs.cs" />
+    <Compile Include="Events\TrailerLoadedEventArgs.cs" />
     <Compile Include="Helpers\Constants.cs" />
     <Compile Include="Helpers\NoKeepAliveWebClient.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Helpers\YoutubeStreamingQuality.cs" />
     <Compile Include="Model\Cast\Actor.cs" />
     <Compile Include="Model\Movie\MovieImages.cs" />
     <Compile Include="Model\Movie\MovieShortDetails.cs" />

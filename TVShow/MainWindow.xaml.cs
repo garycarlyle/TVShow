@@ -125,6 +125,7 @@ namespace TVShow
                 vm.LoadingMovie += OnLoadingMovie;
                 vm.BufferedMovie += OnBufferedMovie;
                 vm.LoadingMovieProgress += OnLoadingMovieProgress;
+                vm.LoadedTrailer += OnLoadedTrailer;
             }
 
             /*
@@ -145,6 +146,34 @@ namespace TVShow
             };
 
             PreviewKeyDown += new KeyEventHandler(BackToBoxedScreen);
+        }
+
+        private void OnLoadedTrailer(object sender, TrailerLoadedEventArgs e)
+        {
+            if (!e.InError)
+            {
+                DispatcherHelper.CheckBeginInvokeOnUI(() =>
+                {
+                    #region Fade in opacity
+
+                    DoubleAnimationUsingKeyFrames opacityAnimation = new DoubleAnimationUsingKeyFrames();
+                    opacityAnimation.Duration = new Duration(TimeSpan.FromSeconds(0.5));
+                    PowerEase opacityEasingFunction = new PowerEase();
+                    opacityEasingFunction.EasingMode = EasingMode.EaseInOut;
+                    EasingDoubleKeyFrame startOpacityEasing = new EasingDoubleKeyFrame(1.0, KeyTime.FromPercent(0));
+                    EasingDoubleKeyFrame endOpacityEasing = new EasingDoubleKeyFrame(0.0, KeyTime.FromPercent(1.0),
+                        opacityEasingFunction);
+                    opacityAnimation.KeyFrames.Add(startOpacityEasing);
+                    opacityAnimation.KeyFrames.Add(endOpacityEasing);
+
+                    MovieContainer.BeginAnimation(OpacityProperty, opacityAnimation);
+
+                    #endregion
+                });
+
+                TrailerPlayer.Source = new Uri(e.TrailerUrl);
+                TrailerPlayer.Play();
+            }
         }
 
         #endregion

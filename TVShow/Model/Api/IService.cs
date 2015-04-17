@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using TMDbLib.Objects.Movies;
 using TVShow.Model.Movie;
 
 namespace TVShow.Model.Api
@@ -35,8 +36,6 @@ namespace TVShow.Model.Api
             string imageUrl,
             CancellationTokenSource cancellationToken);
 
-        Task<Tuple<string, IEnumerable<Exception>>> DownloadMovieTorrentAsync(string imdbCode, 
-            string torentUrl,
-            CancellationTokenSource cancellationToken);
+        Tuple<Trailers, Exception> GetMovieTrailer(string imdbId);
     }
 }

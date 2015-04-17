@@ -129,63 +129,6 @@ namespace TVShow.Model.Api
         }
         #endregion
 
-        #region Method -> DownloadMovieTorrentAsync
-        /// <summary>
-        /// Download the torrent file of a movie
-        /// </summary>
-        /// <param name="imdbCode">The unique identifier of a movie</param>
-        /// <param name="torentUrl">The torrent URL</param>
-        /// <param name="cancellationToken">cancellationToken</param>
-        public async Task<Tuple<string, IEnumerable<Exception>>> DownloadMovieTorrentAsync(string imdbCode,
-            string torentUrl,
-            CancellationTokenSource cancellationToken)
-        {
-            List<Exception> ex = new List<Exception>();
-            Tuple<string, Exception> torrentFile = new Tuple<string, Exception>(String.Empty, null);
-
-            try
-            {
-                torrentFile =
-                    await
-                        DownloadFileAsync(imdbCode,
-                            new Uri(torentUrl), Constants.FileType.TorrentFile,
-                            cancellationToken.Token);
-
-                if (torrentFile != null)
-                {
-                    if (torrentFile.Item2 == null)
-                    {
-                        torrentFile = new Tuple<string, Exception>(Constants.TorrentDirectory +
-                                                                   imdbCode +
-                                                                   ".torrent", null);
-                    }
-                    else
-                    {
-                        ex.Add(torrentFile.Item2);
-                    }
-                }
-                else
-                {
-                    ex.Add(new Exception());
-                }
-            }
-            catch (WebException webException)
-            {
-                ex.Add(webException);
-            }
-            catch (TaskCanceledException e)
-            {
-                ex.Add(e);
-            }
-
-            if (torrentFile != null && torrentFile.Item1 != null)
-            {
-                return new Tuple<string, IEnumerable<Exception>>(torrentFile.Item1, ex);
-            }
-            return new Tuple<string, IEnumerable<Exception>>(null, ex);
-        }
-        #endregion
-
         #region Method -> DownloadMovieCoverAsync
         /// <summary>
         /// Download the movie cover
@@ -426,7 +369,7 @@ namespace TVShow.Model.Api
             List<Exception> ex = new List<Exception>();
             string backgroundImage = String.Empty;
 
-            TMDbClient tmDbclient = new TMDbClient(Constants.TMDbClientID);
+            TMDbClient tmDbclient = new TMDbClient(Constants.TmDbClientId);
             tmDbclient.GetConfig();
 
             try
@@ -434,7 +377,7 @@ namespace TVShow.Model.Api
                 TMDbLib.Objects.Movies.Movie movie = tmDbclient.GetMovie(imdbCode, MovieMethods.Images);
                 if (movie.ImdbId != null)
                 {
-                    Uri imageUri = tmDbclient.GetImageUrl(Constants.BackgroundImageSizeTMDb,
+                    Uri imageUri = tmDbclient.GetImageUrl(Constants.BackgroundImageSizeTmDb,
                         movie.Images.Backdrops.Aggregate((i1, i2) => i1.VoteAverage > i2.VoteAverage ? i1 : i2).FilePath);
 
                     try
@@ -481,6 +424,40 @@ namespace TVShow.Model.Api
             }
 
             return new Tuple<string, IEnumerable<Exception>>(backgroundImage, ex);
+        }
+        #endregion
+
+        #region Method -> GetMovieTrailer
+        /// <summary>
+        /// Get the link to the youtube trailer of a movie
+        /// </summary>
+        /// <param name="imdbCode">The unique identifier of a movie</param>
+        public Tuple<Trailers, Exception> GetMovieTrailer(string imdbCode)
+        {
+            Exception ex = null;
+            Trailers trailers = new Trailers();
+
+            TMDbClient tmDbclient = new TMDbClient(Constants.TmDbClientId);
+            tmDbclient.GetConfig();
+
+            try
+            {
+                TMDbLib.Objects.Movies.Movie movie = tmDbclient.GetMovie(imdbCode);
+                if (movie.ImdbId != null)
+                {
+                    trailers = tmDbclient.GetMovieTrailers(movie.Id);
+                }
+                else
+                {
+                    ex = new Exception();
+                }
+            }
+            catch (Exception e)
+            {
+                ex = e;
+            }
+
+            return new Tuple<Trailers, Exception>(trailers, ex);
         }
         #endregion
 

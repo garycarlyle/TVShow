@@ -58,7 +58,7 @@ namespace TVShow.Converters
         public object ConvertBack(object value, Type targetType,
             object parameter, CultureInfo culture)
         {
-            return DependencyProperty.UnsetValue;
+            throw new NotImplementedException();
         }
         #endregion
     }

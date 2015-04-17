@@ -37,7 +37,7 @@ namespace TVShow.Converters
         /// <param name="culture">The culture to use in the converter.</param>
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return DependencyProperty.UnsetValue;
+            throw new NotImplementedException();
         }
         #endregion
 

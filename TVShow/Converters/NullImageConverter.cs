@@ -24,7 +24,7 @@ namespace TVShow.Converters
             if (String.IsNullOrEmpty(result))
                 return DependencyProperty.UnsetValue;
 
-            return value;
+            return result;
         }
 
         /// <summary>

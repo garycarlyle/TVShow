@@ -149,7 +149,7 @@ namespace TVShow.Model.Api
                     await
                         DownloadFileAsync(imdbCode,
                             new Uri(torentUrl), Constants.FileType.TorrentFile,
-                            cancellationToken.Token).ConfigureAwait(false);
+                            cancellationToken.Token);
 
                 if (torrentFile != null)
                 {
@@ -206,7 +206,7 @@ namespace TVShow.Model.Api
                     await
                         DownloadFileAsync(imdbCode,
                             new Uri(imageUrl), Constants.FileType.CoverImage,
-                            cancellationToken.Token).ConfigureAwait(false);
+                            cancellationToken.Token);
 
                 if (coverImage != null)
                 {
@@ -263,7 +263,7 @@ namespace TVShow.Model.Api
                     await
                         DownloadFileAsync(imdbCode,
                             new Uri(imageUrl), Constants.FileType.PosterImage,
-                            cancellationToken.Token).ConfigureAwait(false);
+                            cancellationToken.Token);
 
                 if (posterImage != null)
                 {
@@ -320,7 +320,7 @@ namespace TVShow.Model.Api
                     await
                         DownloadFileAsync(name,
                             new Uri(imageUrl), Constants.FileType.DirectorImage,
-                            cancellationToken.Token).ConfigureAwait(false);
+                            cancellationToken.Token);
 
                 if (directorImage != null)
                 {
@@ -377,7 +377,7 @@ namespace TVShow.Model.Api
                     await
                         DownloadFileAsync(name,
                             new Uri(imageUrl), Constants.FileType.ActorImage,
-                            cancellationToken.Token).ConfigureAwait(false);
+                            cancellationToken.Token);
 
                 if (actorImage != null)
                 {
@@ -423,44 +423,54 @@ namespace TVShow.Model.Api
         public async Task<Tuple<string, IEnumerable<Exception>>> DownloadMovieBackgroundImageAsync(string imdbCode,
             CancellationTokenSource cancellationToken)
         {
-            TMDbClient tmDbclient = new TMDbClient(Helpers.Constants.TMDbClientID);
-            tmDbclient.GetConfig();
-            TMDbLib.Objects.Movies.Movie movie = tmDbclient.GetMovie(imdbCode, MovieMethods.Images);
-            Uri imageUri = tmDbclient.GetImageUrl(Helpers.Constants.BackgroundImageSizeTMDb,
-                movie.Images.Backdrops.Aggregate((i1, i2) => i1.VoteAverage > i2.VoteAverage ? i1 : i2).FilePath);
-
             List<Exception> ex = new List<Exception>();
             string backgroundImage = String.Empty;
-            try
-            {
-                Tuple<string, Exception> res =
-                    await DownloadFileAsync(imdbCode, imageUri, Constants.FileType.BackgroundImage, cancellationToken.Token).ConfigureAwait(false);
 
-                if (res != null)
+            TMDbClient tmDbclient = new TMDbClient(Helpers.Constants.TMDbClientID);
+            tmDbclient.GetConfig();
+
+            TMDbLib.Objects.Movies.Movie movie = tmDbclient.GetMovie(imdbCode, MovieMethods.Images);
+            if (movie.ImdbId != null)
+            {
+                Uri imageUri = tmDbclient.GetImageUrl(Helpers.Constants.BackgroundImageSizeTMDb,
+                    movie.Images.Backdrops.Aggregate((i1, i2) => i1.VoteAverage > i2.VoteAverage ? i1 : i2).FilePath);
+
+                try
                 {
-                    if (res.Item2 == null)
+                    Tuple<string, Exception> res =
+                        await DownloadFileAsync(imdbCode, imageUri, Constants.FileType.BackgroundImage, cancellationToken.Token);
+
+                    if (res != null)
                     {
-                        backgroundImage = Constants.BackgroundMovieDirectory + imdbCode + Constants.ImageFileExtension;
+                        if (res.Item2 == null)
+                        {
+                            backgroundImage = Constants.BackgroundMovieDirectory + imdbCode + Constants.ImageFileExtension;
+                        }
+                        else
+                        {
+                            ex.Add(res.Item2);
+                        }
                     }
                     else
                     {
-                        ex.Add(res.Item2);
+                        ex.Add(new Exception());
                     }
                 }
-                else
+                catch (WebException webException)
                 {
-                    ex.Add(new Exception());
+                    ex.Add(webException);
+                }
+                catch (TaskCanceledException e)
+                {
+                    ex.Add(e);
                 }
             }
-            catch (WebException webException)
+            else
             {
-                ex.Add(webException);
+                ex.Add(new Exception());
             }
-            catch (TaskCanceledException e)
-            {
-                ex.Add(e);
-            }
-            return new Tuple<string,IEnumerable<Exception>>(backgroundImage, ex);
+
+            return new Tuple<string, IEnumerable<Exception>>(backgroundImage, ex);
         }
         #endregion
 
@@ -529,7 +539,7 @@ namespace TVShow.Model.Api
                     try
                     {
                         await webClient.DownloadFileTaskAsync(fileUri,
-                            @downloadToDirectory).ConfigureAwait(false);
+                            downloadToDirectory).ConfigureAwait(false);
 
                         try
                         {
@@ -566,7 +576,7 @@ namespace TVShow.Model.Api
                                 File.Delete(downloadToDirectory);
                                 try
                                 {
-                                    await webClient.DownloadFileTaskAsync(fileUri, @downloadToDirectory).ConfigureAwait(false);
+                                    await webClient.DownloadFileTaskAsync(fileUri, downloadToDirectory).ConfigureAwait(false);
 
                                     FileInfo newfi = new FileInfo(downloadToDirectory);
                                     if (newfi.Length == 0)

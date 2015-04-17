@@ -30,7 +30,7 @@
             <converters:GenresConverter x:Key="GenresConverter" />
             <converters:StringRatingToIntRatingConverter x:Key="StringRatingToIntRatingConverter" />
             <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
-            <converters:BoolToVisibilityInverseConverter x:Key="BoolToVisibilityInverseConverter" />
+            <converters:BoolToInverseVisibilityConverter x:Key="BoolToInverseVisibilityConverter" />
         </ResourceDictionary>
     </Window.Resources>
     
@@ -219,7 +219,7 @@
                                           StrokeThickness="5"
                                           Stroke="#FFFFFF"/>
                                         </Canvas>
-                                        <TextBlock Text="{Binding Movie.MpaRating}" Margin="15,0,0,0" VerticalAlignment="Center" FontFamily="Agency FB" FontSize="18"/>
+                                        <TextBlock Text="{Binding Movie.MpaRating}" Margin="15,0,0,0" VerticalAlignment="Center" FontFamily="pack://application:,,,/Resources/Fonts/#Agency FB" FontSize="18"/>
                                     </StackPanel>
                                 </DockPanel>
                                 <Grid Height="{Binding ElementName=MovieContainer, Path=ActualHeight, Converter={StaticResource RatioConverter}, ConverterParameter=0.5}">
@@ -227,7 +227,7 @@
                                         <StackPanel>
                                             <TextBlock VerticalAlignment="Center" Padding="0,20,0,0" TextAlignment="Justify" Text="{Binding Movie.DescriptionFull}" TextWrapping="Wrap" FontFamily="pack://application:,,,/Resources/Fonts/#Agency FB" FontSize="24"></TextBlock>
                                             <StackPanel Margin="0,20,0,0">
-                                                <TextBlock VerticalAlignment="Center" Text="Cast" FontFamily="/Resources/Fonts/#Agency FB" FontSize="36"></TextBlock>
+                                                <TextBlock VerticalAlignment="Center" Text="Cast" FontFamily="pack://application:,,,/Resources/Fonts/#Agency FB" FontSize="36"></TextBlock>
                                                 <StackPanel Orientation="Horizontal">
                                                     <StackPanel>
                                                         <TextBlock Text="Directors" FontFamily="pack://application:,,,/Resources/Fonts/#Agency FB" FontSize="24"></TextBlock>
@@ -410,7 +410,7 @@
                     Margin="0, 10, 0, 0"
                     Content="Reload"
                     FontSize="18"
-                    Visibility="{Binding Main.IsConnectionInError, Source={StaticResource Locator}, Converter={StaticResource BoolToVisibilityInverseConverter}}"
+                    Visibility="{Binding Main.IsConnectionInError, Source={StaticResource Locator}, Converter={StaticResource BoolToInverseVisibilityConverter}}"
                     Command="{Binding Movies.ReloadMovies, Source={StaticResource Locator}}"/>
         </StackPanel>
     </Grid>

@@ -22,10 +22,14 @@ namespace TVShow.Converters
         /// <param name="parameter">The converter parameter to use.</param>
         /// <param name="culture">The culture to use in the converter.</param>
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        { 
-            double size = System.Convert.ToDouble(value) * System.Convert.ToDouble(parameter, CultureInfo.InvariantCulture);
+        {
+            double size = 0.0;
+            if (value != null)
+            {
+                size = System.Convert.ToDouble(value, CultureInfo.InvariantCulture) * System.Convert.ToDouble(parameter, CultureInfo.InvariantCulture);
+            }
 
-            return size.ToString("G0", CultureInfo.InvariantCulture);
+            return size;
         }
 
         /// <summary>

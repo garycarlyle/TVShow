@@ -21,10 +21,10 @@ namespace TVShow.Converters
             object parameter, CultureInfo culture)
         {
             double result = 0.0;
-            if (value != null)
-            {
-                string rating = value.ToString();
+            string rating = value as string;
 
+            if (rating != null)
+            {
                 try
                 {
                     result = System.Convert.ToDouble(rating, CultureInfo.InvariantCulture);

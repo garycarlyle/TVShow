@@ -7,7 +7,7 @@ namespace TVShow.Converters
     /// <summary>
     /// Used to convert and inverse boolean to a Visibility class property
     /// </summary>
-    public class BoolToVisibilityInverseConverter : IValueConverter
+    public class BoolToInverseVisibilityConverter : IValueConverter
     {
         #region IValueConverter Members
         /// <summary>

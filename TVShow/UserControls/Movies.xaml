@@ -22,12 +22,12 @@
             <DoubleAnimation  
                 From="0" To="0"
                 Storyboard.TargetProperty="(TextBox.RenderTransform).(TranslateTransform.X)"
-                Duration="0:0:2" />
+                Duration="0:0:1" />
             <DoubleAnimation  
                 From="0" To="-180"
-                BeginTime="0:0:2"
+                BeginTime="0:0:1"
                 Storyboard.TargetProperty="(TextBox.RenderTransform).(TranslateTransform.X)"
-                Duration="0:0:4"
+                Duration="0:0:3"
                 AutoReverse="True"
                 RepeatBehavior="Forever"/>
         </Storyboard>

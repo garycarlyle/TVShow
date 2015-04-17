@@ -22,10 +22,11 @@ namespace TVShow.Converters
         public object Convert(object value, Type targetType,
             object parameter, CultureInfo culture)
         {
+            string res = String.Empty;
+
             if (value != null)
             {
                 List<string> genres = value as List<string>;
-                string res = String.Empty;
                 if (genres != null)
                 {
                     int index = 0;
@@ -41,10 +42,9 @@ namespace TVShow.Converters
                         }
                     }
                 }
-                return res;
             }
 
-            return String.Empty;
+            return res;
         }
 
         /// <summary>

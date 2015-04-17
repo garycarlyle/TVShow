@@ -22,12 +22,13 @@ namespace TVShow.Converters
         public object Convert(object value, Type targetType,
             object parameter, CultureInfo culture)
         {
+            string result = String.Empty;
             if (value != null)
             {
-                return value + " min";
+                result = value + " min";
             }
 
-            return String.Empty;
+            return result;
         }
 
         /// <summary>

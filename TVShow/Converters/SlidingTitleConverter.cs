@@ -21,9 +21,10 @@ namespace TVShow.Converters
         /// <param name="culture">The culture to use in the converter.</param>
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value != null)
+            string result = value as string;
+            if (result != null)
             {
-                Size sz = MeasureString((string)value);
+                Size sz = MeasureString(result);
                 if (sz.Width > Helpers.Constants.MaxWidthBeforeSlidingTitle)
                 {
                     return true;

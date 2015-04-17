@@ -267,6 +267,11 @@ namespace TVShow.ViewModel
             Tuple<Trailers, Exception> trailer =
                 ApiService.GetMovieTrailer(imdbId);
 
+            if (trailer.Item2 != null)
+            {
+                OnLoadedTrailer(new TrailerLoadedEventArgs(String.Empty, true));
+                return;
+            }
             VideoInfo video = null;
 
             try
@@ -282,13 +287,15 @@ namespace TVShow.ViewModel
             {
                 if (ex is WebException || ex is VideoNotAvailableException || ex is YoutubeParseException)
                 {
-                    OnLoadedTrailer(new TrailerLoadedEventArgs(video.DownloadUrl, true));
+                    OnLoadedTrailer(new TrailerLoadedEventArgs(String.Empty, true));
+                    return;
                 }
             }
 
             if (video == null)
             {
-                OnLoadedTrailer(new TrailerLoadedEventArgs(video.DownloadUrl, true));
+                OnLoadedTrailer(new TrailerLoadedEventArgs(String.Empty, true));
+                return;
             }
 
             OnLoadedTrailer(new TrailerLoadedEventArgs(video.DownloadUrl, false));

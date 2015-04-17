@@ -423,7 +423,7 @@ namespace TVShow.Model.Api
         public async Task<Tuple<string, IEnumerable<Exception>>> DownloadMovieBackgroundImageAsync(string imdbCode,
             CancellationTokenSource cancellationToken)
         {
-            TMDbClient tmDbclient = new TMDbClient("52db02421219a8b6b4a8eed1df0b8bd8");
+            TMDbClient tmDbclient = new TMDbClient(Helpers.Constants.TMDbClientID);
             tmDbclient.GetConfig();
             TMDbLib.Objects.Movies.Movie movie = tmDbclient.GetMovie(imdbCode, MovieMethods.Images);
             Uri imageUri = tmDbclient.GetImageUrl("original",

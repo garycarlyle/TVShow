@@ -48,6 +48,11 @@ namespace TVShow.Helpers
         public static readonly string YtsApiEndpoint = "http://yts.to/api/v2";
 
         /// <summary>
+        /// Client ID for TMDb
+        /// </summary>
+        public static readonly string TMDbClientID = "52db02421219a8b6b4a8eed1df0b8bd8";
+
+        /// <summary>
         /// Maximum width of the movie title in the main interface until sliding
         /// </summary>
         public const int MaxWidthBeforeSlidingTitle = 160;

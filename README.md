@@ -39,3 +39,4 @@ Well, there's some points.
 
 ## How do I compile the solution?
 * Just open the .sln with VS 2013+, right-click on the solution, click "Enable NuGet Package Restore" and run F5. 
+* -Enable NuGet Package Restore has been removed from VS 2015. Cant find how to make it work this fork work with VS 2015. 
